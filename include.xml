@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension>
+	
+	<haxelib name="renderer_ogles2" if="desktop" />
+	<haxelib name="renderer_ogles2" if="html5" />
+	<haxelib name="renderer_ogles2" if="neko" />
+	<haxelib name="renderer_ogles2" if="android" />
+	<haxelib name="renderer_ogles2" if="ios" />
+	<haxelib name="renderer_flash" if="flash" />
+
+</extension>
