@@ -90,7 +90,7 @@ class RendererImplementation extends Renderer
 
 		if(meshDataBuffer.data != null)
 		{
-			if(meshDataBuffer.data.length < meshDataBuffer.sizeOfHardwareBuffer)
+			if(meshDataBuffer.data.byteLength < meshDataBuffer.sizeOfHardwareBuffer)
 			{
 				GL.bindBuffer(GL.ARRAY_BUFFER, meshDataBuffer.glBuffer);
 				GL.bufferSubData(GL.ARRAY_BUFFER, 0, meshDataBuffer.data);
@@ -103,7 +103,7 @@ class RendererImplementation extends Renderer
 							  GLUtils.convertBufferModeFromUTKToOGL(meshDataBuffer.bufferMode));
 
 			}
-			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.length;
+			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.byteLength;
 			meshDataBuffer.bufferAlreadyOnHardware = true;
 		}
 		GL.bindBuffer(GL.ARRAY_BUFFER, null);
@@ -120,6 +120,7 @@ class RendererImplementation extends Renderer
 		shaderImpl.alreadyLoaded = true;
 
 		/// COMPILE
+
 
 		var vs = compileShader(GL.VERTEX_SHADER, shaderImpl.vertexShaderCode);
 
@@ -264,7 +265,7 @@ class RendererImplementation extends Renderer
 			switch(uniformInterfaceImpl.uniformType)
 			{
 			case SingleInt:
-				GL.uniform1i(uniformInterfaceImpl.uniformLocation, (new Int32Array(uniformInterfaceImpl.data)).getInt32(0));
+				GL.uniform1i(uniformInterfaceImpl.uniformLocation, cast(uniformInterfaceImpl.data, Int32Array)[0]);
 				break;
 				/*
 			case UTK_UNIFORM_SINGLE_INT_ARRAY:
@@ -337,7 +338,7 @@ class RendererImplementation extends Renderer
 				*/
 			case Matrix4:
 				//lime_gl_uniform_matrix(uniformInterfaceImpl.uniformLocation, false, uniformInterfaceImpl, 4);
-				GL.uniformMatrix4fv(uniformInterfaceImpl.uniformLocation, false, new Float32Array(uniformInterfaceImpl.data));
+				GL.uniformMatrix4fv(uniformInterfaceImpl.uniformLocation, false, cast uniformInterfaceImpl.data);
 				break;
 				/*
 			case UTK_UNIFORM_MATRIX_4_TRANSPOSED:
@@ -473,7 +474,6 @@ class RendererImplementation extends Renderer
 		{
 			var count : Int;
 			var offset : Int;
-
 			if(meshData.bakedFrameCount == 0)
 			{
 				count = meshData.vertexCount;
@@ -492,5 +492,13 @@ class RendererImplementation extends Renderer
 	};
 
 
+	override function setClearColor(r : Float, g : Float, b : Float, a : Float) 
+	{
+		GL.clearColor(r, g, b, a);
+	}
+	override function clear() 
+	{
+		GL.clear (GL.COLOR_BUFFER_BIT);
+	};
 
 }
