@@ -1,6 +1,8 @@
 import RenderTypes;
 
-import lime.utils.ByteArray;
+import lime.utils.UInt8Array;
+import lime.utils.ArrayBufferView;
+
 
 import RendererImplementation;
 
@@ -8,7 +10,7 @@ import RendererImplementation;
 class MeshDataBuffer 
 {
 	public var bufferMode : BufferMode;
-	public var data : ByteArray;
+	public var data : ArrayBufferView;
 
 	private function new() {}
 
@@ -20,13 +22,13 @@ class MeshDataBuffer
 
 class MeshDataAttributeConfig
 {
-	public var attributeNumber : Int;
-	public var stride : Int;
-	public var vertexElementCount : Int;
+	public var attributeNumber : Int = 0;
+	public var stride : Int = 0;
+	public var vertexElementCount : Int = 0;
 	public var vertexElementType : DataType;
-	public var offsetInData : Int;
+	public var offsetInData : Int = 0;
 	public var offsetPerBakedFrame : Array<Int>;
-	public var vertexElementsNormalized : Bool;
+	public var vertexElementsNormalized : Bool = false;
 
 	private function new() {}
 
@@ -42,10 +44,10 @@ class MeshData
 	public var indexBuffer : MeshDataBuffer;
 	public var attributeConfigs : Array<MeshDataAttributeConfig>;
 
-	public var vertexCount : Int;
-	public var indexCount : Int;
-	public var bakedFrameCount : Int;
-	public var bakedFPS : Int;
+	public var vertexCount : Int = 0;
+	public var indexCount : Int = 0;
+	public var bakedFrameCount : Int = 0;
+	public var bakedFPS : Int = 0;
 
 	public var primitiveType : PrimitiveType;
 	public var indexDataType : DataType;
@@ -62,20 +64,20 @@ class MeshData
 
 class ShaderUniformInterface
 {
-	public var dataCount : Int;
+	public var dataCount : Int = 0;
 	public var uniformType : UniformType;
 	
 	public var name : String;
 
-	public var data : ByteArray;
-	public var dataActiveCount : Int;
+	public var data : ArrayBufferView;
+	public var dataActiveCount : Int = 0;
 
 	private function new(name : String, uniformType : UniformType, count : Int) 
 	{
 		this.name = name;
 		this.uniformType = uniformType;
 
-		this.data = new ByteArray(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
+		this.data = new UInt8Array(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
 		this.dataActiveCount = 0;
 	}
 
@@ -149,6 +151,9 @@ class Renderer
 	public function bindMeshData(meshData : MeshData, bakedFrame : Int) {};
 	public function render(meshData : MeshData, bakedFrame : Int) {};
 
+	/// pre render target methods
+	public function setClearColor(r : Float, g : Float, b : Float, a : Float) {};
+	public function clear() {};
 
 }
 
