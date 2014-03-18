@@ -18,6 +18,7 @@ import lime.utils.Libs;
 import haxe.io.BytesInput;
 
 import RenderTypes;
+import types.DataType;
 
 class ShaderImplementation extends Shader
 {
@@ -462,7 +463,7 @@ class RendererImplementation extends Renderer
 			else
 			{
 				count = meshData.indexCountPerBakedFrame[bakedFrame];
-				offset = meshData.indexOffsetPerBakedFrame[bakedFrame] * RenderTypesUtils.dataTypeByteSize(meshData.indexDataType);
+				offset = meshData.indexOffsetPerBakedFrame[bakedFrame] * DataTypeUtils.dataTypeByteSize(meshData.indexDataType);
 			}
 
 			GL.drawElements(primitiveType,

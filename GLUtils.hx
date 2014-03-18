@@ -1,6 +1,8 @@
 
 import RenderTypes;
 
+import types.DataType;
+
 import lime.gl.GL;
 
 class GLUtils

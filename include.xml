@@ -2,5 +2,6 @@
 <extension>
 
 	<haxelib name="lime" />
+	<haxelib name="types" />
 	
 </extension>
