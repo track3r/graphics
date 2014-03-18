@@ -10,16 +10,6 @@ enum PrimitiveType
 	Points;
 }
 
-enum DataType
-{
-	Byte;
-	UnsignedByte;
-	Short;
-	UnsignedShort;
-	Int;
-	UnsignedInt;
-	Float;
-}
 
 enum BufferMode
 {
@@ -60,35 +50,47 @@ class RenderTypesUtils
 		switch (uniform)
 		{
 			case SingleInt:
+				return 4;
 			case SingleIntArray:
 				return 4;
 			case SingleFloat:
+				return 4;
 			case SingleFloatArray:
 				return 4;
 			case Vector2Int:
+				return 2*4;
 			case Vector2IntArray:
 				return 2*4;
 			case Vector2Float:
+				return 2*4;
 			case Vector2FloatArray:
 				return 2*4;
 			case Vector3Int:
+				return 3*4;
 			case Vector3IntArray:
 				return 3*4;
 			case Vector3Float:
+				return 3*4;
 			case Vector3FloatArray:
 				return 3*4;
 			case Vector4Int:
+				return 4*4;
 			case Vector4IntArray:
 				return 4*4;
 			case Vector4Float:
+				return 4*4;
 			case Vector4FloatArray:
+				return 4*4;
 			case Matrix2:
+				return 4*4;
 			case Matrix2Transposed:
 				return 4*4;
 			case Matrix3:
+				return 9*4;
 			case Matrix3Transposed:
 				return 9*4;
 			case Matrix4:
+				return 16*4;
 			case Matrix4Transposed:
 				return 16*4;
 		}
@@ -96,22 +98,5 @@ class RenderTypesUtils
 		return 0;
 	}
 
-	static public function dataTypeByteSize(dataType : DataType) : Int
-	{
-		switch(dataType)
-		{
-			case Byte:
-			case UnsignedByte:
-				return 1;
-			case Short:
-			case UnsignedShort:
-				return 2;
-			case Int:
-			case Float:
-			case UnsignedInt:
-				return 4;
-		}
-		return 0;
-	}
 
 }

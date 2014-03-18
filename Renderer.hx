@@ -1,5 +1,7 @@
 import RenderTypes;
 
+import types.DataType;
+
 import lime.utils.UInt8Array;
 import lime.utils.ArrayBufferView;
 

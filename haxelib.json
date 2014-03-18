@@ -4,6 +4,6 @@
     "version" : "0.0.1",
     "description" : "An abstraction layer for cross platform rendering.",
     "contributors" : [ "GameDuell GmbH" ],
-    "dependencies" : [ "renderer_ogles2"]
+    "dependencies" : [ "types" ]
     "releasenote" : ""
 }
