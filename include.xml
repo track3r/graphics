@@ -3,5 +3,6 @@
 
 	<haxelib name="lime" />
 	<haxelib name="types" />
+	<haxelib name="opengl" />
 	
 </extension>

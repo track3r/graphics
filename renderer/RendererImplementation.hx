@@ -1,23 +1,17 @@
-import Renderer;
+package renderer;
 
-import lime.gl.GL;
-import lime.gl.GLBuffer;
-import lime.gl.GLProgram;
-import lime.gl.GLUniformLocation;
+import renderer.Renderer;
 
-import lime.utils.Float32Array;
-import lime.utils.Int32Array;
-import lime.utils.ByteArray;
+import gl.GL;
+import gl.GLDefines;
 
-import GLUtils;
+import renderer.GLUtils;
 
 import StringTools;
 
-import lime.utils.Libs;
-
 import haxe.io.BytesInput;
 
-import RenderTypes;
+import renderer.RenderTypes;
 import types.DataType;
 
 class ShaderImplementation extends Shader
@@ -64,6 +58,7 @@ class MeshDataImplementation extends MeshData
 
 class RendererImplementation extends Renderer
 {
+	var currentShader = 0;
 	public function new() 
 	{
 		super();
@@ -77,7 +72,7 @@ class RendererImplementation extends Renderer
 		loadFilledMeshDataBuffer(cast meshData.attributeBuffer);
 		loadFilledMeshDataBuffer(cast meshData.indexBuffer);
 	}
-
+	
 	function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBufferImplementation)
 	{
 		if(meshDataBuffer == null)
@@ -91,23 +86,24 @@ class RendererImplementation extends Renderer
 
 		if(meshDataBuffer.data != null)
 		{
-			if(meshDataBuffer.data.byteLength < meshDataBuffer.sizeOfHardwareBuffer)
+			if(meshDataBuffer.data.length < meshDataBuffer.sizeOfHardwareBuffer)
 			{
-				GL.bindBuffer(GL.ARRAY_BUFFER, meshDataBuffer.glBuffer);
-				GL.bufferSubData(GL.ARRAY_BUFFER, 0, meshDataBuffer.data);
+				GL.bindBuffer(GLDefines.ARRAY_BUFFER, meshDataBuffer.glBuffer);
+				GL.bufferSubData(GLDefines.ARRAY_BUFFER, 0, 0, meshDataBuffer.data.length, meshDataBuffer.data);
 			}
 			else
 			{
-				GL.bindBuffer(GL.ARRAY_BUFFER, meshDataBuffer.glBuffer);
-				GL.bufferData(GL.ARRAY_BUFFER,
+				GL.bindBuffer(GLDefines.ARRAY_BUFFER, meshDataBuffer.glBuffer);
+				GL.bufferData(GLDefines.ARRAY_BUFFER,
+							  0, meshDataBuffer.data.length,
 							  meshDataBuffer.data,
 							  GLUtils.convertBufferModeFromUTKToOGL(meshDataBuffer.bufferMode));
 
 			}
-			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.byteLength;
+			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.length;
 			meshDataBuffer.bufferAlreadyOnHardware = true;
 		}
-		GL.bindBuffer(GL.ARRAY_BUFFER, null);
+		GL.bindBuffer(GLDefines.ARRAY_BUFFER, 0);
 	}
 
 
@@ -123,17 +119,17 @@ class RendererImplementation extends Renderer
 		/// COMPILE
 
 
-		var vs = compileShader(GL.VERTEX_SHADER, shaderImpl.vertexShaderCode);
+		var vs = compileShader(GLDefines.VERTEX_SHADER, shaderImpl.vertexShaderCode);
 
-		if(vs == null)
+		if(vs == 0)
 		{
 			trace("Failed to compile vertex shader:" + shader.name);
 			return;
 		}
 
-		var fs = compileShader(GL.FRAGMENT_SHADER, shaderImpl.fragmentShaderCode);
+		var fs = compileShader(GLDefines.FRAGMENT_SHADER, shaderImpl.fragmentShaderCode);
 
-		if(fs == null)
+		if(fs == 0)
 		{
 			trace("Failed to compile fragment shader:" + shader.name);
 			return;
@@ -160,11 +156,11 @@ class RendererImplementation extends Renderer
 		{
 			trace("Failed to link program " + shaderImpl.name);
 
-			if(vs != null)
+			if(vs != 0)
 			{
 				GL.deleteShader(vs);
 			}
-			if(fs != null)
+			if(fs != 0)
 			{
 				GL.deleteShader(fs);
 			}
@@ -193,12 +189,12 @@ class RendererImplementation extends Renderer
 
 		/// CLEANUP
 
-		if(vs != null)
+		if(vs != 0)
 		{
 			GL.detachShader(shaderImpl.programName, vs);
 			GL.deleteShader(vs);
 		}
-		if(fs != null)
+		if(fs != 0)
 		{
 			GL.detachShader(shaderImpl.programName, fs);
 			GL.deleteShader(fs);
@@ -228,10 +224,10 @@ class RendererImplementation extends Renderer
 		}
 		#end
 
-		if(GL.getShaderParameter(s, GL.COMPILE_STATUS) != cast 1 ) 
+		if(GL.getShaderParameter(s, GLDefines.COMPILE_STATUS) != cast 1 ) 
 		{
 			GL.deleteShader(s);
-			return null;
+			return 0;
 		}
 		return s;
 	}
@@ -249,7 +245,7 @@ class RendererImplementation extends Renderer
 		}
 		#end
 
-		if(GL.getProgramParameter(shaderProgramName, GL.LINK_STATUS) == 0)
+		if(GL.getProgramParameter(shaderProgramName, GLDefines.LINK_STATUS) == 0)
 			return false;
 		return true;
 	}
@@ -257,7 +253,12 @@ class RendererImplementation extends Renderer
 	override function bindShader(shader : Shader) 
 	{
 		var shaderImpl : ShaderImplementation = cast shader;
-		GL.useProgram(shaderImpl.programName);
+
+		if(currentShader != shaderImpl.programName)
+		{
+			GL.useProgram(shaderImpl.programName);
+			currentShader = shaderImpl.programName;
+		}
 
 		for(uniformInterface in shader.uniformInterfaces)
 		{
@@ -265,10 +266,10 @@ class RendererImplementation extends Renderer
 			var uniformInterfaceImpl : ShaderUniformInterfaceImplementation = cast uniformInterface;
 			switch(uniformInterfaceImpl.uniformType)
 			{
+				/*
 			case SingleInt:
 				GL.uniform1i(uniformInterfaceImpl.uniformLocation, cast(uniformInterfaceImpl.data, Int32Array)[0]);
 				break;
-				/*
 			case UTK_UNIFORM_SINGLE_INT_ARRAY:
 				glUniform1iv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (int*)uniform->_dataPtr);
 				break;
@@ -337,9 +338,9 @@ class RendererImplementation extends Renderer
 				glUniformMatrix3fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, true, (float*)uniform->_dataPtr);
 				break;
 				*/
-			case Matrix4:
+			case UniformTypeMatrix4:
 				//lime_gl_uniform_matrix(uniformInterfaceImpl.uniformLocation, false, uniformInterfaceImpl, 4);
-				GL.uniformMatrix4fv(uniformInterfaceImpl.uniformLocation, false, cast uniformInterfaceImpl.data);
+				GL.uniformMatrix4fv(uniformInterfaceImpl.uniformLocation, uniformInterfaceImpl.dataActiveCount, false, 0, uniformInterfaceImpl.data);
 				break;
 				/*
 			case UTK_UNIFORM_MATRIX_4_TRANSPOSED:
@@ -365,21 +366,21 @@ class RendererImplementation extends Renderer
 		if(data.attributeBuffer != null)
 		{
 			var buffer : MeshDataBufferImplementation = cast data.attributeBuffer;
-			GL.bindBuffer(GL.ARRAY_BUFFER, buffer.glBuffer);
+			GL.bindBuffer(GLDefines.ARRAY_BUFFER, buffer.glBuffer);
 		}
 		else
 		{
-			GL.bindBuffer(GL.ARRAY_BUFFER, null);
+			GL.bindBuffer(GLDefines.ARRAY_BUFFER, 0);
 		}
 
 		if(data.indexBuffer != null)
 		{
 			var buffer : MeshDataBufferImplementation = cast data.indexBuffer;
-			GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, buffer.glBuffer);
+			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, buffer.glBuffer);
 		}
 		else
 		{
-			GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, null);
+			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, 0);
 		}
 
 		enableVertexAttributes(data);
@@ -499,7 +500,7 @@ class RendererImplementation extends Renderer
 	}
 	override function clear() 
 	{
-		GL.clear (GL.COLOR_BUFFER_BIT);
+		GL.clear (GLDefines.COLOR_BUFFER_BIT);
 	};
 
 }
