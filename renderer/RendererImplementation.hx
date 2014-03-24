@@ -5,6 +5,8 @@ import renderer.Renderer;
 import gl.GL;
 import gl.GLDefines;
 
+import lime.Lime;
+
 import renderer.GLUtils;
 
 import StringTools;
@@ -49,7 +51,6 @@ class MeshDataAttributeConfigImplementation extends MeshDataAttributeConfig
 
 class MeshDataImplementation extends MeshData
 {
-	public var testVar : Int;
 	public function new()
 	{
 		super();
@@ -58,10 +59,18 @@ class MeshDataImplementation extends MeshData
 
 class RendererImplementation extends Renderer
 {
-	var currentShader = 0;
+	var currentShader : GLProgram;
 	public function new() 
 	{
 		super();
+	}
+
+	override public function initialize(lime : Lime) 
+	{
+		#if html5
+		GL.context = lime.render.direct_renderer_handle;
+		#end
+		currentShader = GL.nullProgram;
 	}
 
 	override function loadFilledMeshData(meshData : MeshData)
@@ -103,7 +112,7 @@ class RendererImplementation extends Renderer
 			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.length;
 			meshDataBuffer.bufferAlreadyOnHardware = true;
 		}
-		GL.bindBuffer(GLDefines.ARRAY_BUFFER, 0);
+		GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
 	}
 
 
@@ -121,7 +130,7 @@ class RendererImplementation extends Renderer
 
 		var vs = compileShader(GLDefines.VERTEX_SHADER, shaderImpl.vertexShaderCode);
 
-		if(vs == 0)
+		if(vs == GL.nullShader)
 		{
 			trace("Failed to compile vertex shader:" + shader.name);
 			return;
@@ -129,7 +138,7 @@ class RendererImplementation extends Renderer
 
 		var fs = compileShader(GLDefines.FRAGMENT_SHADER, shaderImpl.fragmentShaderCode);
 
-		if(fs == 0)
+		if(fs == GL.nullShader)
 		{
 			trace("Failed to compile fragment shader:" + shader.name);
 			return;
@@ -156,11 +165,11 @@ class RendererImplementation extends Renderer
 		{
 			trace("Failed to link program " + shaderImpl.name);
 
-			if(vs != 0)
+			if(vs != GL.nullShader)
 			{
 				GL.deleteShader(vs);
 			}
-			if(fs != 0)
+			if(fs != GL.nullShader)
 			{
 				GL.deleteShader(fs);
 			}
@@ -179,7 +188,7 @@ class RendererImplementation extends Renderer
 				var uniformLocation : GLUniformLocation;
 				uniformLocation = GL.getUniformLocation(shaderImpl.programName, uniInterfaceImpl.name);
 
-				if(uniformLocation == cast -1)
+				if(uniformLocation == GL.nullUniformLocation)
 				{
 					trace("Failed to link uniform " + uniInterfaceImpl.name + " in shader: " + shader.name);
 				}
@@ -189,12 +198,12 @@ class RendererImplementation extends Renderer
 
 		/// CLEANUP
 
-		if(vs != 0)
+		if(vs != GL.nullShader)
 		{
 			GL.detachShader(shaderImpl.programName, vs);
 			GL.deleteShader(vs);
 		}
-		if(fs != 0)
+		if(fs != GL.nullShader)
 		{
 			GL.detachShader(shaderImpl.programName, fs);
 			GL.deleteShader(fs);
@@ -203,7 +212,7 @@ class RendererImplementation extends Renderer
 
 	};
 
-	private function compileShader(type : Int, code : String)
+	private function compileShader(type : Int, code : String) : GLShader
 	{
 		#if desktop
 		code = StringTools.replace(code, "lowp", "");
@@ -227,7 +236,7 @@ class RendererImplementation extends Renderer
 		if(GL.getShaderParameter(s, GLDefines.COMPILE_STATUS) != cast 1 ) 
 		{
 			GL.deleteShader(s);
-			return 0;
+			return GL.nullShader;
 		}
 		return s;
 	}
@@ -370,7 +379,7 @@ class RendererImplementation extends Renderer
 		}
 		else
 		{
-			GL.bindBuffer(GLDefines.ARRAY_BUFFER, 0);
+			GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
 		}
 
 		if(data.indexBuffer != null)
@@ -380,7 +389,7 @@ class RendererImplementation extends Renderer
 		}
 		else
 		{
-			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, 0);
+			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, GL.nullBuffer);
 		}
 
 		enableVertexAttributes(data);
