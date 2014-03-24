@@ -3,6 +3,8 @@
 
 	
 	
+	<haxelib name="lime" />
+	<haxelib name="types" />
 	<haxelib name="renderer_ogl" if="desktop" />
 	<haxelib name="renderer_ogl" if="html5" />
 	<haxelib name="renderer_ogl" if="neko" />

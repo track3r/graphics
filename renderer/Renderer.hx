@@ -1,18 +1,19 @@
-import RenderTypes;
+package renderer;
+
+import renderer.RenderTypes;
 
 import types.DataType;
+import types.Data;
 
-import lime.utils.UInt8Array;
-import lime.utils.ArrayBufferView;
+import lime.Lime;
 
-
-import RendererImplementation;
+import renderer.RendererImplementation;
 
 
 class MeshDataBuffer 
 {
 	public var bufferMode : BufferMode;
-	public var data : ArrayBufferView;
+	public var data : Data;
 
 	private function new() {}
 
@@ -71,7 +72,7 @@ class ShaderUniformInterface
 	
 	public var name : String;
 
-	public var data : ArrayBufferView;
+	public var data : Data;
 	public var dataActiveCount : Int = 0;
 
 	private function new(name : String, uniformType : UniformType, count : Int) 
@@ -79,7 +80,7 @@ class ShaderUniformInterface
 		this.name = name;
 		this.uniformType = uniformType;
 
-		this.data = new UInt8Array(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
+		this.data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
 		this.dataActiveCount = 0;
 	}
 
@@ -144,6 +145,8 @@ class Renderer
 	}
 
 	private function new() {}
+
+	public function initialize(lime : Lime) {};
 
 	public function loadFilledMeshData(meshData : MeshData) {};
 
