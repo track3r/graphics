@@ -21,11 +21,20 @@ class ShaderImplementation extends Shader
 	public var programName : GLProgram;
 
 	public var alreadyLoaded : Bool;
+
+	public function new()
+	{
+		super();
+	}
 }
 
 class ShaderUniformInterfaceImplementation extends ShaderUniformInterface
 {
 	public var uniformLocation : GLUniformLocation;
+
+	public function new() {
+		super();
+	}
 }
 
 class MeshDataBufferImplementation extends MeshDataBuffer
