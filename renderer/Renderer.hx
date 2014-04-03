@@ -75,18 +75,19 @@ class ShaderUniformInterface
 	public var data : Data;
 	public var dataActiveCount : Int = 0;
 
-	private function new(name : String, uniformType : UniformType, count : Int) 
-	{
-		this.name = name;
-		this.uniformType = uniformType;
-
-		this.data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
-		this.dataActiveCount = 0;
-	}
+	private function new() {}
 
 	static public function create(name : String, uniformType : UniformType, count : Int) : ShaderUniformInterface
 	{
-		return new ShaderUniformInterfaceImplementation(name, uniformType, count);
+		var shaderUniInterface = new ShaderUniformInterfaceImplementation();
+
+		shaderUniInterface.name = name;
+		shaderUniInterface.uniformType = uniformType;
+
+		shaderUniInterface.data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
+		shaderUniInterface.dataActiveCount = 0;
+
+		return shaderUniInterface;
 	}
 }	
 
