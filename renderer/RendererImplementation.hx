@@ -104,21 +104,19 @@ class RendererImplementation extends Renderer
 
 		if(meshDataBuffer.data != null)
 		{
-			if(meshDataBuffer.data.length < meshDataBuffer.sizeOfHardwareBuffer)
+			if(meshDataBuffer.data.offsetLength < meshDataBuffer.sizeOfHardwareBuffer)
 			{
 				GL.bindBuffer(GLDefines.ARRAY_BUFFER, meshDataBuffer.glBuffer);
-				GL.bufferSubData(GLDefines.ARRAY_BUFFER, 0, 0, meshDataBuffer.data.length, meshDataBuffer.data);
+				GL.bufferSubData(GLDefines.ARRAY_BUFFER, 0, meshDataBuffer.data);
 			}
 			else
 			{
 				GL.bindBuffer(GLDefines.ARRAY_BUFFER, meshDataBuffer.glBuffer);
-				GL.bufferData(GLDefines.ARRAY_BUFFER,
-							  0, meshDataBuffer.data.length,
-							  meshDataBuffer.data,
+				GL.bufferData(GLDefines.ARRAY_BUFFER, meshDataBuffer.data,
 							  GLUtils.convertBufferModeFromUTKToOGL(meshDataBuffer.bufferMode));
 
 			}
-			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.length;
+			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.offsetLength;
 			meshDataBuffer.bufferAlreadyOnHardware = true;
 		}
 		GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
@@ -358,7 +356,7 @@ class RendererImplementation extends Renderer
 				*/
 			case UniformTypeMatrix4:
 				//lime_gl_uniform_matrix(uniformInterfaceImpl.uniformLocation, false, uniformInterfaceImpl, 4);
-				GL.uniformMatrix4fv(uniformInterfaceImpl.uniformLocation, uniformInterfaceImpl.dataActiveCount, false, 0, uniformInterfaceImpl.data);
+				GL.uniformMatrix4fv(uniformInterfaceImpl.uniformLocation, uniformInterfaceImpl.dataActiveCount, false, uniformInterfaceImpl.data);
 				break;
 				/*
 			case UTK_UNIFORM_MATRIX_4_TRANSPOSED:
