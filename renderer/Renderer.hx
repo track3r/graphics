@@ -10,20 +10,15 @@ import lime.Lime;
 import renderer.RendererImplementation;
 
 
-class MeshDataBuffer 
+extern class MeshDataBuffer 
 {
 	public var bufferMode : BufferMode;
 	public var data : Data;
 
-	private function new() {}
-
-	static public function create() : MeshDataBuffer
-	{
-		return new MeshDataBufferImplementation();
-	}
+	public function new() : Void;
 }
 
-class MeshDataAttributeConfig
+extern class MeshDataAttributeConfig
 {
 	public var attributeNumber : Int = 0;
 	public var stride : Int = 0;
@@ -33,15 +28,10 @@ class MeshDataAttributeConfig
 	public var offsetPerBakedFrame : Array<Int>;
 	public var vertexElementsNormalized : Bool = false;
 
-	private function new() {}
-
-	static public function create() : MeshDataAttributeConfig
-	{
-		return new MeshDataAttributeConfigImplementation();
-	}
+	public function new() : Void;
 }
 
-class MeshData
+extern class MeshData
 {
 	public var attributeBuffer : MeshDataBuffer;
 	public var indexBuffer : MeshDataBuffer;
@@ -57,41 +47,26 @@ class MeshData
 	public var indexCountPerBakedFrame : Array<Int>;
 	public var indexOffsetPerBakedFrame : Array<Int>;
 
-	private function new() {}
-
-	static public function create() : MeshData
-	{
-		return new MeshDataImplementation();
-	}
+	public function new() : Void;
 }
 
-class ShaderUniformInterface
+extern class ShaderUniformInterface
 {
 	public var dataCount : Int = 0;
 	public var uniformType : UniformType;
 	
-	public var name : String;
+	public var shaderVariableName : String;
 
 	public var data : Data;
 	public var dataActiveCount : Int = 0;
 
-	private function new() {}
+	public function new() : Void;
 
-	static public function create(name : String, uniformType : UniformType, count : Int) : ShaderUniformInterface
-	{
-		var shaderUniInterface = new ShaderUniformInterfaceImplementation();
-
-		shaderUniInterface.name = name;
-		shaderUniInterface.uniformType = uniformType;
-
-		shaderUniInterface.data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
-		shaderUniInterface.dataActiveCount = 0;
-
-		return shaderUniInterface;
-	}
+	/// helper function, creates the underlying data with the appropriate size
+	public function setup(shaderVariableName : String, uniformType : UniformType, count : Int = 1)
 }	
 
-class Shader
+extern class Shader
 {
 	public var name : String;
 
@@ -103,51 +78,19 @@ class Shader
 
 	public var attributeNames : Array<String>;
 
+
+	/// shader caching, the constructor will add the shader to the cache if a name is passed
 	static public var shaderCache : Map<String, Shader>;
-
-	static public function checkForCachedShader(name : String) : Shader
-	{
-		if(shaderCache == null)
-			return null;
-
-		return shaderCache.get(name);
-	}
-
-	static public function create(name : String) : Shader
-	{
-		var shader : Shader = new ShaderImplementation();
-
-		shader.name = name;
-
-		if(shaderCache == null)
-		{
-			shaderCache = new Map<String, Shader>();
-		}
-
-		shaderCache.set(name, shader);
-
-		return shader;
-	}
-
-
-	private function new() {}
+	static public function checkForCachedShader(name : String) : Shader;
+	public function new(?name : String) : Void;
 }
 
-class Renderer
+extern class Renderer
 {
-	static var sharedRenderer : Renderer;
-	static public function shared() : Renderer
-	{
-		if(sharedRenderer == null)
-		{
-			sharedRenderer = new RendererImplementation();
-		}
-		return sharedRenderer;
-	}
-
 	private function new() {}
 
 	public function initialize(lime : Lime) {};
+	public static function instance() : Renderer;
 
 	public function loadFilledMeshData(meshData : MeshData) {};
 
