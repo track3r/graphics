@@ -1,7 +1,5 @@
 package renderer;
 
-import renderer.Renderer;
-
 import gl.GL;
 import gl.GLDefines;
 
@@ -15,66 +13,140 @@ import haxe.io.BytesInput;
 
 import renderer.RenderTypes;
 import types.DataType;
+import types.Data;
 
-class ShaderImplementation extends Shader
+class Shader
 {
+	public var name : String;
+
+	public var vertexShaderCode : Dynamic;
+	public var fragmentShaderCode : Dynamic;
+
+	public var uniformInterfaces : Array<ShaderUniformInterface>;
+
+	public var attributeNames : Array<String>;
+
+	static public var shaderCache : Map<String, Shader>;
+	static public function checkForCachedShader(name : String) : Shader
+	{
+		if(shaderCache == null)
+			return null;
+
+		return shaderCache.get(name);
+	}
+
+	public function new(?name : String) : Void
+	{
+		if(name == null) /// no caching
+			return;
+
+		this.name = name;
+
+		if(shaderCache == null)
+		{
+			shaderCache = new Map<String, Shader>();
+		}
+
+		shaderCache.set(name, this);
+	}
+
+	/// specific to ogl
 	public var programName : GLProgram;
 
 	public var alreadyLoaded : Bool;
+}
 
-	public function new()
+class ShaderUniformInterface
+{
+	public var dataCount : Int = 0;
+	public var uniformType : UniformType;
+	
+	public var shaderVariableName : String;
+
+	public var data : Data;
+	public var dataActiveCount : Int = 0;
+
+	public function new() : Void {}
+
+	public function setup(shaderVariableName : String, uniformType : UniformType, count : Int) : Void
 	{
-		super();
-	}
-}
+		this.shaderVariableName = shaderVariableName;
+		this.uniformType = uniformType;
 
-class ShaderUniformInterfaceImplementation extends ShaderUniformInterface
-{
+		data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
+		dataActiveCount = 0;
+	}
+
+	/// specific to ogl
 	public var uniformLocation : GLUniformLocation;
-
-	public function new() {
-		super();
-	}
 }
 
-class MeshDataBufferImplementation extends MeshDataBuffer
+class MeshDataBuffer
 {
+	public var bufferMode : BufferMode;
+	public var data : Data;
+
+	public function new() : Void {}
+
+	/// specific to ogl
 	public var glBuffer : GLBuffer;
 	public var sizeOfHardwareBuffer : Int;
 
 	public var bufferAlreadyOnHardware : Bool;
-
-	public function new()
-	{
-		super();
-	}
 }
 
-class MeshDataAttributeConfigImplementation extends MeshDataAttributeConfig
+class MeshDataAttributeConfig
 {
-	public function new()
-	{
-		super();
-	}
+	public var attributeNumber : Int = 0;
+	public var stride : Int = 0;
+	public var vertexElementCount : Int = 0;
+	public var vertexElementType : DataType;
+	public var offsetInData : Int = 0;
+	public var offsetPerBakedFrame : Array<Int>;
+	public var vertexElementsNormalized : Bool = false;
+
+	public function new() : Void {}
 }
 
-class MeshDataImplementation extends MeshData
+class MeshData
 {
-	public function new()
-	{
-		super();
-	}
+	public var attributeBuffer : MeshDataBuffer;
+	public var indexBuffer : MeshDataBuffer;
+	public var attributeConfigs : Array<MeshDataAttributeConfig>;
+
+	public var vertexCount : Int = 0;
+	public var indexCount : Int = 0;
+	public var bakedFrameCount : Int = 0;
+	public var bakedFPS : Int = 0;
+
+	public var primitiveType : PrimitiveType;
+	public var indexDataType : DataType;
+	public var indexCountPerBakedFrame : Array<Int>;
+	public var indexOffsetPerBakedFrame : Array<Int>;
+
+	public function new() : Void {}
 }
 
-class RendererImplementation extends Renderer
+class Renderer
 {
-	var currentShader : GLProgram;
-	public function new() 
+	/// caching data
+	private var currentShader : GLProgram;
+	private var cachedAttributeFlags = 0;
+	/// -------------
+
+	private function new() {}
+
+	static var sharedInstance : Renderer;
+	public static function instance() : Renderer
 	{
-		super();
+		if(sharedInstance == null)
+		{
+			sharedInstance = new Renderer();
+		}
+		return sharedInstance;
 	}
 
-	override public function initialize(lime : Lime) 
+	public function initialize(lime : Lime) 
 	{
 		#if html5
 		GL.context = lime.render.direct_renderer_handle;
@@ -82,7 +154,7 @@ class RendererImplementation extends Renderer
 		currentShader = GL.nullProgram;
 	}
 
-	override function loadFilledMeshData(meshData : MeshData)
+	public function loadFilledMeshData(meshData : MeshData)
 	{
 		if(meshData == null)
 			return;
@@ -91,7 +163,7 @@ class RendererImplementation extends Renderer
 		loadFilledMeshDataBuffer(cast meshData.indexBuffer);
 	}
 	
-	function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBufferImplementation)
+	private function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBuffer)
 	{
 		if(meshDataBuffer == null)
 			return;
@@ -123,19 +195,17 @@ class RendererImplementation extends Renderer
 	}
 
 
-	override function loadFilledShader(shader : Shader) 
+	public function loadFilledShader(shader : Shader) 
 	{
-		var shaderImpl : ShaderImplementation = cast shader;
-
-		if(shaderImpl.alreadyLoaded)
+		if(shader.alreadyLoaded)
 			return;
 
-		shaderImpl.alreadyLoaded = true;
+		shader.alreadyLoaded = true;
 
 		/// COMPILE
 
 
-		var vs = compileShader(GLDefines.VERTEX_SHADER, shaderImpl.vertexShaderCode);
+		var vs = compileShader(GLDefines.VERTEX_SHADER, shader.vertexShaderCode);
 
 		if(vs == GL.nullShader)
 		{
@@ -143,7 +213,7 @@ class RendererImplementation extends Renderer
 			return;
 		}
 
-		var fs = compileShader(GLDefines.FRAGMENT_SHADER, shaderImpl.fragmentShaderCode);
+		var fs = compileShader(GLDefines.FRAGMENT_SHADER, shader.fragmentShaderCode);
 
 		if(fs == GL.nullShader)
 		{
@@ -153,24 +223,24 @@ class RendererImplementation extends Renderer
 
 		/// CREATE
 
-		shaderImpl.programName = GL.createProgram();
-		GL.attachShader(shaderImpl.programName, vs);
-		GL.attachShader(shaderImpl.programName, fs);
+		shader.programName = GL.createProgram();
+		GL.attachShader(shader.programName, vs);
+		GL.attachShader(shader.programName, fs);
 		
 		/// BIND ATTRIBUTE LOCATIONS
 
 		for(i in 0...shader.attributeNames.length)
 		{
 			var attribute : String = shader.attributeNames[i];
-			GL.bindAttribLocation(shaderImpl.programName, i, attribute);
+			GL.bindAttribLocation(shader.programName, i, attribute);
 		}		
 
 
 		/// LINK
 
-		if(!linkShader(shaderImpl.programName))
+		if(!linkShader(shader.programName))
 		{
-			trace("Failed to link program " + shaderImpl.name);
+			trace("Failed to link program " + shader.name);
 
 			if(vs != GL.nullShader)
 			{
@@ -181,7 +251,7 @@ class RendererImplementation extends Renderer
 				GL.deleteShader(fs);
 			}
 
-			GL.deleteProgram(shaderImpl.programName);
+			GL.deleteProgram(shader.programName);
 			return;
 		}
 
@@ -191,15 +261,14 @@ class RendererImplementation extends Renderer
 		{
 			for(uniInterface in shader.uniformInterfaces)
 			{
-				var uniInterfaceImpl : ShaderUniformInterfaceImplementation = cast uniInterface;
 				var uniformLocation : GLUniformLocation;
-				uniformLocation = GL.getUniformLocation(shaderImpl.programName, uniInterfaceImpl.name);
+				uniformLocation = GL.getUniformLocation(shader.programName, uniInterface.shaderVariableName);
 
 				if(uniformLocation == GL.nullUniformLocation)
 				{
-					trace("Failed to link uniform " + uniInterfaceImpl.name + " in shader: " + shader.name);
+					trace("Failed to link uniform " + uniInterface.shaderVariableName + " in shader: " + shader.name);
 				}
-				uniInterfaceImpl.uniformLocation = uniformLocation;
+				uniInterface.uniformLocation = uniformLocation;
 			}
 		}
 
@@ -207,12 +276,12 @@ class RendererImplementation extends Renderer
 
 		if(vs != GL.nullShader)
 		{
-			GL.detachShader(shaderImpl.programName, vs);
+			GL.detachShader(shader.programName, vs);
 			GL.deleteShader(vs);
 		}
 		if(fs != GL.nullShader)
 		{
-			GL.detachShader(shaderImpl.programName, fs);
+			GL.detachShader(shader.programName, fs);
 			GL.deleteShader(fs);
 		}
 
@@ -266,21 +335,18 @@ class RendererImplementation extends Renderer
 		return true;
 	}
 
-	override function bindShader(shader : Shader) 
+	public function bindShader(shader : Shader) 
 	{
-		var shaderImpl : ShaderImplementation = cast shader;
-
-		if(currentShader != shaderImpl.programName)
+		if(currentShader != shader.programName)
 		{
-			GL.useProgram(shaderImpl.programName);
-			currentShader = shaderImpl.programName;
+			GL.useProgram(shader.programName);
+			currentShader = shader.programName;
 		}
 
 		for(uniformInterface in shader.uniformInterfaces)
 		{
 
-			var uniformInterfaceImpl : ShaderUniformInterfaceImplementation = cast uniformInterface;
-			switch(uniformInterfaceImpl.uniformType)
+			switch(uniformInterface.uniformType)
 			{
 				/*
 			case SingleInt:
@@ -356,7 +422,7 @@ class RendererImplementation extends Renderer
 				*/
 			case UniformTypeMatrix4:
 				//lime_gl_uniform_matrix(uniformInterfaceImpl.uniformLocation, false, uniformInterfaceImpl, 4);
-				GL.uniformMatrix4fv(uniformInterfaceImpl.uniformLocation, uniformInterfaceImpl.dataActiveCount, false, uniformInterfaceImpl.data);
+				GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
 				break;
 				/*
 			case UTK_UNIFORM_MATRIX_4_TRANSPOSED:
@@ -369,10 +435,8 @@ class RendererImplementation extends Renderer
 		}
 	};
 
-	override function bindMeshData(meshData : MeshData, bakedFrame : Int) 
+	public function bindMeshData(data : MeshData, bakedFrame : Int) 
 	{
-		var data : MeshDataImplementation = cast meshData;
-
 		if(data.bakedFrameCount > 0 && bakedFrame >= data.bakedFrameCount)
 		{
 			trace("Tried to set invalid frame on render buffer data");
@@ -381,8 +445,7 @@ class RendererImplementation extends Renderer
 
 		if(data.attributeBuffer != null)
 		{
-			var buffer : MeshDataBufferImplementation = cast data.attributeBuffer;
-			GL.bindBuffer(GLDefines.ARRAY_BUFFER, buffer.glBuffer);
+			GL.bindBuffer(GLDefines.ARRAY_BUFFER, data.attributeBuffer.glBuffer);
 		}
 		else
 		{
@@ -391,8 +454,7 @@ class RendererImplementation extends Renderer
 
 		if(data.indexBuffer != null)
 		{
-			var buffer : MeshDataBufferImplementation = cast data.indexBuffer;
-			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, buffer.glBuffer);
+			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, data.indexBuffer.glBuffer);
 		}
 		else
 		{
@@ -418,7 +480,7 @@ class RendererImplementation extends Renderer
 		}
 	};
 
-	private function enableVertexAttributes(meshData : MeshDataImplementation)
+	private function enableVertexAttributes(meshData : MeshData)
 	{
 		var combinedAttributes = 0;
 		for(attributeConfig in meshData.attributeConfigs)
@@ -430,7 +492,6 @@ class RendererImplementation extends Renderer
 
 	}
 
-	private var cachedAttributeFlags = 0;
 	private function enableVertexAttributesFromCombinedAttributes(combinedFlagsFromVertexAttributes : Int)
 	{
 		var currentMask = 1;
@@ -457,7 +518,7 @@ class RendererImplementation extends Renderer
 		cachedAttributeFlags = combinedFlagsFromVertexAttributes;
 	}
 
-	override function render(meshData : MeshData, bakedFrame : Int)
+	public function render(meshData : MeshData, bakedFrame : Int)
 	{
 		if(meshData.bakedFrameCount > 0 && bakedFrame >= meshData.bakedFrameCount)
 		{
@@ -510,11 +571,11 @@ class RendererImplementation extends Renderer
 	};
 
 
-	override function setClearColor(r : Float, g : Float, b : Float, a : Float) 
+	public function setClearColor(r : Float, g : Float, b : Float, a : Float) 
 	{
 		GL.clearColor(r, g, b, a);
 	}
-	override function clear() 
+	public function clear() 
 	{
 		GL.clear (GLDefines.COLOR_BUFFER_BIT);
 	};
