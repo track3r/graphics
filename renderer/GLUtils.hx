@@ -68,4 +68,17 @@ class GLUtils
 		}
 	}
 
+	public static function convertTextureTypeFromUTKToOGL(textureType : TextureType) : Int
+	{
+		switch (textureType) {
+			case TextureType2D:
+				return GLDefines.TEXTURE_2D;
+			case TextureTypeCubeMap:
+				return GLDefines.TEXTURE_CUBE_MAP;
+			default:
+				return 0;
+		}
+	}
+
+
 }

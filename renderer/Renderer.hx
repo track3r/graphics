@@ -15,6 +15,8 @@ import renderer.RenderTypes;
 import types.DataType;
 import types.Data;
 
+import platform.Platform;
+
 class Shader
 {
 	public var name : String;
@@ -127,14 +129,57 @@ class MeshData
 	public function new() : Void {}
 }
 
+class TextureData
+{
+	public var pixelFormat : TextureFormat;
+	public var textureType : TextureType;
+	public var hasAlpha : Bool;
+	public var hasPremultipliedAlpha : Bool;
+	public var originalHeight : Int;
+	public var originalWidth : Int;
+
+	public var hasMipMaps : Bool;
+
+	public var filteringMode : TextureFilteringMode;
+	public var wrap : TextureWrap;
+
+	public var data : Data;
+
+    public var dataForCubeMapPositiveX : Data;
+    public var dataForCubeMapNegativeX : Data;
+    public var dataForCubeMapPositiveY : Data;
+    public var dataForCubeMapNegativeY : Data;
+    public var dataForCubeMapPositiveZ : Data;
+    public var dataForCubeMapNegativeZ : Data;
+
+    public function new() : Void {}
+
+	/// specific to ogl
+	public var glTexture : GLTexture;
+}
+
 class Renderer
 {
 	/// caching data
 	private var currentShader : GLProgram;
 	private var cachedAttributeFlags = 0;
+	private var currentActiveTextures = new Array<GLTexture>();
+    private var currentActiveTexture : Int;
 	/// -------------
 
-	private function new() {}
+	private function new() 
+	{
+		#if html5
+		GL.context = Platform.instance().lime.render.direct_renderer_handle;
+		#end
+
+		currentShader = GL.nullProgram;
+		currentActiveTexture = maxActiveTextures + 1;
+		for(val in 0...maxActiveTextures)
+		{
+			currentActiveTextures.push(GL.nullTexture);
+		}
+	}
 
 	static var sharedInstance : Renderer;
 	public static function instance() : Renderer
@@ -146,13 +191,7 @@ class Renderer
 		return sharedInstance;
 	}
 
-	public function initialize(lime : Lime) 
-	{
-		#if html5
-		GL.context = lime.render.direct_renderer_handle;
-		#end
-		currentShader = GL.nullProgram;
-	}
+	public static var maxActiveTextures = 16;
 
 	public function loadFilledMeshData(meshData : MeshData)
 	{
@@ -333,6 +372,139 @@ class Renderer
 		if(GL.getProgramParameter(shaderProgramName, GLDefines.LINK_STATUS) == 0)
 			return false;
 		return true;
+	}
+
+	public function loadFilledTextureData(texture : TextureData) : Void
+	{
+		texture.glTexture = GL.createTexture();
+		bindTexture(texture);
+
+		configureFilteringMode(texture);
+		configureMipmaps(texture);
+		configureWrap(texture);
+
+		pushTextureData(texture);
+	}
+
+	private function pushTextureData(texture : TextureData) : Void
+	{
+		var glTextureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+
+		if(texture.textureType == TextureType2D)
+		{
+			pushTextureDataForType(glTextureType, texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
+		}
+		else
+		{
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_X, 
+									texture.pixelFormat, 
+									texture.dataForCubeMapPositiveX, 
+									texture.originalWidth, 
+									texture.originalHeight);
+
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_X, 
+									texture.pixelFormat, 
+									texture.dataForCubeMapNegativeX, 
+									texture.originalWidth, 
+									texture.originalHeight);
+
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_Y, 
+									texture.pixelFormat, 
+									texture.dataForCubeMapPositiveY, 
+									texture.originalWidth, 
+									texture.originalHeight);
+
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_Y, 
+									texture.pixelFormat, 
+									texture.dataForCubeMapNegativeY, 
+									texture.originalWidth, 
+									texture.originalHeight);
+
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_Z, 
+									texture.pixelFormat, 
+									texture.dataForCubeMapPositiveZ, 
+									texture.originalWidth, 
+									texture.originalHeight);
+
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_Z, 
+									texture.pixelFormat, 
+									texture.dataForCubeMapNegativeZ, 
+									texture.originalWidth, 
+									texture.originalHeight);
+		}
+	}
+
+	private function pushTextureDataForType(textureType : Int, textureFormat : TextureFormat, data : Data, width : Int, height : Int)
+	{
+		switch(textureFormat)
+		{
+			case(TextureFormatRGB565):
+				GL.texImage2D(textureType, 0, GLDefines.RGB, width, height, 0, GLDefines.RGB, GLDefines.UNSIGNED_SHORT_5_6_5, data);
+
+			case(TextureFormatA8):
+				GL.texImage2D(textureType, 0, GLDefines.ALPHA, width, height, 0, GLDefines.ALPHA, GLDefines.UNSIGNED_BYTE, data);
+
+			case(TextureFormatRGBA8888):
+				GL.texImage2D(textureType, 0, GLDefines.RGBA, width, height, 0, GLDefines.RGBA, GLDefines.UNSIGNED_BYTE, data);
+		}
+	}
+
+	private function configureFilteringMode(texture : TextureData) : Void
+	{
+		bindTexture(texture);
+
+		var textureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+
+		if(texture.filteringMode == TextureFilteringModeLinear)
+		{
+			GL.texParameteri(textureType, GLDefines.TEXTURE_MAG_FILTER, GLDefines.LINEAR);
+
+	        if (texture.hasMipMaps)
+	            GL.texParameteri(textureType, GLDefines.TEXTURE_MIN_FILTER, GLDefines.LINEAR_MIPMAP_LINEAR);
+	        else
+	            GL.texParameteri(textureType, GLDefines.TEXTURE_MIN_FILTER, GLDefines.LINEAR);
+	    }
+	    else
+	    {
+	        GL.texParameteri(textureType, GLDefines.TEXTURE_MAG_FILTER, GLDefines.NEAREST);
+	        
+	        if (texture.hasMipMaps)
+	            GL.texParameteri(textureType, GLDefines.TEXTURE_MIN_FILTER, GLDefines.LINEAR_MIPMAP_NEAREST);
+	        else
+	            GL.texParameteri(textureType, GLDefines.TEXTURE_MIN_FILTER, GLDefines.NEAREST);
+	    }
+	}
+
+	private function configureWrap(texture : TextureData) : Void
+	{
+		bindTexture(texture);
+
+		var textureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+	    
+	    if (texture.wrap == TextureWrapClamp)
+	    {
+	        GL.texParameteri(textureType, GLDefines.TEXTURE_WRAP_S, GLDefines.CLAMP_TO_EDGE);
+	        GL.texParameteri(textureType, GLDefines.TEXTURE_WRAP_T, GLDefines.CLAMP_TO_EDGE);
+	    }else
+	    {
+	        GL.texParameteri(textureType, GLDefines.TEXTURE_WRAP_S, GLDefines.REPEAT);
+	        GL.texParameteri(textureType, GLDefines.TEXTURE_WRAP_T, GLDefines.REPEAT);
+	    }
+	}
+
+	private function configureMipmaps(texture : TextureData) : Void
+	{
+	    if(!texture.hasMipMaps)
+	        return;
+	    
+		bindTexture(texture);
+	    GL.hint(GLDefines.GENERATE_MIPMAP_HINT, GLDefines.NICEST);
+	    
+		var textureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+	    
+	   	GL.generateMipmap(textureType);
+	    
+	    configureFilteringMode(texture);
 	}
 
 	public function bindShader(shader : Shader) 
@@ -570,6 +742,39 @@ class Renderer
 		}
 	};
 
+	public function bindTextureData(texture : TextureData, position : Int) : Void
+	{
+    	if(texture == null)
+  	    	return;
+        activeTexture(position);
+        bindTexture(texture);
+	}
+
+	private function bindTexture(texture : TextureData)
+	{
+		if(currentActiveTextures[currentActiveTexture] != texture.glTexture)
+		{	
+			currentActiveTextures[currentActiveTexture] = texture.glTexture;
+    	    GL.bindTexture(GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType), texture.glTexture);
+		}
+	}
+
+	private function activeTexture(position)
+	{
+		if(position > maxActiveTextures)
+		{
+			trace("Tried to active a texture at position " + position + ", and max active textures is " + maxActiveTextures + "!");
+			return;
+		}
+
+		if(position != currentActiveTexture)
+		{
+			currentActiveTexture = position;
+			GL.activeTexture(position + GLDefines.TEXTURE0);
+
+		}
+
+	}
 
 	public function setClearColor(r : Float, g : Float, b : Float, a : Float) 
 	{
