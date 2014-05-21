@@ -44,6 +44,31 @@ enum UniformType
 	UniformTypeMatrix4Transposed;
 }
 
+enum TextureType
+{
+	TextureType2D;
+	TextureTypeCubeMap;
+}
+
+enum TextureFilteringMode
+{
+	TextureFilteringModeLinear;
+	TextureFilteringModeNearest;
+}
+
+enum TextureFormat
+{
+	TextureFormatRGBA8888;
+	TextureFormatRGB565;
+	TextureFormatA8;
+}
+
+enum TextureWrap
+{
+	TextureWrapRepeat;
+	TextureWrapClamp;
+}
+
 class RenderTypesUtils
 {
 	static public function uniformTypeElementSize(uniform : UniformType)

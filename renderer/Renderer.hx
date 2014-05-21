@@ -63,7 +63,7 @@ extern class ShaderUniformInterface
 	public function new() : Void;
 
 	/// helper function, creates the underlying data with the appropriate size
-	public function setup(shaderVariableName : String, uniformType : UniformType, count : Int = 1)
+	public function setup(shaderVariableName : String, uniformType : UniformType, count : Int = 1);
 }	
 
 extern class Shader
@@ -85,25 +85,53 @@ extern class Shader
 	public function new(?name : String) : Void;
 }
 
+extern class TextureData
+{
+	public var pixelFormat : TextureFormat;
+	public var textureType : TextureType;
+	public var hasAlpha : Bool;
+	public var hasPremultipliedAlpha : Bool;
+	public var originalHeight : Int;
+	public var originalWidth : Int;
+
+	public var hasMipMaps : Bool;
+
+	public var filteringMode : TextureFilteringMode;
+	public var wrap : TextureWrap;
+
+	public var data : Data;
+
+    public var dataForCubeMapPositiveX : Data;
+    public var dataForCubeMapNegativeX : Data;
+    public var dataForCubeMapPositiveY : Data;
+    public var dataForCubeMapNegativeY : Data;
+    public var dataForCubeMapPositiveZ : Data;
+    public var dataForCubeMapNegativeZ : Data;
+
+    public function new() : Void;
+}
+
 extern class Renderer
 {
-	private function new() {}
+	private function new() : Void;
+	public static function instance() : Renderer : Void;
 
-	public function initialize(lime : Lime) {};
-	public static function instance() : Renderer;
+	public function loadFilledMeshData(meshData : MeshData) : Void;
 
-	public function loadFilledMeshData(meshData : MeshData) {};
+	public function loadFilledShader(shader : Shader) : Void;
 
-	public function loadFilledShader(shader : Shader) {};
+	public function loadFilledTextureData(textureData : TextureData) : Void;
 
-	public function bindShader(shader : Shader) {};
-	public function bindMeshData(meshData : MeshData, bakedFrame : Int) {};
-	public function render(meshData : MeshData, bakedFrame : Int) {};
+	public function bindShader(shader : Shader) : Void;
+	public function bindMeshData(meshData : MeshData, bakedFrame : Int) : Void;
+	public function bindTextureData(texture : TextureData, position : Int) : Void;
+	public function render(meshData : MeshData, bakedFrame : Int) : Void;
 
 	/// pre render target methods
-	public function setClearColor(r : Float, g : Float, b : Float, a : Float) {};
-	public function clear() {};
+	public function setClearColor(r : Float, g : Float, b : Float, a : Float) : Void;
+	public function clear() : Void;
 
+	public static var maxActiveTextures : Int;
 }
 
 
