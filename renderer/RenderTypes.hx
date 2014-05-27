@@ -69,8 +69,104 @@ enum TextureWrap
 	TextureWrapClamp;
 }
 
+enum ColorFormat
+{
+    ColorFormatRGBA8888;
+    ColorFormatRGB565;
+    ColorFormatSRGBA8888;
+}
+
+enum DepthFormat
+{
+    DepthFormat16;
+    DepthFormat24;
+}
+
+enum StencilFormat
+{
+    StencilFormat8;
+}
+
+enum StencilOp
+{
+    StencilOpKeep;
+    StencilOpZero;
+    StencilOpReplace;
+    StencilOpIncr;
+    StencilOpIncrWrap;
+    StencilOpDecr;
+    StencilOpDecrWrap;
+    StencilOpInvert;
+}
+
+enum StencilFunc
+{
+    StencilFuncNever;
+    StencilFuncLess;
+    StencilFuncEqual;
+    StencilFuncLEqual;
+    StencilFuncGreater;
+    StencilFuncGEqual;
+    StencilFuncNotEqual;
+    StencilFuncAlways;
+}
+
+enum BlendFactor
+{
+    BlendFactorZero;
+    BlendFactorOne;
+    BlendFactorSrcColor;
+    BlendFactorOneMinusSrcColor;
+    BlendFactorSrcAlpha;
+    BlendFactorOneMinusSrcAlpha;
+    BlendFactorDstAlpha;
+    BlendFactorOneMinusDstAlpha;
+    BlendFactorDstColor;
+    BlendFactorOneMinusDstColor;
+    BlendFactorSrcAlphaSaturate;
+}
+
+typedef BlendFunction =
+{
+    @:required var src : BlendFactor;
+    @:required var dst : BlendFactor;
+}
+
+enum BlendMode
+{
+    BlendModeAdd;
+    BlendModeSubtract;
+    BlendModeReverseSubtract;
+}
+
+enum StencilMode
+{
+    StencilModeOff;
+    StencilModeOnly;
+    StencilModeCompose;
+}
+
+enum FaceCullingMode
+{
+    FaceCullingModeFront;
+    FaceCullingModeBack;
+    FaceCullingModeFrontBack;
+    FaceCullingModeOff;
+}
+
+enum StencilWriteMode
+{
+    StencilWriteModeReadWrite;
+    StencilWriteModeReadOnly;
+    StencilWriteModeWriteOnly;
+}
+
 class RenderTypesUtils
 {
+    static public var blendFunctionDisable : BlendFunction = { src : BlendFactorOne, dst : BlendFactorZero };
+    static public var blendFunctionAlpha : BlendFunction = { src : BlendFactorSrcAlpha, dst : BlendFactorOneMinusSrcAlpha };
+    static public var blendFunctionAlphaPremultiplied : BlendFunction = { src : BlendFactorOne, dst : BlendFactorOneMinusSrcAlpha };
+    static public var blendFunctionAdditive : BlendFunction = { src : BlendFactorSrcAlpha, dst : BlendFactorOne };
 	static public function uniformTypeElementSize(uniform : UniformType)
 	{
 		switch (uniform)
@@ -123,6 +219,5 @@ class RenderTypesUtils
 
 		return 0;
 	}
-
 
 }
