@@ -7,19 +7,20 @@
 package renderer;
 
 import types.Data;
+import renderer.RenderTypes;
 
 extern class ShaderUniformInterface
 {
-    public var dataCount : Int = 0;
+    public var dataCount : Int;
     public var uniformType : UniformType;
 
     public var shaderVariableName : String;
 
     public var data : Data;
-    public var dataActiveCount : Int = 0;
+    public var dataActiveCount : Int;
 
     /// helper function, creates the underlying data with the appropriate size
-    public function setup(shaderVariableName : String, uniformType : UniformType, count : Int = 1);
+    public function setup(shaderVariableName : String, uniformType : UniformType, count : Int = 1) : Void;
 }
 
 extern class Shader

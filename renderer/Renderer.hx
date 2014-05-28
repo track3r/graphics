@@ -1,6 +1,9 @@
 package renderer;
 
 import renderer.RenderTypes;
+import renderer.MeshData;
+import renderer.Shader;
+import renderer.TextureData;
 
 import types.DataType;
 import types.Data;
@@ -9,7 +12,7 @@ import types.Data;
 extern class Renderer
 {
 	private function new() : Void;
-	public static function instance() : Renderer : Void;
+	public static function instance() : Renderer;
 
     ///######## LOAD ########
 	public function loadFilledMeshData(meshData : MeshData) : Void;

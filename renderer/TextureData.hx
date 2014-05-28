@@ -7,6 +7,7 @@
 package renderer;
 
 import types.Data;
+import renderer.RenderTypes;
 
 extern class TextureData
 {

@@ -6,10 +6,9 @@
  */
 package renderer;
 
-import renderer.Interfaces;
-
 import types.Data;
 import types.DataType;
+import renderer.RenderTypes;
 
 extern class MeshDataBuffer
 {
@@ -19,13 +18,13 @@ extern class MeshDataBuffer
 
 extern class MeshDataAttributeConfig
 {
-    public var attributeNumber : Int = 0;
-    public var stride : Int = 0;
-    public var vertexElementCount : Int = 0;
+    public var attributeNumber : Int;
+    public var stride : Int;
+    public var vertexElementCount : Int;
     public var vertexElementType : DataType;
-    public var offsetInData : Int = 0;
+    public var offsetInData : Int;
     public var offsetPerBakedFrame : Array<Int>;
-    public var vertexElementsNormalized : Bool = false;
+    public var vertexElementsNormalized : Bool;
 }
 
 extern class MeshData
@@ -34,10 +33,10 @@ extern class MeshData
     public var indexBuffer : MeshDataBuffer;
     public var attributeConfigs : Array<MeshDataAttributeConfig>;
 
-    public var vertexCount : Int = 0;
-    public var indexCount : Int = 0;
-    public var bakedFrameCount : Int = 0;
-    public var bakedFPS : Int = 0;
+    public var vertexCount : Int;
+    public var indexCount : Int;
+    public var bakedFrameCount : Int;
+    public var bakedFPS : Int;
 
     public var primitiveType : PrimitiveType;
     public var indexDataType : DataType;
