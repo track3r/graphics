@@ -4,10 +4,10 @@
  * Date: 22/05/14
  * Time: 11:07
  */
-package renderer;
+package graphics;
 
 import types.Data;
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 
 extern class ShaderUniformInterface
 {

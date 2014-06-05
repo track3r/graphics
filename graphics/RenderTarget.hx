@@ -4,11 +4,11 @@
  * Date: 22/05/14
  * Time: 15:53
  */
-package renderer;
+package graphics;
 
 import types.SizeI;
 import types.Color4B;
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 
 extern class RenderTarget
 {

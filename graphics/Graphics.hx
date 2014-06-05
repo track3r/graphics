@@ -1,28 +1,28 @@
 package ;
 
-import renderer.RendererContext
-import renderer.RenderTypes;
-import renderer.MeshData;
-import renderer.Shader;
-import renderer.TextureData;
+import graphics.GraphicsContext
+import graphics.GraphicsTypes;
+import graphics.MeshData;
+import graphics.Shader;
+import graphics.TextureData;
 
 import types.DataType;
 import types.Data;
 
 
-extern class Renderer
+extern class Graphics
 {
 	private function new() : Void;
-	public static function instance() : Renderer;
+	public static function instance() : Graphics;
 
     ///######## CONTEXT ########
-    public function loadFilledContext(context : RendererContext) : Void;
-    public function isLoadedContext(context:RendererContext) : Void;
-    public function unloadFilledContext(context : RendererContext) : Void;
+    public function loadFilledContext(context : GraphicsContext) : Void;
+    public function isLoadedContext(context : GraphicsContext) : Void;
+    public function unloadFilledContext(context : GraphicsContext) : Void;
 
-    public function getCurrentContext() : RendererContext;
-    public function pushContext(context : RendererContext) : Void;
-    public function popContext(context : RendererContext) : Void;
+    public function getCurrentContext() : GraphicsContext;
+    public function pushContext(context : GraphicsContext) : Void;
+    public function popContext(context : GraphicsContext) : Void;
 
     ///######## LOAD ########
 	public function loadFilledMeshData(meshData : MeshData) : Void;

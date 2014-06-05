@@ -1,4 +1,4 @@
-package renderer;
+package graphics;
 
 enum PrimitiveType
 {
@@ -161,7 +161,7 @@ enum StencilWriteMode
     StencilWriteModeWriteOnly;
 }
 
-class RenderTypesUtils
+class GraphicsTypesUtils
 {
     static public var blendFunctionDisable : BlendFunction = { src : BlendFactorOne, dst : BlendFactorZero };
     static public var blendFunctionAlpha : BlendFunction = { src : BlendFactorSrcAlpha, dst : BlendFactorOneMinusSrcAlpha };

@@ -4,8 +4,9 @@
  * Date: 04/06/14
  * Time: 14:34
  */
+package graphics;
 
-extern class RendererContext
+extern class GraphicsContext
 {
     public var alpha : Bool;
     public var antialias : Bool;

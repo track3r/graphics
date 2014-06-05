@@ -4,11 +4,11 @@
  * Date: 21/05/14
  * Time: 19:25
  */
-package renderer;
+package graphics;
 
 import types.Data;
 import types.DataType;
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 
 extern class MeshDataBuffer
 {
