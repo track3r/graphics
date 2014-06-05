@@ -4,10 +4,10 @@
  * Date: 22/05/14
  * Time: 14:23
  */
-package renderer;
+package graphics;
 
-import renderer.RenderTypes;
-import renderer.MeshData;
+import graphics.GraphicsTypes;
+import graphics.MeshData;
 
 import types.DataType;
 import types.Data;

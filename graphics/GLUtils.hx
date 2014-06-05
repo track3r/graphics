@@ -1,6 +1,6 @@
-package renderer;
+package graphics;
 
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 
 import types.DataType;
 

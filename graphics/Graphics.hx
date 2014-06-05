@@ -1,11 +1,12 @@
-package renderer;
+package graphics;
 
 import types.Color4B;
-import renderer.MeshData;
-import renderer.Shader;
-import renderer.TextureData;
-import renderer.RenderTypes;
-import renderer.GLUtils;
+import graphics.MeshData;
+import graphics.Shader;
+import graphics.TextureData;
+import graphics.GraphicsTypes;
+import graphics.GLUtils;
+import graphics.GraphicsContext;
 
 import gl.GL;
 import gl.GLDefines;
@@ -24,12 +25,12 @@ import platform.Platform;
 import lime.Lime;
 #end
 
-class Renderer
+class Graphics
 {
 #if cpp
-    private var contextStackPerThread : Map<Thread, RendererContext>;
+    private var contextStackPerThread : Map<Thread, GraphicsContext>;
 #else
-    private var contextStack : GenericStack<RendererContext>;
+    private var contextStack : GenericStack<GraphicsContext>;
 #end
 
 	private function new() 
@@ -40,23 +41,23 @@ class Renderer
 
 
         #if cpp
-            contextStackPerThread = new Map<Thread, RendererContext>();
+            contextStackPerThread = new Map<Thread, GraphicsContext>();
         #else
-            contextStack = new GenericStack<RendererContext>();
+            contextStack = new GenericStack<GraphicsContext>();
         #end
 
         ///TEMPORARY
-        var context = new RendererContext();
-        pushContext(new RendererContext());
+        var context = new GraphicsContext();
+        pushContext(new GraphicsContext());
 
 	}
 
-	static var sharedInstance : Renderer;
-	public static function instance() : Renderer
+	static var sharedInstance : Graphics;
+	public static function instance() : Graphics
 	{
 		if(sharedInstance == null)
 		{
-			sharedInstance = new Renderer();
+			sharedInstance = new Graphics();
 		}
 		return sharedInstance;
 	}
@@ -64,22 +65,22 @@ class Renderer
 	public static var maxActiveTextures = 16;
 
 
-    public function loadFilledContext(context : RendererContext) : Void
+    public function loadFilledContext(context : GraphicsContext) : Void
     {
 
     }
 
-    public function isLoadedContext(context:RendererContext) : Void
+    public function isLoadedContext(context:GraphicsContext) : Void
     {
 
     }
 
-    public function unloadFilledContext(context : RendererContext) : Void
+    public function unloadFilledContext(context : GraphicsContext) : Void
     {
 
     }
 
-    public function getCurrentContext() : RendererContext
+    public function getCurrentContext() : GraphicsContext
     {
         #if cpp
         if(!contextStackPerThread.exists(Thread.current()))
@@ -96,12 +97,12 @@ class Renderer
 
     }
 
-    public function pushContext(context : RendererContext) : Void
+    public function pushContext(context : GraphicsContext) : Void
     {
         #if cpp
             if(!contextStackPerThread.exists(Thread.current()))
             {
-                contextStackPerThread.set(Thread.current(), new GenericStack<RendererContext>());
+                contextStackPerThread.set(Thread.current(), new GenericStack<GraphicsContext>());
                 return null;
             )
             contextStackPerThread[Thread.current()].add(context);
@@ -110,7 +111,7 @@ class Renderer
         #end
     }
 
-    public function popContext(context : RendererContext) : Void
+    public function popContext(context : GraphicsContext) : Void
     {
         #if cpp
             if(contextStackPerThread.exists(Thread.current()))

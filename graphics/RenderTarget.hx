@@ -4,12 +4,12 @@
  * Date: 04/06/14
  * Time: 17:35
  */
-package renderer;
+package graphics;
 
 import gl.GL;
 import types.SizeI;
 import types.Color4B;
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 
 class RenderTarget
 {

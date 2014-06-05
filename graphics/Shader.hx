@@ -4,9 +4,9 @@
  * Date: 22/05/14
  * Time: 14:23
  */
-package renderer;
+package graphics;
 
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 
 import types.Data;
 
@@ -47,7 +47,7 @@ class ShaderUniformInterface
         this.shaderVariableName = shaderVariableName;
         this.uniformType = uniformType;
 
-        data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
+        data = new Data(count * GraphicsTypesUtils.uniformTypeElementSize(uniformType));
         dataActiveCount = 0;
     }
 

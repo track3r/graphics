@@ -4,17 +4,17 @@
  * Date: 04/06/14
  * Time: 14:45
  */
-package renderer;
+package graphics;
 
 import gl.GL;
 import gl.GLDefines;
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 import haxe.ds.GenericStack;
-import renderer.RenderTarget;
+import graphics.RenderTarget;
 
 import haxe.ds.GenericStack;
 
-class RendererContext
+class GraphicsContext
 {
     public var alpha : Bool;
     public var antialias : Bool;
@@ -44,7 +44,7 @@ class RendererContext
     public function new() : Void
     {
         currentShader = GL.nullProgram;
-        var maxActiveTextures = Renderer.maxActiveTextures;
+        var maxActiveTextures = Graphics.maxActiveTextures;
         currentActiveTexture = maxActiveTextures + 1;
         for(val in 0...maxActiveTextures)
         {

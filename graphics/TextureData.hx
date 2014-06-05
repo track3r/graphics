@@ -4,9 +4,9 @@
  * Date: 22/05/14
  * Time: 14:23
  */
-package renderer;
+package graphics;
 
-import renderer.RenderTypes;
+import graphics.GraphicsTypes;
 
 import gl.GL;
 import types.Data;
