@@ -11,6 +11,8 @@ import renderer.RenderTypes;
 
 extern class ShaderUniformInterface
 {
+    public var name : String;///purely for debugging purposes.
+
     public var dataCount : Int;
     public var uniformType : UniformType;
 

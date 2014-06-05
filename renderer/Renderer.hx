@@ -1,5 +1,6 @@
-package renderer;
+package ;
 
+import renderer.RendererContext
 import renderer.RenderTypes;
 import renderer.MeshData;
 import renderer.Shader;
@@ -14,6 +15,15 @@ extern class Renderer
 	private function new() : Void;
 	public static function instance() : Renderer;
 
+    ///######## CONTEXT ########
+    public function loadFilledContext(context : RendererContext) : Void;
+    public function isLoadedContext(context:RendererContext) : Void;
+    public function unloadFilledContext(context : RendererContext) : Void;
+
+    public function getCurrentContext() : RendererContext;
+    public function pushContext(context : RendererContext) : Void;
+    public function popContext(context : RendererContext) : Void;
+
     ///######## LOAD ########
 	public function loadFilledMeshData(meshData : MeshData) : Void;
     public function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void; ///called by unloadMeshDataBuffer
@@ -21,11 +31,11 @@ extern class Renderer
 	public function loadFilledTextureData(textureData : TextureData) : Void;
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void;
 
-    public function isLoadedMeshData(meshData : MeshData) : Void;
-    public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void; ///called by isLoadedMeshData
-    public function isLoadedShader(shader : Shader) : Void;
-    public function isLoadedTextureData(textureData : TextureData) : Void;
-    public function isLoadedRenderTarget(renderTarget : RenderTarget) : Void;
+    public function isLoadedMeshData(meshData : MeshData) : Bool;
+    public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool; ///called by isLoadedMeshData
+    public function isLoadedShader(shader : Shader) : Bool;
+    public function isLoadedTextureData(textureData : TextureData) : Bool;
+    public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool;
 
     public function unloadMeshData(meshData : MeshData) : Void;
     public function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void; ///called by unloadMeshData
@@ -74,7 +84,7 @@ extern class Renderer
 	public function render(meshData : MeshData, bakedFrame : Int) : Void;
 
     ///######## RENDER TARGET ########
-	public function setClearColor(r : Float, g : Float, b : Float, a : Float) : Void;
+	public function setClearColor(color : Color4B) : Void;
 	public function clearColorBuffer() : Void;
     public function clearDepthBuffer() : Void;
     public function clearStencilBuffer() : Void;
