@@ -1,171 +1,36 @@
 package renderer;
 
+import types.Color4B;
+import renderer.MeshData;
+import renderer.Shader;
+import renderer.TextureData;
+import renderer.RenderTypes;
+import renderer.GLUtils;
+
 import gl.GL;
 import gl.GLDefines;
 
-import lime.Lime;
-
-import renderer.GLUtils;
-
-import StringTools;
-
-import haxe.io.BytesInput;
-
-import renderer.RenderTypes;
 import types.DataType;
 import types.Data;
 
+import haxe.ds.GenericStack;
+
+#if cpp
+import cpp.vm.Thread;
+#end
+
+#if html5
 import platform.Platform;
-
-class Shader
-{
-	public var name : String;
-
-	public var vertexShaderCode : Dynamic;
-	public var fragmentShaderCode : Dynamic;
-
-	public var uniformInterfaces : Array<ShaderUniformInterface>;
-
-	public var attributeNames : Array<String>;
-
-	static public var shaderCache : Map<String, Shader>;
-	static public function checkForCachedShader(name : String) : Shader
-	{
-		if(shaderCache == null)
-			return null;
-
-		return shaderCache.get(name);
-	}
-
-	public function new(?name : String) : Void
-	{
-		if(name == null) /// no caching
-			return;
-
-		this.name = name;
-
-		if(shaderCache == null)
-		{
-			shaderCache = new Map<String, Shader>();
-		}
-
-		shaderCache.set(name, this);
-	}
-
-	/// specific to ogl
-	public var programName : GLProgram;
-
-	public var alreadyLoaded : Bool;
-}
-
-class ShaderUniformInterface
-{
-	public var dataCount : Int = 0;
-	public var uniformType : UniformType;
-	
-	public var shaderVariableName : String;
-
-	public var data : Data;
-	public var dataActiveCount : Int = 0;
-
-	public function new() : Void {}
-
-	public function setup(shaderVariableName : String, uniformType : UniformType, count : Int) : Void
-	{
-		this.shaderVariableName = shaderVariableName;
-		this.uniformType = uniformType;
-
-		data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
-		dataActiveCount = 0;
-	}
-
-	/// specific to ogl
-	public var uniformLocation : GLUniformLocation;
-}
-
-class MeshDataBuffer
-{
-	public var bufferMode : BufferMode;
-	public var data : Data;
-
-	public function new() : Void {}
-
-	/// specific to ogl
-	public var glBuffer : GLBuffer;
-	public var sizeOfHardwareBuffer : Int;
-
-	public var bufferAlreadyOnHardware : Bool;
-}
-
-class MeshDataAttributeConfig
-{
-	public var attributeNumber : Int = 0;
-	public var stride : Int = 0;
-	public var vertexElementCount : Int = 0;
-	public var vertexElementType : DataType;
-	public var offsetInData : Int = 0;
-	public var offsetPerBakedFrame : Array<Int>;
-	public var vertexElementsNormalized : Bool = false;
-
-	public function new() : Void {}
-}
-
-class MeshData
-{
-	public var attributeBuffer : MeshDataBuffer;
-	public var indexBuffer : MeshDataBuffer;
-	public var attributeConfigs : Array<MeshDataAttributeConfig>;
-
-	public var vertexCount : Int = 0;
-	public var indexCount : Int = 0;
-	public var bakedFrameCount : Int = 0;
-	public var bakedFPS : Int = 0;
-
-	public var primitiveType : PrimitiveType;
-	public var indexDataType : DataType;
-	public var indexCountPerBakedFrame : Array<Int>;
-	public var indexOffsetPerBakedFrame : Array<Int>;
-
-	public function new() : Void {}
-}
-
-class TextureData
-{
-	public var pixelFormat : TextureFormat;
-	public var textureType : TextureType;
-	public var hasAlpha : Bool;
-	public var hasPremultipliedAlpha : Bool;
-	public var originalHeight : Int;
-	public var originalWidth : Int;
-
-	public var hasMipMaps : Bool;
-
-	public var filteringMode : TextureFilteringMode;
-	public var wrap : TextureWrap;
-
-	public var data : Data;
-
-    public var dataForCubeMapPositiveX : Data;
-    public var dataForCubeMapNegativeX : Data;
-    public var dataForCubeMapPositiveY : Data;
-    public var dataForCubeMapNegativeY : Data;
-    public var dataForCubeMapPositiveZ : Data;
-    public var dataForCubeMapNegativeZ : Data;
-
-    public function new() : Void {}
-
-	/// specific to ogl
-	public var glTexture : GLTexture;
-}
+import lime.Lime;
+#end
 
 class Renderer
 {
-	/// caching data
-	private var currentShader : GLProgram;
-	private var cachedAttributeFlags = 0;
-	private var currentActiveTextures = new Array<GLTexture>();
-    private var currentActiveTexture : Int;
-	/// -------------
+#if cpp
+    private var contextStackPerThread : Map<Thread, RendererContext>;
+#else
+    private var contextStack : GenericStack<RendererContext>;
+#end
 
 	private function new() 
 	{
@@ -173,12 +38,17 @@ class Renderer
 		GL.context = Platform.instance().lime.render.direct_renderer_handle;
 		#end
 
-		currentShader = GL.nullProgram;
-		currentActiveTexture = maxActiveTextures + 1;
-		for(val in 0...maxActiveTextures)
-		{
-			currentActiveTextures.push(GL.nullTexture);
-		}
+
+        #if cpp
+            contextStackPerThread = new Map<Thread, RendererContext>();
+        #else
+            contextStack = new GenericStack<RendererContext>();
+        #end
+
+        ///TEMPORARY
+        var context = new RendererContext();
+        pushContext(new RendererContext());
+
 	}
 
 	static var sharedInstance : Renderer;
@@ -192,6 +62,67 @@ class Renderer
 	}
 
 	public static var maxActiveTextures = 16;
+
+
+    public function loadFilledContext(context : RendererContext) : Void
+    {
+
+    }
+
+    public function isLoadedContext(context:RendererContext) : Void
+    {
+
+    }
+
+    public function unloadFilledContext(context : RendererContext) : Void
+    {
+
+    }
+
+    public function getCurrentContext() : RendererContext
+    {
+        #if cpp
+        if(!contextStackPerThread.exists(Thread.current()))
+        {
+            return null;
+        )
+        else
+        {
+            return contextStackPerThread[Thread.current()].first();
+        }
+        #else
+        return contextStack.first();
+        #end
+
+    }
+
+    public function pushContext(context : RendererContext) : Void
+    {
+        #if cpp
+            if(!contextStackPerThread.exists(Thread.current()))
+            {
+                contextStackPerThread.set(Thread.current(), new GenericStack<RendererContext>());
+                return null;
+            )
+            contextStackPerThread[Thread.current()].add(context);
+        #else
+            contextStack.add(context);
+        #end
+    }
+
+    public function popContext(context : RendererContext) : Void
+    {
+        #if cpp
+            if(contextStackPerThread.exists(Thread.current()))
+            {
+                contextStackPerThread[Thread.current()].pop();
+            )
+        #else
+            contextStack.pop();
+        #end
+
+
+    }
 
 	public function loadFilledMeshData(meshData : MeshData)
 	{
@@ -224,7 +155,7 @@ class Renderer
 			{
 				GL.bindBuffer(GLDefines.ARRAY_BUFFER, meshDataBuffer.glBuffer);
 				GL.bufferData(GLDefines.ARRAY_BUFFER, meshDataBuffer.data,
-							  GLUtils.convertBufferModeFromUTKToOGL(meshDataBuffer.bufferMode));
+							  GLUtils.convertBufferModeToOGL(meshDataBuffer.bufferMode));
 
 			}
 			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.offsetLength;
@@ -239,10 +170,8 @@ class Renderer
 		if(shader.alreadyLoaded)
 			return;
 
-		shader.alreadyLoaded = true;
 
 		/// COMPILE
-
 
 		var vs = compileShader(GLDefines.VERTEX_SHADER, shader.vertexShaderCode);
 
@@ -324,7 +253,7 @@ class Renderer
 			GL.deleteShader(fs);
 		}
 
-
+        shader.alreadyLoaded = true;
 	};
 
 	private function compileShader(type : Int, code : String) : GLShader
@@ -376,6 +305,9 @@ class Renderer
 
 	public function loadFilledTextureData(texture : TextureData) : Void
 	{
+        if(texture.alreadyLoaded)
+            return;
+
 		texture.glTexture = GL.createTexture();
 		bindTexture(texture);
 
@@ -384,11 +316,13 @@ class Renderer
 		configureWrap(texture);
 
 		pushTextureData(texture);
+
+        texture.alreadyLoaded = true;
 	}
 
 	private function pushTextureData(texture : TextureData) : Void
 	{
-		var glTextureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+		var glTextureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
 
 		if(texture.textureType == TextureType2D)
 		{
@@ -453,7 +387,7 @@ class Renderer
 	{
 		bindTexture(texture);
 
-		var textureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
 
 		if(texture.filteringMode == TextureFilteringModeLinear)
 		{
@@ -479,7 +413,7 @@ class Renderer
 	{
 		bindTexture(texture);
 
-		var textureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
 	    
 	    if (texture.wrap == TextureWrapClamp)
 	    {
@@ -500,19 +434,472 @@ class Renderer
 		bindTexture(texture);
 	    GL.hint(GLDefines.GENERATE_MIPMAP_HINT, GLDefines.NICEST);
 	    
-		var textureType = GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType);
+		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
 	    
 	   	GL.generateMipmap(textureType);
 	    
 	    configureFilteringMode(texture);
 	}
 
-	public function bindShader(shader : Shader) 
+    public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
+    {
+        var context = getCurrentContext();
+
+        if(renderTarget == context.defaultRenderTarget)
+        {
+            return;
+        }
+
+        destroyRenderbuffers(renderTarget);
+
+        if(!renderTarget.alreadyLoaded)
+        {
+            renderTarget.framebufferID = GL.createFramebuffer();
+            renderTarget.alreadyLoaded = true;
+        }
+
+        GL.bindFramebuffer(GLDefines.FRAMEBUFFER, renderTarget.framebufferID);
+        if(renderTarget.colorTextureData != null)
+        {
+            GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+                                    GLDefines.COLOR_ATTACHMENT0,
+                                    GLDefines.TEXTURE_2D,
+                                    renderTarget.colorTextureData.glTexture,
+                                    0);
+        }
+        else
+        {
+            setupColorRenderbuffer(renderTarget);
+        }
+
+        if(renderTarget.depthTextureData == null && renderTarget.stencilTextureData == null)
+        {
+            setupDepthStencilRenderbuffer(renderTarget);
+        }
+        else
+        {
+            if(renderTarget.depthTextureData != null)
+            {
+                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+                                        GLDefines.DEPTH_ATTACHMENT,
+                                        GLDefines.TEXTURE_2D,
+                                        renderTarget.depthTextureData.glTexture,
+                                        0);
+            }
+            else
+            {
+                setupDepthRenderbuffer(renderTarget);
+            }
+
+            if(renderTarget.stencilTextureData != null)
+            {
+                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+                                        GLDefines.STENCIL_ATTACHMENT,
+                                        GLDefines.TEXTURE_2D,
+                                        renderTarget.stencilTextureData.glTexture,
+                                        0);
+            }
+            else
+            {
+                setupStencilRenderbuffer(renderTarget);
+            }
+        }
+
+        var result = GL.checkFramebufferStatus(GLDefines.FRAMEBUFFER);
+        if(result != GLDefines.FRAMEBUFFER_COMPLETE)
+        {
+            trace("Framebuffer error: 0x%x", result);
+        }
+    }
+
+    private function setupColorRenderbuffer(renderTarget : RenderTarget) : Void
+    {
+        if(renderTarget.colorFormat == null)
+            return;
+
+        var format = GLDefines.RGBA;
+        if(renderTarget.colorFormat == ColorFormatRGB565)
+        {
+            format = GLDefines.RGB565;
+        }
+
+        renderTarget.colorRenderbufferID = GL.createRenderbuffer();
+        GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.colorRenderbufferID);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, format, renderTarget.size.width, renderTarget.size.height);
+        GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.COLOR_ATTACHMENT0, GLDefines.RENDERBUFFER, renderTarget.colorRenderbufferID);
+    }
+
+    private function setupDepthRenderbuffer(renderTarget : RenderTarget) : Void
+    {
+        if(renderTarget.depthFormat == null)
+            return;
+
+        var format = GLDefines.DEPTH_COMPONENT;
+        if(renderTarget.depthFormat == DepthFormat16)
+        {
+            format = GLDefines.DEPTH_COMPONENT16;
+        }
+
+        renderTarget.depthRenderbufferID = GL.createRenderbuffer();
+        GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.depthRenderbufferID);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, format, renderTarget.size.width, renderTarget.size.height);
+        GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.DEPTH_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthRenderbufferID);
+    }
+
+    private function setupStencilRenderbuffer(renderTarget : RenderTarget) : Void
+    {
+        if(renderTarget.stencilFormat == null)
+            return;
+
+        renderTarget.stencilRenderbufferID = GL.createRenderbuffer();
+        GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.stencilRenderbufferID);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, GLDefines.STENCIL_INDEX8, renderTarget.size.width, renderTarget.size.height);
+        GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.STENCIL_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.stencilRenderbufferID);
+    }
+
+    private function setupDepthStencilRenderbuffer(renderTarget : RenderTarget) : Void
+    {
+        if(renderTarget.stencilFormat == null && renderTarget.depthFormat == null)
+            return;
+
+        if(renderTarget.stencilFormat == null)
+        {
+            setupDepthRenderbuffer(renderTarget);
+            return;
+        }
+
+        if(renderTarget.depthFormat == null)
+        {
+            setupStencilRenderbuffer(renderTarget);
+            return;
+        }
+
+        renderTarget.depthStencilRenderbufferID = GL.createRenderbuffer();
+        GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.depthStencilRenderbufferID);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, GLDefines.DEPTH24_STENCIL8, renderTarget.size.width, renderTarget.size.height);
+        GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.STENCIL_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthStencilRenderbufferID);
+        GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.DEPTH_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthStencilRenderbufferID);
+
+    }
+
+    public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
+    {
+        return renderTarget.alreadyLoaded;
+    }
+
+    public function isLoadedMeshData(meshData : MeshData) : Bool
+    {
+        var attributeBuffer : Bool = true;
+        if(meshData.attributeBuffer != null)
+        {
+            attributeBuffer = isLoadedMeshDataBuffer(meshData.attributeBuffer);
+        }
+
+        var indexBuffer : Bool = true;
+        if(meshData.indexBuffer != null)
+        {
+            indexBuffer = isLoadedMeshDataBuffer(meshData.indexBuffer);
+        }
+
+        return attributeBuffer && indexBuffer;
+    }
+
+    public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool
+    {
+        if(meshDataBuffer != null)
+            return meshDataBuffer.bufferAlreadyOnHardware;
+        return false;
+    }
+
+    public function isLoadedShader(shader : Shader) : Bool
+    {
+        return shader.alreadyLoaded;
+    }
+
+    public function isLoadedTextureData(textureData : TextureData) : Bool
+    {
+        return textureData.alreadyLoaded;
+    }
+
+    public function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void
+    {
+        if(meshDataBuffer.bufferAlreadyOnHardware)
+        {
+            GL.deleteBuffer(meshDataBuffer.glBuffer);
+            meshDataBuffer.bufferAlreadyOnHardware = false;
+        }
+    }
+
+    public function unloadMeshData(meshData : MeshData) : Void
+    {
+        if(meshData.attributeBuffer != null)
+        {
+            unloadMeshDataBuffer(meshData.attributeBuffer);
+        }
+
+        if(meshData.indexBuffer != null)
+        {
+            unloadMeshDataBuffer(meshData.indexBuffer);
+        }
+    }
+
+    public function unloadShader(shader : Shader) : Void
+    {
+        if(shader.alreadyLoaded)
+        {
+            GL.deleteProgram(shader.programName);
+            shader.alreadyLoaded = false;
+        }
+    }
+
+    public function unloadTextureData(textureData : TextureData) : Void
+    {
+        if(textureData.alreadyLoaded)
+        {
+            GL.deleteTexture(textureData.glTexture);
+            textureData.alreadyLoaded = false;
+        }
+    }
+
+    public function unloadRenderTarget(renderTarget : RenderTarget) : Void
+    {
+        var context = getCurrentContext();
+        if(renderTarget == context.defaultRenderTarget)
+        {
+            return;
+        }
+        destroyRenderbuffers(renderTarget);
+
+        GL.deleteFramebuffer(renderTarget.framebufferID);
+        renderTarget.alreadyLoaded = false;
+    }
+
+    public function destroyRenderbuffers(renderTarget : RenderTarget) : Void
+    {
+        if(renderTarget.colorRenderbufferID != GL.nullRenderbuffer)
+        {
+            GL.deleteRenderbuffer(renderTarget.colorRenderbufferID);
+            renderTarget.colorRenderbufferID = GL.nullRenderbuffer;
+        }
+
+        if(renderTarget.depthRenderbufferID != GL.nullRenderbuffer)
+        {
+            GL.deleteRenderbuffer(renderTarget.depthRenderbufferID);
+            renderTarget.depthRenderbufferID = GL.nullRenderbuffer;
+        }
+
+        if(renderTarget.stencilRenderbufferID != GL.nullRenderbuffer)
+        {
+            GL.deleteRenderbuffer(renderTarget.stencilRenderbufferID);
+            renderTarget.stencilRenderbufferID = GL.nullRenderbuffer;
+        }
+
+        if(renderTarget.depthStencilRenderbufferID != GL.nullRenderbuffer)
+        {
+            GL.deleteRenderbuffer(renderTarget.depthStencilRenderbufferID);
+            renderTarget.depthStencilRenderbufferID = GL.nullRenderbuffer;
+        }
+    }
+
+    public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
+    {
+        var context = getCurrentContext();
+
+        if(context.currentBlendFactorSrcRGB != sourceFactor || context.currentBlendFactorDestRGB != destinationFactor ||
+           context.currentBlendFactorSrcA != sourceFactor || context.currentBlendFactorDestA != destinationFactor)
+        {
+            context.currentBlendFactorSrcRGB = sourceFactor;
+            context.currentBlendFactorDestRGB = destinationFactor;
+            context.currentBlendFactorSrcA = sourceFactor;
+            context.currentBlendFactorDestA = destinationFactor;
+            GL.blendFunc(GLUtils.convertBlendFactorToOGL(sourceFactor),
+                         GLUtils.convertBlendFactorToOGL(destinationFactor));
+        }
+    }
+
+    public function setBlendFuncSeparate(sourceFactorRGB : BlendFactor,
+                                         destinationFactorRGB : BlendFactor,
+                                         sourceFactorA : BlendFactor,
+                                         destinationFactorA : BlendFactor) : Void
+    {
+        var context = getCurrentContext();
+
+        if(context.currentBlendFactorSrcRGB != sourceFactorRGB || context.currentBlendFactorDestRGB != destinationFactorRGB ||
+        context.currentBlendFactorSrcA != sourceFactorA || context.currentBlendFactorDestA != destinationFactorA)
+        {
+            context.currentBlendFactorSrcRGB = sourceFactorRGB;
+            context.currentBlendFactorDestRGB = destinationFactorRGB;
+            context.currentBlendFactorSrcA = sourceFactorA;
+            context.currentBlendFactorDestA = destinationFactorA;
+            GL.blendFuncSeparate(GLUtils.convertBlendFactorToOGL(sourceFactorRGB),
+                                 GLUtils.convertBlendFactorToOGL(destinationFactorRGB),
+                                 GLUtils.convertBlendFactorToOGL(sourceFactorA),
+                                 GLUtils.convertBlendFactorToOGL(destinationFactorA));
+        }
+    }
+
+    public function setBlendMode(blendMode : BlendMode) : Void
+    {
+        var context = getCurrentContext();
+
+        if(blendMode != context.currentBlendModeA && blendMode != context.currentBlendModeRGB)
+        {
+            context.currentBlendModeA = blendMode;
+            context.currentBlendModeRGB = blendMode;
+            GL.blendEquation(GLUtils.convertBlendModeToOGL(blendMode));
+        }
+    }
+
+    public function setBlendModeSeparate(blendModeRGB : BlendMode, blendModeA : BlendMode) : Void
+    {
+        var context = getCurrentContext();
+
+        if(blendModeRGB != context.currentBlendModeA && blendModeA != context.currentBlendModeRGB)
+        {
+            context.currentBlendModeA = blendModeA;
+            context.currentBlendModeRGB = blendModeRGB;
+            GL.blendEquationSeparate(GLUtils.convertBlendModeToOGL(blendModeRGB),
+                                     GLUtils.convertBlendModeToOGL(blendModeA));
+        }
+    }
+
+    public function enableDepthTesting(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+
+        if(context.currentDepthTesting == enabled)
+            return;
+
+        if(enabled)
+        {
+            GL.enable(GLDefines.DEPTH_TEST);
+        }
+        else
+        {
+            GL.disable(GLDefines.DEPTH_TEST);
+        }
+        context.currentDepthTesting = enabled;
+    }
+
+    public function enableDepthWrite(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+        if(context.currentDepthWrite == enabled)
+            return;
+
+        GL.depthMask(enabled);
+        context.currentDepthWrite = enabled;
+    }
+
+    public function isDepthTesting() : Bool
+    {
+        var context = getCurrentContext();
+        return context.currentDepthTesting;
+    }
+
+    public function isDepthWriting() : Bool
+    {
+        var context = getCurrentContext();
+        return context.currentDepthWrite;
+    }
+
+    public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void
+    {
+        var context = getCurrentContext();
+
+        if(cullingMode != context.currentFaceCullingMode)
+        {
+            if(cullingMode == FaceCullingModeOff)
+            {
+                GL.disable(GLDefines.CULL_FACE);
+            }
+            else
+            {
+                GL.cullFace(GLDefines.CULL_FACE);
+
+                if(context.currentFaceCullingMode == FaceCullingModeOff || context.currentFaceCullingMode == null)
+                {
+                    GL.enable(GLDefines.CULL_FACE);
+                }
+            }
+            context.currentFaceCullingMode = cullingMode;
+        }
+    }
+
+    public function getFaceCullingMode() : FaceCullingMode
+    {
+        var context = getCurrentContext();
+
+        return context.currentFaceCullingMode;
+    }
+
+    public function setLineWidth(lineWidth : Float) : Void
+    {
+        var context = getCurrentContext();
+
+        if(context.currentLineWidth == lineWidth)
+            return;
+
+        GL.lineWidth(lineWidth);
+        context.currentLineWidth = lineWidth;
+    }
+
+    public function setColorMask(writeRed : Bool, writeGreen : Bool, writeRed : Bool, writeAlpha : Bool) : Void
+    {
+        GL.colorMask(writeRed, writeGreen, writeRed, writeAlpha);
+    }
+
+    public function pushRenderTarget(renderTarget : RenderTarget) : Void
+    {
+        var context = getCurrentContext();
+
+        var framebuffer = renderTarget.framebufferID;
+
+        if(context.currentRenderTargetStack.first().framebufferID != framebuffer)
+        {
+            GL.bindFramebuffer(GLDefines.FRAMEBUFFER, framebuffer);
+        }
+
+        context.currentRenderTargetStack.add(renderTarget);
+    }
+
+    public function popRenderTarget() : Void
+    {
+        var context = getCurrentContext();
+
+        context.currentRenderTargetStack.pop();
+
+        if(!context.currentRenderTargetStack.isEmpty())
+        {
+            GL.bindFramebuffer(GLDefines.FRAMEBUFFER, context.currentRenderTargetStack.first().framebufferID);
+        }
+    }
+
+    public function enableScissorTesting(enabled : Bool) : Void
+    {
+        if(enabled)
+        {
+            GL.enable(GLDefines.SCISSOR_TEST);
+        }
+        else
+        {
+            GL.disable(GLDefines.SCISSOR_TEST);
+        }
+    }
+
+    public function setScissorTestRect(x : Int, y : Int, width : Int, height : Int) : Void
+    {
+        GL.scissor(x, y, width, height);
+    }
+
+    public function bindShader(shader : Shader)
 	{
-		if(currentShader != shader.programName)
+        var context = getCurrentContext();
+
+		if(context.currentShader != shader.programName)
 		{
 			GL.useProgram(shader.programName);
-			currentShader = shader.programName;
+            context.currentShader = shader.programName;
 		}
 
 		for(uniformInterface in shader.uniformInterfaces)
@@ -520,89 +907,117 @@ class Renderer
 
 			switch(uniformInterface.uniformType)
 			{
-				/*
-			case SingleInt:
-				GL.uniform1i(uniformInterfaceImpl.uniformLocation, cast(uniformInterfaceImpl.data, Int32Array)[0]);
-				break;
-			case UTK_UNIFORM_SINGLE_INT_ARRAY:
-				glUniform1iv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (int*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_SINGLE_FLOAT:
-				glUniform1f(uniform->_uniformLocation, ((float*)uniform->_dataPtr)[0]);
-				break;
-			case UTK_UNIFORM_SINGLE_FLOAT_ARRAY:
-				glUniform1fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (float*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_VECTOR_2_INT:
-				glUniform2i(uniform->_uniformLocation, ((int*)uniform->_dataPtr)[0], ((int*)uniform->_dataPtr)[1]);
-				break;
-			case UTK_UNIFORM_VECTOR_2_INT_ARRAY:
-				glUniform2iv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (int*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_VECTOR_2_FLOAT:
-				glUniform2f(uniform->_uniformLocation, ((float*)uniform->_dataPtr)[0], ((float*)uniform->_dataPtr)[1]);
-				break;
-			case UTK_UNIFORM_VECTOR_2_FLOAT_ARRAY:
-				glUniform2fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (float*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_VECTOR_3_INT:
-				glUniform3i(uniform->_uniformLocation, ((int*)uniform->_dataPtr)[0],
-							((int*)uniform->_dataPtr)[1],
-							((int*)uniform->_dataPtr)[2]);
-				break;
-			case UTK_UNIFORM_VECTOR_3_INT_ARRAY:
-				glUniform3iv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (int*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_VECTOR_3_FLOAT:
-				glUniform3f(uniform->_uniformLocation, ((float*)uniform->_dataPtr)[0],
-							((float*)uniform->_dataPtr)[1],
-							((float*)uniform->_dataPtr)[2]);
-				break;
-			case UTK_UNIFORM_VECTOR_3_FLOAT_ARRAY:
-				glUniform3fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (float*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_VECTOR_4_INT:
-				glUniform4i(uniform->_uniformLocation, ((int*)uniform->_dataPtr)[0],
-							((int*)uniform->_dataPtr)[1],
-							((int*)uniform->_dataPtr)[2],
-							((int*)uniform->_dataPtr)[3]);
-				break;
-			case UTK_UNIFORM_VECTOR_4_INT_ARRAY:
-				glUniform4iv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (int*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_VECTOR_4_FLOAT:
-				glUniform4f(uniform->_uniformLocation, ((float*)uniform->_dataPtr)[0],
-							((float*)uniform->_dataPtr)[1],
-							((float*)uniform->_dataPtr)[2],
-							((float*)uniform->_dataPtr)[3]);
-				break;
-			case UTK_UNIFORM_VECTOR_4_FLOAT_ARRAY:
-				glUniform4fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, (float*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_MATRIX_2:
-				glUniformMatrix2fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, false, (float*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_MATRIX_2_TRANSPOSED:
-				glUniformMatrix2fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, true, (float*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_MATRIX_3:
-				glUniformMatrix3fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, false, (float*)uniform->_dataPtr);
-				break;
-			case UTK_UNIFORM_MATRIX_3_TRANSPOSED:
-				glUniformMatrix3fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, true, (float*)uniform->_dataPtr);
-				break;
-				*/
-			case UniformTypeMatrix4:
-				//lime_gl_uniform_matrix(uniformInterfaceImpl.uniformLocation, false, uniformInterfaceImpl, 4);
-				GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
-				break;
-				/*
-			case UTK_UNIFORM_MATRIX_4_TRANSPOSED:
-				glUniformMatrix4fv(uniform->_uniformLocation, (GLsizei)uniform->_dataActiveCount, true, (float*)uniform->_dataPtr);
-				break;
-				*/
-			default:
-				break;
+                case UniformTypeSingleInt:
+                    GL.uniform1i(uniformInterface.uniformLocation, uniformInterface.data.readInt(DataTypeInt));
+                    break;
+                case UniformTypeSingleIntArray:
+                    GL.uniform1iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+                case UniformTypeSingleFloat:
+                    GL.uniform1f(uniformInterface.uniformLocation, uniformInterface.data.readFloat(DataTypeFloat));
+                    break;
+                case UniformTypeSingleFloatArray:
+                    GL.uniform1fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+
+                case UniformTypeVector2Int:
+                    var x = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset += 4;
+                    var y = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset -= 4;
+                    GL.uniform2i(uniformInterface.uniformLocation, x, y);
+                    break;
+                case UniformTypeVector2IntArray:
+                    GL.uniform2iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+                case UniformTypeVector2Float:
+                    var x = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset += 4;
+                    var y = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset -= 4;
+                    GL.uniform2f(uniformInterface.uniformLocation, x, y);
+                    break;
+                case UniformTypeVector2FloatArray:
+                    GL.uniform2fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+
+                case UniformTypeVector3Int:
+                    var x = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset += 4;
+                    var y = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset += 4;
+                    var z = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset -= 8;
+                    GL.uniform3i(uniformInterface.uniformLocation, x, y, z);
+                    break;
+                case UniformTypeVector3IntArray:
+                    GL.uniform3iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+                case UniformTypeVector3Float:
+                    var x = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset += 4;
+                    var y = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset += 4;
+                    var z = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset -= 8;
+                    GL.uniform3f(uniformInterface.uniformLocation, x, y, z);
+                    break;
+                case UniformTypeVector3FloatArray:
+                    GL.uniform3fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+
+                case UniformTypeVector4Int:
+                    var x = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset += 4;
+                    var y = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset += 4;
+                    var z = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset += 4;
+                    var w = uniformInterface.data.readInt(DataTypeInt);
+                    uniformInterface.data.offset -= 12;
+                    GL.uniform4i(uniformInterface.uniformLocation, x, y, z, w);
+                    break;
+                case UniformTypeVector4IntArray:
+                    GL.uniform4iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+                case UniformTypeVector4Float:
+                    var x = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset += 4;
+                    var y = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset += 4;
+                    var z = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset += 4;
+                    var w = uniformInterface.data.readFloat(DataTypeFloat);
+                    uniformInterface.data.offset -= 12;
+                    GL.uniform4f(uniformInterface.uniformLocation, x, y, z, w);
+                    break;
+                case UniformTypeVector4FloatArray:
+                    GL.uniform4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
+                    break;
+
+                case UniformTypeMatrix2:
+                    GL.uniformMatrix2fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
+                    break;
+                case UniformTypeMatrix2Transposed:
+                    GL.uniformMatrix2fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, true, uniformInterface.data);
+                    break;
+
+                case UniformTypeMatrix3:
+                    GL.uniformMatrix3fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
+                    break;
+                case UniformTypeMatrix3Transposed:
+                    GL.uniformMatrix3fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, true, uniformInterface.data);
+                    break;
+
+                case UniformTypeMatrix4:
+                    GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
+                    break;
+                case UniformTypeMatrix4Transposed:
+                    GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, true, uniformInterface.data);
+                    break;
+
+                default:
+                    break;
 			}
 		}
 	};
@@ -645,12 +1060,12 @@ class Renderer
 			}
 			GL.vertexAttribPointer(attributeConfig.attributeNumber,
 								   attributeConfig.vertexElementCount,
-								   GLUtils.convertDataTypeFromUTKToOGL(attributeConfig.vertexElementType),
+								   GLUtils.convertDataTypeToOGL(attributeConfig.vertexElementType),
 								   attributeConfig.vertexElementsNormalized,
 								   attributeConfig.stride,
 								   attributeConfig.offsetInData + offsetForFrame);
 		}
-	};
+	}
 
 	private function enableVertexAttributes(meshData : MeshData)
 	{
@@ -666,11 +1081,13 @@ class Renderer
 
 	private function enableVertexAttributesFromCombinedAttributes(combinedFlagsFromVertexAttributes : Int)
 	{
+        var context = getCurrentContext();
+
 		var currentMask = 1;
 		for(i in 0...8)
 		{
 			var enableNow = combinedFlagsFromVertexAttributes & currentMask;
-			var prevState = cachedAttributeFlags & currentMask;
+			var prevState = context.currentAttributeFlags & currentMask;
 
 			if(enableNow != prevState)
 			{
@@ -687,7 +1104,7 @@ class Renderer
 			currentMask = currentMask << 1;
 		}
 
-		cachedAttributeFlags = combinedFlagsFromVertexAttributes;
+        context.currentAttributeFlags = combinedFlagsFromVertexAttributes;
 	}
 
 	public function render(meshData : MeshData, bakedFrame : Int)
@@ -698,7 +1115,7 @@ class Renderer
 			return;
 		}
 
-		var primitiveType = GLUtils.convertPrimitiveTypeFromUTKToOGL(meshData.primitiveType);
+		var primitiveType = GLUtils.convertPrimitiveTypeToOGL(meshData.primitiveType);
 
 		if(meshData.indexBuffer != null) 
 		{///dont know if it is working
@@ -718,7 +1135,7 @@ class Renderer
 
 			GL.drawElements(primitiveType,
 							count,
-							GLUtils.convertDataTypeFromUTKToOGL(meshData.indexDataType),
+							GLUtils.convertDataTypeToOGL(meshData.indexDataType),
 							offset);
 		}
 		else
@@ -752,10 +1169,11 @@ class Renderer
 
 	private function bindTexture(texture : TextureData)
 	{
-		if(currentActiveTextures[currentActiveTexture] != texture.glTexture)
-		{	
-			currentActiveTextures[currentActiveTexture] = texture.glTexture;
-    	    GL.bindTexture(GLUtils.convertTextureTypeFromUTKToOGL(texture.textureType), texture.glTexture);
+        var context = getCurrentContext();
+		if(context.currentActiveTextures[context.currentActiveTexture] != texture.glTexture)
+		{
+            context.currentActiveTextures[context.currentActiveTexture] = texture.glTexture;
+    	    GL.bindTexture(GLUtils.convertTextureTypeToOGL(texture.textureType), texture.glTexture);
 		}
 	}
 
@@ -767,22 +1185,73 @@ class Renderer
 			return;
 		}
 
-		if(position != currentActiveTexture)
+        var context = getCurrentContext();
+		if(position != context.currentActiveTexture)
 		{
-			currentActiveTexture = position;
+            context.currentActiveTexture = position;
 			GL.activeTexture(position + GLDefines.TEXTURE0);
 
 		}
 
 	}
 
-	public function setClearColor(r : Float, g : Float, b : Float, a : Float) 
-	{
-		GL.clearColor(r, g, b, a);
-	}
-	public function clear() 
-	{
-		GL.clear (GLDefines.COLOR_BUFFER_BIT);
-	};
+    public function setClearColor(color : Color4B) : Void
+    {
+        var context = getCurrentContext();
+        var renderTarget = context.currentRenderTargetStack.first();
 
+        if(renderTarget.currentClearColor.r != color.r || renderTarget.currentClearColor.g != color.g ||
+           renderTarget.currentClearColor.b != color.b || renderTarget.currentClearColor.a != color.a)
+        {
+            renderTarget.currentClearColor.data.writeData(color.data);
+            GL.clearColor(color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
+        }
+    }
+
+    public function clearColorBuffer() : Void
+    {
+        GL.clear(GLDefines.COLOR_BUFFER_BIT);
+    }
+
+    public function clearDepthBuffer() : Void
+    {
+        GL.clear(GLDefines.DEPTH_BUFFER_BIT);
+    }
+
+    public function clearStencilBuffer() : Void
+    {
+        GL.clear(GLDefines.STENCIL_BUFFER_BIT);
+    }
+    public function clearAllBuffers() : Void
+    {
+        GL.clear(GLDefines.COLOR_BUFFER_BIT & GLDefines.DEPTH_BUFFER_BIT & GLDefines.STENCIL_BUFFER_BIT);
+    }
+
+    public function enableStencilTest(enabled : Bool) : Void
+    {
+        if(enabled)
+        {
+            GL.enable(GLDefines.SCISSOR_TEST);
+        }
+        else
+        {
+            GL.disable(GLDefines.SCISSOR_TEST);
+        }
+    }
+
+    public function isStencilTestEnabled() : Bool
+    {
+        return GL.getParameter(GLDefines.STENCIL_TEST);
+    }
+
+    public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void
+    {
+        GL.stencilOp(GLUtils.convertStencilOpToOGL(stencilFail),
+                     GLUtils.convertStencilOpToOGL(depthFail),
+                     GLUtils.convertStencilOpToOGL(stencilAndDepthPass));
+    }
+    public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, mask : Int) : Void
+    {
+        GL.stencilFunc(GLUtils.convertStencilFuncToOGL(stencilFunc), referenceValue, mask);
+    }
 }

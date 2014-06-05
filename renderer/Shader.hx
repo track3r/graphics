@@ -1,0 +1,56 @@
+/*
+ * Created by IntelliJ IDEA.
+ * User: rcam
+ * Date: 22/05/14
+ * Time: 14:23
+ */
+package renderer;
+
+import renderer.RenderTypes;
+
+import types.Data;
+
+import gl.GL;
+
+class Shader
+{
+    public var name : String;///purely for debugging purposes.
+
+    public var vertexShaderCode : Dynamic;
+    public var fragmentShaderCode : Dynamic;
+
+    public var uniformInterfaces : Array<ShaderUniformInterface>;
+
+    public var attributeNames : Array<String>;
+
+    public function new() : Void {}
+
+    /// specific to ogl
+    public var programName : GLProgram;
+    public var alreadyLoaded : Bool;
+}
+
+class ShaderUniformInterface
+{
+    public var dataCount : Int = 0;
+    public var uniformType : UniformType;
+
+    public var shaderVariableName : String;
+
+    public var data : Data;
+    public var dataActiveCount : Int = 0;
+
+    public function new() : Void {}
+
+    public function setup(shaderVariableName : String, uniformType : UniformType, count : Int) : Void
+    {
+        this.shaderVariableName = shaderVariableName;
+        this.uniformType = uniformType;
+
+        data = new Data(count * RenderTypesUtils.uniformTypeElementSize(uniformType));
+        dataActiveCount = 0;
+    }
+
+    /// specific to ogl
+    public var uniformLocation : GLUniformLocation;
+}
