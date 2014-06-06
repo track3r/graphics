@@ -28,7 +28,7 @@ import lime.Lime;
 class Graphics
 {
 #if cpp
-    private var contextStackPerThread : Map<Thread, GraphicsContext>;
+    private var contextStackPerThread : Map<Dynamic, GenericStack<GraphicsContext> >;
 #else
     private var contextStack : GenericStack<GraphicsContext>;
 #end
@@ -41,24 +41,29 @@ class Graphics
 
 
         #if cpp
-            contextStackPerThread = new Map<Thread, GraphicsContext>();
+            contextStackPerThread = new Map<Thread, GenericStack<GraphicsContext>>();
         #else
             contextStack = new GenericStack<GraphicsContext>();
         #end
 
-        ///TEMPORARY
-        var context = new GraphicsContext();
-        pushContext(new GraphicsContext());
 
 	}
+
+    public static function initialize(callback:Void->Void)
+    {
+
+        sharedInstance = new Graphics();
+
+        ///TEMPORARY
+        var context = new GraphicsContext();
+        sharedInstance.pushContext(new GraphicsContext());
+
+        callback();
+    }
 
 	static var sharedInstance : Graphics;
 	public static function instance() : Graphics
 	{
-		if(sharedInstance == null)
-		{
-			sharedInstance = new Graphics();
-		}
 		return sharedInstance;
 	}
 
@@ -83,13 +88,13 @@ class Graphics
     public function getCurrentContext() : GraphicsContext
     {
         #if cpp
-        if(!contextStackPerThread.exists(Thread.current()))
+        if(!contextStackPerThread.exists(Thread.current().handle))
         {
             return null;
-        )
+        }
         else
         {
-            return contextStackPerThread[Thread.current()].first();
+            return contextStackPerThread[Thread.current().handle].first();
         }
         #else
         return contextStack.first();
@@ -100,12 +105,12 @@ class Graphics
     public function pushContext(context : GraphicsContext) : Void
     {
         #if cpp
-            if(!contextStackPerThread.exists(Thread.current()))
+            if(!contextStackPerThread.exists(Thread.current().handle))
             {
-                contextStackPerThread.set(Thread.current(), new GenericStack<GraphicsContext>());
-                return null;
-            )
-            contextStackPerThread[Thread.current()].add(context);
+                contextStackPerThread.set(Thread.current().handle, new GenericStack<GraphicsContext>());
+                trace(contextStackPerThread);
+            }
+            contextStackPerThread.get(Thread.current().handle).add(context);
         #else
             contextStack.add(context);
         #end
@@ -114,10 +119,10 @@ class Graphics
     public function popContext(context : GraphicsContext) : Void
     {
         #if cpp
-            if(contextStackPerThread.exists(Thread.current()))
+            if(contextStackPerThread.exists(Thread.current().handle))
             {
-                contextStackPerThread[Thread.current()].pop();
-            )
+                contextStackPerThread.get(Thread.current().handle).pop();
+            }
         #else
             contextStack.pop();
         #end
