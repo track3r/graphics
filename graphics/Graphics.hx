@@ -1,6 +1,7 @@
 package ;
 
-import graphics.GraphicsContext
+import graphics.Graphics;
+import graphics.GraphicsContext;
 import graphics.GraphicsTypes;
 import graphics.MeshData;
 import graphics.Shader;
@@ -14,6 +15,7 @@ extern class Graphics
 {
 	private function new() : Void;
 	public static function instance() : Graphics;
+	public static function initialize(onInitializd:Void->Void) : Void;
 
     ///######## CONTEXT ########
     public function loadFilledContext(context : GraphicsContext) : Void;
