@@ -27,25 +27,25 @@ class GLUtils
 	{
 		switch(type)
 		{
-			case DataTypeByte:
+			case DataTypeInt8:
 				return GLDefines.BYTE;
 
-			case DataTypeUnsignedByte:
+			case DataTypeUInt8:
 				return GLDefines.UNSIGNED_BYTE;
 
-			case DataTypeUnsignedInt:
+			case DataTypeUInt32:
 				return GLDefines.UNSIGNED_INT;
 
-			case DataTypeInt:
+			case DataTypeInt32:
 				return GLDefines.INT;
 
-			case DataTypeFloat:
+			case DataTypeFloat32:
 				return GLDefines.FLOAT;
 
-			case DataTypeShort:
+			case DataTypeInt16:
 				return GLDefines.SHORT;
 
-			case DataTypeUnsignedShort:
+			case DataTypeUInt16:
 				return GLDefines.UNSIGNED_SHORT;
 
 			default:
