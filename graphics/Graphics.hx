@@ -914,16 +914,12 @@ class Graphics
 			{
                 case UniformTypeSingleInt:
                     GL.uniform1i(uniformInterface.uniformLocation, uniformInterface.data.readInt(DataTypeInt32));
-                    break;
                 case UniformTypeSingleIntArray:
                     GL.uniform1iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
                 case UniformTypeSingleFloat:
                     GL.uniform1f(uniformInterface.uniformLocation, uniformInterface.data.readFloat(DataTypeFloat32));
-                    break;
                 case UniformTypeSingleFloatArray:
                     GL.uniform1fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
 
                 case UniformTypeVector2Int:
                     var x = uniformInterface.data.readInt(DataTypeInt32);
@@ -931,20 +927,16 @@ class Graphics
                     var y = uniformInterface.data.readInt(DataTypeInt32);
                     uniformInterface.data.offset -= 4;
                     GL.uniform2i(uniformInterface.uniformLocation, x, y);
-                    break;
                 case UniformTypeVector2IntArray:
                     GL.uniform2iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
                 case UniformTypeVector2Float:
                     var x = uniformInterface.data.readFloat(DataTypeFloat32);
                     uniformInterface.data.offset += 4;
                     var y = uniformInterface.data.readFloat(DataTypeFloat32);
                     uniformInterface.data.offset -= 4;
                     GL.uniform2f(uniformInterface.uniformLocation, x, y);
-                    break;
                 case UniformTypeVector2FloatArray:
                     GL.uniform2fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
 
                 case UniformTypeVector3Int:
                     var x = uniformInterface.data.readInt(DataTypeInt32);
@@ -954,10 +946,8 @@ class Graphics
                     var z = uniformInterface.data.readInt(DataTypeInt32);
                     uniformInterface.data.offset -= 8;
                     GL.uniform3i(uniformInterface.uniformLocation, x, y, z);
-                    break;
                 case UniformTypeVector3IntArray:
                     GL.uniform3iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
                 case UniformTypeVector3Float:
                     var x = uniformInterface.data.readFloat(DataTypeFloat32);
                     uniformInterface.data.offset += 4;
@@ -966,10 +956,8 @@ class Graphics
                     var z = uniformInterface.data.readFloat(DataTypeFloat32);
                     uniformInterface.data.offset -= 8;
                     GL.uniform3f(uniformInterface.uniformLocation, x, y, z);
-                    break;
                 case UniformTypeVector3FloatArray:
                     GL.uniform3fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
 
                 case UniformTypeVector4Int:
                     var x = uniformInterface.data.readInt(DataTypeInt32);
@@ -981,10 +969,8 @@ class Graphics
                     var w = uniformInterface.data.readInt(DataTypeInt32);
                     uniformInterface.data.offset -= 12;
                     GL.uniform4i(uniformInterface.uniformLocation, x, y, z, w);
-                    break;
                 case UniformTypeVector4IntArray:
                     GL.uniform4iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
                 case UniformTypeVector4Float:
                     var x = uniformInterface.data.readFloat(DataTypeFloat32);
                     uniformInterface.data.offset += 4;
@@ -995,37 +981,28 @@ class Graphics
                     var w = uniformInterface.data.readFloat(DataTypeFloat32);
                     uniformInterface.data.offset -= 12;
                     GL.uniform4f(uniformInterface.uniformLocation, x, y, z, w);
-                    break;
                 case UniformTypeVector4FloatArray:
                     GL.uniform4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
-                    break;
 
                 case UniformTypeMatrix2:
                     GL.uniformMatrix2fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
-                    break;
                 case UniformTypeMatrix2Transposed:
                     GL.uniformMatrix2fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, true, uniformInterface.data);
-                    break;
 
                 case UniformTypeMatrix3:
                     GL.uniformMatrix3fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
-                    break;
                 case UniformTypeMatrix3Transposed:
                     GL.uniformMatrix3fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, true, uniformInterface.data);
-                    break;
 
                 case UniformTypeMatrix4:
                     GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
-                    break;
                 case UniformTypeMatrix4Transposed:
                     GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, true, uniformInterface.data);
-                    break;
 
                 default:
-                    break;
 			}
 		}
-	};
+	}
 
 	public function bindMeshData(data : MeshData, bakedFrame : Int) 
 	{
