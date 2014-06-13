@@ -58,6 +58,11 @@ class Graphics
         var context = new GraphicsContext();
         sharedInstance.pushContext(new GraphicsContext());
 
+        ///blending is not enabled by default on webgl
+        GL.enable(GLDefines.BLEND);
+        ///clear color is black by default on webgl
+        GL.clearColor(1.0, 1.0, 1.0, 1.0);
+
         callback();
     }
 
@@ -259,7 +264,7 @@ class Graphics
 		}
 
         shader.alreadyLoaded = true;
-	};
+	}
 
 	private function compileShader(type : Int, code : String) : GLShader
 	{
