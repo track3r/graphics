@@ -139,11 +139,11 @@ class Graphics
 		if(meshData == null)
 			return;
 
-		loadFilledMeshDataBuffer(cast meshData.attributeBuffer);
-		loadFilledMeshDataBuffer(cast meshData.indexBuffer);
+		loadFilledMeshDataBuffer(GLDefines.ARRAY_BUFFER, cast meshData.attributeBuffer);
+		loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, cast meshData.indexBuffer);
 	}
 	
-	private function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBuffer)
+	private function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
 	{
 		if(meshDataBuffer == null)
 			return;
@@ -158,20 +158,20 @@ class Graphics
 		{
 			if(meshDataBuffer.data.offsetLength < meshDataBuffer.sizeOfHardwareBuffer)
 			{
-				GL.bindBuffer(GLDefines.ARRAY_BUFFER, meshDataBuffer.glBuffer);
-				GL.bufferSubData(GLDefines.ARRAY_BUFFER, 0, meshDataBuffer.data);
+				GL.bindBuffer(bufferType, meshDataBuffer.glBuffer);
+				GL.bufferSubData(bufferType, 0, meshDataBuffer.data);
 			}
 			else
 			{
-				GL.bindBuffer(GLDefines.ARRAY_BUFFER, meshDataBuffer.glBuffer);
-				GL.bufferData(GLDefines.ARRAY_BUFFER, meshDataBuffer.data,
+				GL.bindBuffer(bufferType, meshDataBuffer.glBuffer);
+				GL.bufferData(bufferType, meshDataBuffer.data,
 							  GLUtils.convertBufferModeToOGL(meshDataBuffer.bufferMode));
 
 			}
 			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.offsetLength;
 			meshDataBuffer.bufferAlreadyOnHardware = true;
 		}
-		GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
+		GL.bindBuffer(bufferType, GL.nullBuffer);
 	}
 
 
