@@ -1,4 +1,4 @@
-package ;
+package graphics;
 
 import graphics.Graphics;
 import graphics.GraphicsContext;
@@ -28,7 +28,7 @@ extern class Graphics
 
     ///######## LOAD ########
 	public function loadFilledMeshData(meshData : MeshData) : Void;
-    public function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void; ///called by unloadMeshDataBuffer
+    public function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void; ///called by loadFilledMeshData
 	public function loadFilledShader(shader : Shader) : Void;
 	public function loadFilledTextureData(textureData : TextureData) : Void;
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void;
