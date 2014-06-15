@@ -143,7 +143,7 @@ class Graphics
 		loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, cast meshData.indexBuffer);
 	}
 	
-	private function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
+	public function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
 	{
 		if(meshDataBuffer == null)
 			return;
