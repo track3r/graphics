@@ -30,7 +30,7 @@ class MeshDataBuffer
 class MeshDataAttributeConfig
 {
     public var attributeNumber : Int = 0;
-    public var stride : Int = 0;
+    /*public var stride : Int = 0;*/ // Moved to MeshData because its the same for all attributeConfigs and helps for Flash target
     public var vertexElementCount : Int = 0;
     public var vertexElementType : DataType;
     public var offsetInData : Int = 0;
@@ -45,6 +45,7 @@ class MeshData
     public var attributeBuffer : MeshDataBuffer;
     public var indexBuffer : MeshDataBuffer;
     public var attributeConfigs : Array<MeshDataAttributeConfig>;
+    public var attributeStride : Int = 0;
 
     public var vertexCount : Int = 0;
     public var indexCount : Int = 0;

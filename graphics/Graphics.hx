@@ -1049,7 +1049,7 @@ class Graphics
 								   attributeConfig.vertexElementCount,
 								   GLUtils.convertDataTypeToOGL(attributeConfig.vertexElementType),
 								   attributeConfig.vertexElementsNormalized,
-								   attributeConfig.stride,
+								   data.attributeStride,
 								   attributeConfig.offsetInData + offsetForFrame);
 		}
 	}
