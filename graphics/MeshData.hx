@@ -19,7 +19,7 @@ extern class MeshDataBuffer
 extern class MeshDataAttributeConfig
 {
     public var attributeNumber : Int;
-    public var stride : Int;
+    /*public var stride : Int;*/ // Moved to MeshData because its the same for all attributeConfigs and helps for Flash target
     public var vertexElementCount : Int;
     public var vertexElementType : DataType;
     public var offsetInData : Int;
@@ -32,6 +32,7 @@ extern class MeshData
     public var attributeBuffer : MeshDataBuffer;
     public var indexBuffer : MeshDataBuffer;
     public var attributeConfigs : Array<MeshDataAttributeConfig>;
+    public var attributeStride : Int;
 
     public var vertexCount : Int;
     public var indexCount : Int;
