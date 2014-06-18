@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension>
 
-	
-	
 	<haxelib name="lime" />
 	<haxelib name="types" />
 	<haxelib name="graphics_ogl" if="desktop" />
@@ -10,5 +8,6 @@
 	<haxelib name="graphics_ogl" if="neko" />
 	<haxelib name="graphics_ogl" if="android" />
 	<haxelib name="graphics_ogl" if="ios" />
+	<haxelib name="graphics_stage3d" if="flash" />
 
 </extension>
