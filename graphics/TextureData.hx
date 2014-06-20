@@ -6,6 +6,8 @@
  */
 package graphics;
 
+import flash.display3D.Context3DTextureFormat;
+import flash.display3D.textures.Texture;
 import graphics.GraphicsTypes;
 
 import types.Data;
@@ -34,5 +36,11 @@ class TextureData
     public var dataForCubeMapNegativeZ : Data;
 
     public function new() : Void {}
+
+    //flash specific
+    public var texture : Texture;
+    public var textureID : Int;
+    public var mipMapsLevel : Int = 0;
+    public var format : Context3DTextureFormat;
 
 }

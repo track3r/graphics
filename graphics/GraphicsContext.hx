@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import flash.display3D.textures.Texture;
 import flash.display3D.Context3D;
 import graphics.GraphicsTypes;
 import haxe.ds.GenericStack;
@@ -20,6 +21,12 @@ class GraphicsContext {
     public var premultipliedAlpha:Bool;
     public var preserveDrawingBuffer:Bool;
     public var stencil:Bool;
+
+    public var currentBlendFactorSrc : BlendFactor;
+    public var currentBlendFactorDest : BlendFactor;
+
+    public var currentActiveTextures = new Array<Texture>();
+    public var currentActiveTexture : Int;
 
     public var currentRenderTargetStack:GenericStack<RenderTarget>;
 

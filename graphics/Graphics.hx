@@ -1,5 +1,8 @@
 package graphics;
-import flash.utils.Dictionary;
+import flash.display3D.Context3DBlendFactor;
+import aglsl.assembler.AGALMiniAssembler;
+import flash.display3D.Context3DTextureFormat;
+import flash.display3D.textures.Texture;
 import flash.display3D.Context3DTriangleFace;
 import flash.Vector;
 import flash.display.StageScaleMode;
@@ -10,16 +13,17 @@ import flash.display3D.Context3DVertexBufferFormat;
 import flash.display.Stage3D;
 import flash.utils.ByteArray;
 import flash.Lib;
-import aglsl.assembler.AGALMiniAssembler;
 import flash.display3D.VertexBuffer3D;
 import flash.display3D.IndexBuffer3D;
 import flash.display3D.Context3DProgramType;
 import flash.errors.Error;
 import flash.events.ErrorEvent;
 import flash.events.Event;
-import haxe.ds.GenericStack;
 import flash.display3D.Context3D;
 import flash.display.Stage;
+import haxe.ds.GenericStack;
+import graphics.GraphicsTypes;
+import graphics.GraphicsContext;
 import graphics.MeshData;
 import graphics.RenderTarget;
 import graphics.Shader;
@@ -78,9 +82,9 @@ class Graphics
     {
         var vs = compileShader(Context3DProgramType.VERTEX, shader.vertexShaderCode);
         var fs = compileShader(Context3DProgramType.FRAGMENT, shader.fragmentShaderCode);
-        var context = getCurrentContext().context3D;
+        var context3D:Context3D = getCurrentContext().context3D;
 
-        shader.program = context.createProgram();
+        shader.program = context3D.createProgram();
 
         try
         {
@@ -99,7 +103,7 @@ class Graphics
 
     public function bindShader(shader : Shader)
     {
-        var context:Context3D = getCurrentContext().context3D;
+        var context3D:Context3D = getCurrentContext().context3D;
         var currentIndex = 0;
         var constantType;
         var vector;
@@ -107,11 +111,11 @@ class Graphics
         for(uniformInterface in shader.uniformInterfaces)
         {
             constantType = uniformInterface.isVertexConstant ? Context3DProgramType.VERTEX : Context3DProgramType.FRAGMENT;
-            context.setProgramConstantsFromByteArray(constantType, currentIndex, cast uniformInterface.data.byteArray.length/(4 * 4), uniformInterface.data.byteArray, 0);
+            context3D.setProgramConstantsFromByteArray(constantType, currentIndex, cast uniformInterface.data.byteArray.length/(4 * 4), uniformInterface.data.byteArray, 0);
             currentIndex++;
         }
 
-        context.setProgram(shader.program);
+        context3D.setProgram(shader.program);
     }
 
     private function compileShader(type : Context3DProgramType, code : String):ByteArray
@@ -154,8 +158,8 @@ class Graphics
         if(meshDataBuffer == null)
             return;
 
-        var context:Context3D = getCurrentContext().context3D;
-        meshData.indexBufferInstance = context.createIndexBuffer(meshData.indexCount);
+        var context3D:Context3D = getCurrentContext().context3D;
+        meshData.indexBufferInstance = context3D.createIndexBuffer(meshData.indexCount);
 
         if(meshDataBuffer.data != null)
         {
@@ -173,12 +177,12 @@ class Graphics
     public function bindMeshData(data : MeshData, bakedFrame : Int):Void
     {
         var format;
-        var context:Context3D = getCurrentContext().context3D;
+        var context3D:Context3D = getCurrentContext().context3D;
         var headStep = 0;
 
         for(attributeConfig in data.attributeConfigs)
         {
-            context.setVertexBufferAt(attributeConfig.attributeNumber, data.vertexBufferInstance, headStep, getFormat(attributeConfig));
+            context3D.setVertexBufferAt(attributeConfig.attributeNumber, data.vertexBufferInstance, headStep, getFormat(attributeConfig));
             headStep += attributeConfig.vertexElementCount;
         }
     }
@@ -206,19 +210,144 @@ class Graphics
 
     public function render(meshData : MeshData, bakedFrame : Int):Void{
 
-        var context = getCurrentContext().context3D;
+        var context3D:Context3D = getCurrentContext().context3D;
 
         if(meshData.indexBufferInstance != null)
         {
             try
             {
-                context.drawTriangles(meshData.indexBufferInstance, 0, -1);
+                context3D.drawTriangles(meshData.indexBufferInstance, 0, -1);
             }
             catch(error:Error)
             {
                 trace(error);
             }
         }
+    }
+
+    public function loadFilledTextureData(texture : TextureData) : Void
+    {
+        //if(texture.alreadyLoaded)
+          //  return;
+
+
+        pushTextureData(texture);
+        bindTexture(texture);
+
+        //configureFilteringMode(texture);
+        //configureMipmaps(texture);
+        //configureWrap(texture);
+
+    }
+
+    public function bindTextureData(texture : TextureData, position : Int) : Void
+    {
+        if(texture == null)
+            return;
+
+        bindTexture(texture);
+    }
+
+    private function bindTexture(texture : TextureData) :Void
+    {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
+
+        if(context.currentActiveTextures[context.currentActiveTexture] != texture.texture)
+        {
+            context.currentActiveTextures[context.currentActiveTexture] = texture.texture;
+            context3D.setTextureAt(texture.textureID, texture.texture);
+        }
+    }
+
+    private function pushTextureData(texture : TextureData) : Void
+    {
+        if(texture.textureType == TextureType2D)
+        {
+            pushTextureDataForType(texture , texture.textureID, texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
+        }
+        else
+        {
+            //cubtexture
+        }
+    }
+
+    private function pushTextureDataForType(textureData:TextureData, textureType : Int, textureFormat : TextureFormat, data : Data, width : Int, height : Int) :Void
+    {
+        var context3D:Context3D = getCurrentContext().context3D;
+        var texture:Texture;
+
+        switch(textureFormat)
+        {
+            case(TextureFormatRGB565):
+                texture = context3D.createTexture( width, height, Context3DTextureFormat.BGR_PACKED,  false );
+
+            case(TextureFormatA8):
+                texture = context3D.createTexture( width, height, Context3DTextureFormat.BGRA,        false );
+
+            case(TextureFormatRGBA8888):
+                texture = context3D.createTexture( width, height, Context3DTextureFormat.BGRA,        false );
+        }
+
+        textureData.texture = texture;
+        texture.uploadFromByteArray(data.byteArray, 0, 0);
+    }
+
+    public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
+    {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
+
+        if(context.currentBlendFactorSrc != sourceFactor || context.currentBlendFactorDest != destinationFactor)
+        {
+            context.currentBlendFactorSrc = sourceFactor;
+            context.currentBlendFactorDest = destinationFactor;
+            context3D.setBlendFactors( getBlendFactor(sourceFactor), getBlendFactor(destinationFactor) );
+        }
+    }
+
+    inline private function getBlendFactor(factor:BlendFactor) :Context3DBlendFactor
+    {
+        var factorValue:Context3DBlendFactor;
+
+        switch(factor)
+        {
+            case BlendFactorZero:
+                 factorValue = Context3DBlendFactor.ZERO;
+
+            case BlendFactorOne:
+                 factorValue = Context3DBlendFactor.ONE;
+
+            case BlendFactorSrcColor:
+                 factorValue = Context3DBlendFactor.SOURCE_COLOR;
+
+            case BlendFactorOneMinusSrcColor:
+                 factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR;
+
+            case BlendFactorSrcAlpha:
+                 factorValue = Context3DBlendFactor.SOURCE_ALPHA;
+
+            case BlendFactorOneMinusSrcAlpha:
+                 factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
+
+            case BlendFactorDstAlpha:
+                 factorValue = Context3DBlendFactor.DESTINATION_ALPHA;
+
+            case BlendFactorOneMinusDstAlpha:
+                 factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA;
+
+            case BlendFactorDstColor:
+                 factorValue = Context3DBlendFactor.DESTINATION_COLOR;
+
+            case BlendFactorOneMinusDstColor:
+                 factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR;
+
+            case BlendFactorSrcAlphaSaturate:
+                 //TODO
+                 factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
+        }
+
+        return factorValue;
     }
 
     public function loadFilledContext(context : GraphicsContext) : Void
@@ -257,6 +386,7 @@ class Graphics
     {
         var context = getCurrentContext();
         var color:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
+
         context.context3D.clear(color.r/255,
                                 color.g/255,
                                 color.b/255,
