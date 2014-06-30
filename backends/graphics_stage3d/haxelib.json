@@ -3,7 +3,7 @@
     "license" : "Closed",
     "version" : "0.0.1",
     "description" : "The renderer abstraction layer implementation for ogles2.",
-    "releasenote" : "",
     "contributors" : [ "GameDuell GmbH" ],
-    "dependencies" : {}
+    "dependencies" : {"types":"","openfl":""}
+    "releasenote" : ""
 }

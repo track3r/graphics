@@ -1,9 +1,3 @@
-/*
- * Created by IntelliJ IDEA.
- * User: rcam
- * Date: 22/05/14
- * Time: 14:23
- */
 package graphics;
 
 import flash.display3D.Context3DTextureFormat;
