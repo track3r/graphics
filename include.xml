@@ -3,11 +3,11 @@
 
 	<haxelib name="lime" />
 	<haxelib name="types" />
-	<haxelib name="graphics_ogl" if="desktop" />
-	<haxelib name="graphics_ogl" if="html5" />
-	<haxelib name="graphics_ogl" if="neko" />
-	<haxelib name="graphics_ogl" if="android" />
-	<haxelib name="graphics_ogl" if="ios" />
-	<haxelib name="graphics_stage3d" if="flash" />
+
+    <include path="backends/graphics_ogl/include.xml" if="desktop" />
+    <include path="backends/graphics_ogl/include.xml" if="html5" />
+    <include path="backends/graphics_ogl/include.xml" if="android" />
+    <include path="backends/graphics_ogl/include.xml" if="ios" />
+    <include path="backends/graphics_stage3d/include.xml" if="flash" />
 
 </extension>
