@@ -2,6 +2,6 @@
 <extension>
 	
 	<haxelib name="openfl" />
-	<haxelib name="types" />;
+	<haxelib name="types" />
 
 </extension>
