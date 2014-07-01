@@ -1,4 +1,6 @@
 package graphics;
+import flash.display3D.Context3DProfile;
+import flash.system.Capabilities;
 import flash.display3D.Context3DRenderMode;
 import flash.geom.Rectangle;
 import flash.display.BitmapData;
@@ -63,14 +65,19 @@ class Graphics
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void{
             var contextWrapper:GraphicsContext = new GraphicsContext();
             contextWrapper.context3D = stage3D.context3D;
-            contextWrapper.context3D.enableErrorChecking = true;
+            contextWrapper.context3D.enableErrorChecking = isDebugBuild();
             contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
-            contextWrapper.context3D.setCulling(Context3DTriangleFace.NONE);
             sharedInstance.pushContext(contextWrapper);
             callback();
         });
 
-        stage3D.requestContext3D(Context3DRenderMode.AUTO);
+        stage3D.requestContext3D("auto");
+    }
+
+    public static function isDebugBuild():Bool {
+        var error:String = new Error().getStackTrace();
+        var reg = ~/:[0-9]+]$/m;
+        return reg.match(error);
     }
 
     static var sharedInstance : Graphics;
@@ -79,8 +86,41 @@ class Graphics
         return sharedInstance;
     }
 
-    public static var maxActiveTextures = 16;
+    public function loadFilledContext(context : GraphicsContext) : Void
+    {
 
+    }
+
+    public function isLoadedContext(context:GraphicsContext) : Void
+    {
+
+    }
+
+    public function unloadFilledContext(context : GraphicsContext) : Void
+    {
+
+    }
+
+    public function getCurrentContext() : GraphicsContext
+    {
+        return contextStack.first();
+    }
+
+    public function pushContext(context : GraphicsContext) : Void
+    {
+        contextStack.add(context);
+    }
+
+    public function popContext(context : GraphicsContext) : Void
+    {
+        contextStack.pop();
+    }
+
+    public function present():Void{
+        getCurrentContext().context3D.present();
+    }
+
+    public static var maxActiveTextures = 16;
     public function loadFilledShader(shader : Shader)
     {
         var vs = compileShader(Context3DProgramType.VERTEX, shader.vertexShaderCode);
@@ -277,7 +317,18 @@ class Graphics
         }
         else
         {
-            //TODO
+            /*var tex:Texture = context.createCubeTexture(size, "bgra", false)
+
+            var mm:uint = 0
+                for(; size != 0 ; size >>= 1){
+            tex.uploadFromBitmapData( bd(size, 0xff0000), 0, mm)
+            tex.uploadFromBitmapData( bd(size, 0x00ff00), 1, mm)
+            tex.uploadFromBitmapData( bd(size, 0x0000ff), 2, mm)
+            tex.uploadFromBitmapData( bd(size, 0xff00ff), 3, mm)
+            tex.uploadFromBitmapData( bd(size, 0xffff00), 4, mm)
+            tex.uploadFromBitmapData( bd(size, 0x00ffff), 5, mm)
+            mm ++;
+        }*/
         }
     }
 
@@ -375,23 +426,78 @@ class Graphics
         return factorValue;
     }
 
-    public function loadFilledContext(context : GraphicsContext) : Void
+    public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
     {
+        var context = getCurrentContext();
 
-    }
+        if(renderTarget == context.defaultRenderTarget)
+        {
+            return;
+        }
 
-    public function isLoadedContext(context:GraphicsContext) : Void
-    {
+        var context3D:Context3D = context.context3D;
 
-    }
+        /*destroyRenderbuffers(renderTarget);
 
-    public function unloadFilledContext(context : GraphicsContext) : Void
-    {
+        if(!renderTarget.alreadyLoaded)
+        {
+            renderTarget.framebufferID = GL.createFramebuffer();
+            renderTarget.alreadyLoaded = true;
+        }
 
-    }
+        GL.bindFramebuffer(GLDefines.FRAMEBUFFER, renderTarget.framebufferID);
+        if(renderTarget.colorTextureData != null)
+        {
+            GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+            GLDefines.COLOR_ATTACHMENT0,
+            GLDefines.TEXTURE_2D,
+            renderTarget.colorTextureData.glTexture,
+            0);
+        }
+        else
+        {
+            setupColorRenderbuffer(renderTarget);
+        }
 
-    public function present():Void{
-        getCurrentContext().context3D.present();
+        if(renderTarget.depthTextureData == null && renderTarget.stencilTextureData == null)
+        {
+            setupDepthStencilRenderbuffer(renderTarget);
+        }
+        else
+        {
+            if(renderTarget.depthTextureData != null)
+            {
+                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+                GLDefines.DEPTH_ATTACHMENT,
+                GLDefines.TEXTURE_2D,
+                renderTarget.depthTextureData.glTexture,
+                0);
+            }
+            else
+            {
+                setupDepthRenderbuffer(renderTarget);
+            }
+
+            if(renderTarget.stencilTextureData != null)
+            {
+                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+                GLDefines.STENCIL_ATTACHMENT,
+                GLDefines.TEXTURE_2D,
+                renderTarget.stencilTextureData.glTexture,
+                0);
+            }
+            else
+            {
+                setupStencilRenderbuffer(renderTarget);
+            }
+        }
+
+        var result = GL.checkFramebufferStatus(GLDefines.FRAMEBUFFER);
+        if(result != GLDefines.FRAMEBUFFER_COMPLETE)
+        {
+            trace("Framebuffer error: 0x%x", result);
+        }
+        */
     }
 
     public function setClearColor(color : Color4B) : Void
@@ -420,21 +526,6 @@ class Graphics
             color.b/255,
             color.a/255,
             1,0,0xFFFFFF);
-    }
-
-    public function getCurrentContext() : GraphicsContext
-    {
-        return contextStack.first();
-    }
-
-    public function pushContext(context : GraphicsContext) : Void
-    {
-        contextStack.add(context);
-    }
-
-    public function popContext(context : GraphicsContext) : Void
-    {
-        contextStack.pop();
     }
 }
 

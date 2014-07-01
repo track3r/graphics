@@ -25,6 +25,8 @@ class GraphicsContext {
     public var currentBlendFactorSrc : BlendFactor;
     public var currentBlendFactorDest : BlendFactor;
 
+
+    public var defaultRenderTarget : RenderTarget;
     public var currentActiveTextures = new Array<Texture>();
     public var currentActiveTexture : Int;
 
@@ -44,6 +46,7 @@ class GraphicsContext {
 
     public function new():Void {
         currentRenderTargetStack = new GenericStack<RenderTarget>();
-        currentRenderTargetStack.add(new RenderTarget());
+        defaultRenderTarget = new RenderTarget();
+        currentRenderTargetStack.add(defaultRenderTarget);
     }
 }

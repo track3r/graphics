@@ -41,7 +41,7 @@ class ShaderUniformInterface
         this.uniformType = uniformType;
         this.dataSize = GraphicsTypesUtils.uniformTypeElementSize(uniformType);
 
-//deal with flash limitations on register size
+        //deal with flash limitations on register size
         if(this.dataSize < minRegisterSize)this.dataSize = minRegisterSize;
 
         data = new Data(count * dataSize);
@@ -53,5 +53,5 @@ class ShaderUniformInterface
     public var numRegisters: Int = 0;
     public var minRegisterSize: Int = 16;
     public var offset: Int = 0;
-    public var isVertexConstant:Bool = false;
+    public var isVertexConstant:Bool=true;
 }

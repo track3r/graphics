@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package aglsl.assembler;
 
+import flash.errors.Error;
 import flash.display3D.Context3DProgramType;
 import flash.utils.ByteArray;
 import flash.utils.Endian;
@@ -72,9 +73,7 @@ class AGALMiniAssembler {
         _agalcode = new ByteArray();
         _error = "";
 
-        var isFrag:Bool = false;
-
-        if (mode == Context3DProgramType.FRAGMENT) isFrag = true;
+        var isFrag:Bool = mode == Context3DProgramType.FRAGMENT;
 
         _agalcode.endian = Endian.LITTLE_ENDIAN;
         _agalcode.writeByte(0xa0);            // tag version
@@ -88,11 +87,9 @@ class AGALMiniAssembler {
         var nops : Int = 0;
         var i : Int;
         var lng : Int = lines.length;
-
         i = 0;
         while (i < lng && _error == "") {
             var line : String = new String(lines[i]);
-
 // remove comments
             var startcomment : Int = line.indexOf("//");
             if (startcomment != -1) line = line.substr(0, startcomment);
@@ -107,19 +104,19 @@ class AGALMiniAssembler {
             if (optsi != -1)
             {
                 line = line.substr(0, optsi);
-                while (optsi != -1)
+                //while (optsi != -1)
+                var count = 0;
+                options = options.substr(1,options.length-2);
+                while (optsi > 0)
                 {
                     options = options.substr(optsi);
-
+                    if(options.length<2)break;
                     reg = ~/([\w\.\-\+]+)/gi;
                     reg.match(options);
 
                     opts.push(reg.matched(0));
-
-                    if (reg.match(options))
-                        optsi = reg.matchedPos().pos;
-                    else
-                        break;
+                    if (reg.match(options)) optsi = reg.matchedPos().pos + reg.matchedPos().len;
+                    else break;
                 }
             }
 
@@ -140,7 +137,6 @@ class AGALMiniAssembler {
             }
 
             line = line.substr(line.indexOf(opFound.name()) + opFound.name().length);
-
 // nesting check
             if ((opFound.flags() & OP_DEC_NEST) != 0) {
                 nest--;
@@ -182,6 +178,7 @@ class AGALMiniAssembler {
             }
             if (regs.length != Std.int(opFound.numRegister())) {
                 _error = "error: wrong number of operands. found " + regs.length + " but expected " + opFound.numRegister + ".";
+                trace(_error);
                 break;
             }
 
@@ -198,6 +195,7 @@ class AGALMiniAssembler {
                     relreg = reg.matched(0);
                     var relpos : Int = source.indexOf(relreg);
                     regs[j] = regs[j].substr(0, relpos) + "0" + regs[j].substr(relpos + relreg.length);
+                    trace(regs[j]);
 
                     if (verbose) trace("IS REL");
                     isRelative = true;
@@ -207,24 +205,26 @@ class AGALMiniAssembler {
                 reg.match(regs[j]);
                 var res : String = reg.matched(0);
                 var regFound : Register = REGMAP.get(res);
-
 // if debug is enabled, output the registers
                 if (debugEnabled) trace(regFound);
 
                 if (regFound == null) {
                     _error = "error: could not parse operand " + j + " (" + regs[j] + ").";
                     badreg = true;
+                    trace(_error);
                     break;
                 }
 
                 if (isFrag) {
                     if ((regFound.flags() & REG_FRAG) == 0) {
                         _error = "error: register operand "+j+" ("+regs[j]+") only allowed in vertex programs.";
+                        trace(_error);
                         badreg = true;
                         break;
                     }
                     if (isRelative) {
                         _error = "error: register operand " + j + " (" + regs[j] + ") relative adressing not allowed in fragment programs.";
+                        trace(_error);
                         badreg = true;
                         break;
                     }
@@ -232,13 +232,14 @@ class AGALMiniAssembler {
                 else {
                     if ((regFound.flags() & REG_VERT) == 0) {
                         _error = "error: register operand " + j + " (" + regs[j] + ") only allowed in fragment programs.";
+                        trace(_error);
                         badreg = true;
                         break;
                     }
                 }
 
                 regs[j] = regs[j].substr(regs[j].indexOf( regFound.name() ) + regFound.name().length);
-//trace( "REGNUM: " +regs[j] );
+                //trace( "REGNUM: " +regs[j] );
                 reg = ~/\d+/;
                 var idxmatched : Bool;
                 if (isRelative) idxmatched = reg.match(relreg);
@@ -250,6 +251,7 @@ class AGALMiniAssembler {
 
                 if (regFound.range() < regidx) {
                     _error = "error: register operand " + j + " (" + regs[j] + ") index exceeds limit of " + (regFound.range() + 1) + ".";
+                    trace(_error);
                     badreg = true;
                     break;
                 }
@@ -263,6 +265,7 @@ class AGALMiniAssembler {
 
                 if (isDest && isRelative) {
                     _error = "error: relative can not be destination";
+                    trace(_error);
                     badreg = true;
                     break;
                 }
@@ -297,6 +300,7 @@ class AGALMiniAssembler {
                     var regFoundRel : Register = REGMAP.get(relname);
                     if (regFoundRel == null) {
                         _error = "error: bad index register";
+                        trace(_error);
                         badreg = true;
                         break;
                     }
@@ -304,6 +308,7 @@ class AGALMiniAssembler {
                     reg = ~/(\.[xyzw]{1,1})/;
                     if (!reg.match(relreg)) {
                         _error = "error: bad index register select";
+                        trace(_error);
                         badreg = true;
                         break;
                     }
@@ -316,6 +321,7 @@ class AGALMiniAssembler {
                     }
                     if (reloffset < 0 || reloffset > 255) {
                         _error = "error: index offset "+reloffset+" out of bounds. [0..255]";
+                        trace(_error);
                         badreg = true;
                         break;
                     }
@@ -347,7 +353,7 @@ class AGALMiniAssembler {
                             if (optfound == null)
                             {
 // todo check that it's a number...
-//trace( "Warning, unknown sampler option: "+opts[k] );
+                                //trace( "Warning, unknown sampler option: "+opts[k] );
                                 bias = Std.parseFloat(opts[k]);
                                 if (verbose)
                                 {
@@ -417,7 +423,7 @@ class AGALMiniAssembler {
                 if (( index % 16) == 0) dbgLine += "\n";
                 if ((index % 4) == 0) dbgLine += " ";
 
-                var byteStr : String = Std.string(_agalcode[index]);// .toString( 16 );
+                var byteStr : String = Std.string(_agalcode[index]).toString( );
                 if (byteStr.length < 2) byteStr = "0" + byteStr;
 
                 dbgLine += byteStr;
