@@ -435,69 +435,78 @@ class Graphics
             return;
         }
 
+        if(renderTarget.depthTextureData != null || renderTarget.stencilTextureData!=null)
+            throw new Error("Graphics::loadFilledRenderTarget depth and stencil buffer are not suppoerted on the flash target");
+
         var context3D:Context3D = context.context3D;
-
-        /*destroyRenderbuffers(renderTarget);
-
-        if(!renderTarget.alreadyLoaded)
-        {
-            renderTarget.framebufferID = GL.createFramebuffer();
-            renderTarget.alreadyLoaded = true;
-        }
-
-        GL.bindFramebuffer(GLDefines.FRAMEBUFFER, renderTarget.framebufferID);
         if(renderTarget.colorTextureData != null)
         {
-            GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
-            GLDefines.COLOR_ATTACHMENT0,
-            GLDefines.TEXTURE_2D,
-            renderTarget.colorTextureData.glTexture,
-            0);
+            renderTarget.colorTextureData.textureID = 0;
+            loadFilledTextureData(renderTarget.colorTextureData);
         }
         else
         {
-            setupColorRenderbuffer(renderTarget);
+            throw new Error("Graphics::loadFilledRenderTarget renderTarget.colorTextureData has not been set");
         }
 
-        if(renderTarget.depthTextureData == null && renderTarget.stencilTextureData == null)
-        {
-            setupDepthStencilRenderbuffer(renderTarget);
-        }
-        else
-        {
-            if(renderTarget.depthTextureData != null)
-            {
-                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
-                GLDefines.DEPTH_ATTACHMENT,
-                GLDefines.TEXTURE_2D,
-                renderTarget.depthTextureData.glTexture,
-                0);
-            }
-            else
-            {
-                setupDepthRenderbuffer(renderTarget);
-            }
+        renderTarget.alreadyLoaded = true;
+    }
 
-            if(renderTarget.stencilTextureData != null)
-            {
-                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
-                GLDefines.STENCIL_ATTACHMENT,
-                GLDefines.TEXTURE_2D,
-                renderTarget.stencilTextureData.glTexture,
-                0);
-            }
-            else
-            {
-                setupStencilRenderbuffer(renderTarget);
-            }
+    public function pushRenderTarget(renderTarget : RenderTarget) : Void
+    {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
+
+        var textureID = renderTarget.colorTextureData.textureID;
+
+        if(context.currentRenderTargetStack.first().colorTextureData.textureID != textureID)
+        {
+            var enableDepthAndStencil = true;
+            var antiAlias = 0;
+            var surfaceSelector = 0;
+
+            context3D.setRenderToTexture(renderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
         }
 
-        var result = GL.checkFramebufferStatus(GLDefines.FRAMEBUFFER);
-        if(result != GLDefines.FRAMEBUFFER_COMPLETE)
+        context.currentRenderTargetStack.add(renderTarget);
+    }
+
+    public function popRenderTarget() : Void
+    {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
+        context.currentRenderTargetStack.pop();
+        if(!context.currentRenderTargetStack.isEmpty())
         {
-            trace("Framebuffer error: 0x%x", result);
+            var nextRenderTarget = context.currentRenderTargetStack.first();
+
+            var enableDepthAndStencil = true;
+            var antiAlias = 0;
+            var surfaceSelector = 0;
+
+            if(nextRenderTarget == context.defaultRenderTarget)context3D.setRenderToBackBuffer();
+            else context3D.setRenderToTexture(nextRenderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
         }
-        */
+    }
+
+    public function unloadRenderTarget(renderTarget : RenderTarget) : Void
+    {
+        var context = getCurrentContext();
+
+        if(renderTarget == context.defaultRenderTarget)
+        {
+            return;
+        }
+
+        renderTarget.colorTextureData.texture.dispose();
+        renderTarget.colorTextureData = null;
+
+        renderTarget.alreadyLoaded = false;
+    }
+
+    public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
+    {
+        return renderTarget.alreadyLoaded;
     }
 
     public function setClearColor(color : Color4B) : Void

@@ -23,11 +23,12 @@ class RenderTarget
     public var stencilTextureData : TextureData;
 
     public var currentClearColor : Color4B;
-
+    public var alreadyLoaded : Bool;
 
     public function new () : Void
     {
         currentClearColor = new Color4B();
+        alreadyLoaded = false;
     }
 
 }
