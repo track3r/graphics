@@ -13,9 +13,6 @@ class Shader {
 
     public var attributeNames : Array<String>;
 
-    //private var vertexShader:GLSLVertexShader;
-
-    //private var fragmentShader:GLSLFragmentShader;
     public var program:Program3D;
 
     public function new(?name:String) : Void {
@@ -35,7 +32,6 @@ class ShaderUniformInterface
     public var data : Data;
     public var dataActiveCount : Int = 0;
 
-    public var isVertexConstant:Bool = false;
 
     public function new() : Void {}
 
@@ -43,9 +39,19 @@ class ShaderUniformInterface
     {
         this.shaderVariableName = shaderVariableName;
         this.uniformType = uniformType;
+        this.dataSize = GraphicsTypesUtils.uniformTypeElementSize(uniformType);
 
-        data = new Data(count * GraphicsTypesUtils.uniformTypeElementSize(uniformType));
-        //dataCount = count;
-        dataActiveCount = 0;
+        //deal with flash limitations on register size
+        if(this.dataSize < minRegisterSize)this.dataSize = minRegisterSize;
+
+        data = new Data(count * dataSize);
+        numRegisters = Math.ceil(data.offsetLength/minRegisterSize);
     }
+
+//flash only
+    public var dataSize: Int = 0;
+    public var numRegisters: Int = 0;
+    public var minRegisterSize: Int = 16;
+    public var offset: Int = 0;
+    public var isVertexConstant:Bool=true;
 }

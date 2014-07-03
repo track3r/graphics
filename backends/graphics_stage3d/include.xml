@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension>
-
+	
+	<haxelib name="openfl" />
+	<haxelib name="types" />
 
 </extension>

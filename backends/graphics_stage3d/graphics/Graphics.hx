@@ -1,7 +1,12 @@
 package graphics;
+import flash.display3D.Context3DProfile;
+import flash.system.Capabilities;
+import flash.display3D.Context3DRenderMode;
+import flash.geom.Rectangle;
+import flash.display.BitmapData;
+import flash.display3D.Context3DTextureFormat;
 import flash.display3D.Context3DBlendFactor;
 import aglsl.assembler.AGALMiniAssembler;
-import flash.display3D.Context3DTextureFormat;
 import flash.display3D.textures.Texture;
 import flash.display3D.Context3DTriangleFace;
 import flash.Vector;
@@ -35,7 +40,10 @@ class Graphics
     private var assembler:AGALMiniAssembler;
     private var currentStage3DIndex:Int = 0;
     private var contextStack : GenericStack<GraphicsContext>;
-    public function new(){}
+    public function new(){
+        assembler = new AGALMiniAssembler();
+        contextStack = new GenericStack<GraphicsContext>();
+    }
 
     public static function initialize(callback:Void->Void) : Void{
         var stage:Stage = flash.Lib.current.stage;
@@ -48,8 +56,6 @@ class Graphics
         if(sharedInstance == null)
         {
             sharedInstance = new Graphics();
-            sharedInstance.contextStack = new GenericStack<GraphicsContext>();
-            sharedInstance.assembler = new AGALMiniAssembler();
         }
 
         stage3D.addEventListener( ErrorEvent.ERROR, function(event:ErrorEvent):Void{
@@ -59,15 +65,19 @@ class Graphics
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void{
             var contextWrapper:GraphicsContext = new GraphicsContext();
             contextWrapper.context3D = stage3D.context3D;
-            contextWrapper.context3D.enableErrorChecking = true;
-            contextWrapper.context3D.setCulling(Context3DTriangleFace.NONE);
+            contextWrapper.context3D.enableErrorChecking = isDebugBuild();
+            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
             sharedInstance.pushContext(contextWrapper);
-
-            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, true);
             callback();
         });
 
         stage3D.requestContext3D("auto");
+    }
+
+    public static function isDebugBuild():Bool {
+        var error:String = new Error().getStackTrace();
+        var reg = ~/:[0-9]+]$/m;
+        return reg.match(error);
     }
 
     static var sharedInstance : Graphics;
@@ -76,8 +86,41 @@ class Graphics
         return sharedInstance;
     }
 
-    public static var maxActiveTextures = 16;
+    public function loadFilledContext(context : GraphicsContext) : Void
+    {
 
+    }
+
+    public function isLoadedContext(context:GraphicsContext) : Void
+    {
+
+    }
+
+    public function unloadFilledContext(context : GraphicsContext) : Void
+    {
+
+    }
+
+    public function getCurrentContext() : GraphicsContext
+    {
+        return contextStack.first();
+    }
+
+    public function pushContext(context : GraphicsContext) : Void
+    {
+        contextStack.add(context);
+    }
+
+    public function popContext(context : GraphicsContext) : Void
+    {
+        contextStack.pop();
+    }
+
+    public function present():Void{
+        getCurrentContext().context3D.present();
+    }
+
+    public static var maxActiveTextures = 16;
     public function loadFilledShader(shader : Shader)
     {
         var vs = compileShader(Context3DProgramType.VERTEX, shader.vertexShaderCode);
@@ -92,10 +135,10 @@ class Graphics
         }
         catch (err:Error)
         {
-        // Lots of error can occur in uploading the program. Many of them
-        // are simple error checking (e.g. null bytecode) but many more
-        // can indicate invalid bytecode such as programs that have more
-        // than 200 hardware instructions.
+            // Lots of error can occur in uploading the program. Many of them
+            // are simple error checking (e.g. null bytecode) but many more
+            // can indicate invalid bytecode such as programs that have more
+            // than 200 hardware instructions.
             trace("Couldn't upload shader program: " + err);
             return;
         }
@@ -104,17 +147,17 @@ class Graphics
     public function bindShader(shader : Shader)
     {
         var context3D:Context3D = getCurrentContext().context3D;
-        var currentIndex = 0;
+        var currentVertexIndex = 0;
+        var currentFragmentIndex = 0;
         var constantType;
-        var vector;
-
+        var selectIndex;
         for(uniformInterface in shader.uniformInterfaces)
         {
             constantType = uniformInterface.isVertexConstant ? Context3DProgramType.VERTEX : Context3DProgramType.FRAGMENT;
-            context3D.setProgramConstantsFromByteArray(constantType, currentIndex, cast uniformInterface.data.byteArray.length/(4 * 4), uniformInterface.data.byteArray, 0);
-            currentIndex++;
+            selectIndex = uniformInterface.isVertexConstant ? currentVertexIndex : currentFragmentIndex;
+            context3D.setProgramConstantsFromByteArray(constantType, selectIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
+            selectIndex++;
         }
-
         context3D.setProgram(shader.program);
     }
 
@@ -128,8 +171,8 @@ class Graphics
         if(meshData == null)
             return;
 
-        loadFilledVertexBuffer(cast meshData.attributeBuffer, meshData);
-        loadFilledIndexBuffer(cast meshData.indexBuffer , meshData);
+        loadFilledVertexBuffer(meshData.attributeBuffer, meshData);
+        loadFilledIndexBuffer(meshData.indexBuffer , meshData);
     }
 
     private function loadFilledVertexBuffer(meshDataBuffer : MeshDataBuffer, meshData:MeshData):Void
@@ -140,16 +183,14 @@ class Graphics
         var context:Context3D = getCurrentContext().context3D;
         meshData.vertexBufferInstance = context.createVertexBuffer(meshData.vertexCount, cast meshData.attributeStride / 4);
 
-        if(meshDataBuffer.data != null)
+        if(meshDataBuffer.data == null)trace("vertexBufferInstance meshDataBuffer.data is null");
+        try
         {
-            try
-            {
-                meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
-            }
-            catch(er:Error)
-            {
-                trace(er);
-            }
+            meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
+        }
+        catch(er:Error)
+        {
+            trace(er);
         }
     }
 
@@ -157,20 +198,17 @@ class Graphics
     {
         if(meshDataBuffer == null)
             return;
-
         var context3D:Context3D = getCurrentContext().context3D;
         meshData.indexBufferInstance = context3D.createIndexBuffer(meshData.indexCount);
 
-        if(meshDataBuffer.data != null)
+        if(meshDataBuffer.data == null)trace("indexBufferInstance meshDataBuffer.data is null");
+        try
         {
-            try
-            {
-                meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
-            }
-            catch(er:Error)
-            {
-                trace(er);
-            }
+            meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
+        }
+        catch(er:Error)
+        {
+            trace(er);
         }
     }
 
@@ -211,39 +249,51 @@ class Graphics
     public function render(meshData : MeshData, bakedFrame : Int):Void{
 
         var context3D:Context3D = getCurrentContext().context3D;
-
-        if(meshData.indexBufferInstance != null)
-        {
-            try
-            {
-                context3D.drawTriangles(meshData.indexBufferInstance, 0, -1);
-            }
-            catch(error:Error)
-            {
-                trace(error);
-            }
-        }
+        if(meshData.indexBufferInstance == null)trace("meshData.indexBufferInstance is null");
+        context3D.drawTriangles(meshData.indexBufferInstance);
     }
 
     public function loadFilledTextureData(texture : TextureData) : Void
     {
-        //if(texture.alreadyLoaded)
-          //  return;
-
-
         pushTextureData(texture);
         bindTexture(texture);
+    }
 
-        //configureFilteringMode(texture);
-        //configureMipmaps(texture);
-        //configureWrap(texture);
+    private function checkPowerOfTwo(value : Int) :Int
+    {
+        var newSize = value;
+        if(!isPowerOfTwo(value))
+        {
+            newSize = nextPowerOfTwo(value);
+        }
+        return newSize;
+    }
 
+    inline private function isPowerOfTwo(size:Int):Bool
+    {
+        return (size != 0) && ((size & (size - 1)) == 0);
+    }
+
+    inline private function nextPowerOfTwo(n:Int):Int
+    {
+        var count = 0;
+        if (isPowerOfTwo(n))return n;
+
+        while( n != 0)
+        {
+            n  >>= 1;
+            count += 1;
+        }
+
+        return 1<<count;
     }
 
     public function bindTextureData(texture : TextureData, position : Int) : Void
     {
         if(texture == null)
             return;
+
+        texture.textureID = position;
 
         bindTexture(texture);
     }
@@ -252,7 +302,6 @@ class Graphics
     {
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
-
         if(context.currentActiveTextures[context.currentActiveTexture] != texture.texture)
         {
             context.currentActiveTextures[context.currentActiveTexture] = texture.texture;
@@ -268,7 +317,18 @@ class Graphics
         }
         else
         {
-            //cubtexture
+            /*var tex:Texture = context.createCubeTexture(size, "bgra", false)
+
+            var mm:uint = 0
+                for(; size != 0 ; size >>= 1){
+            tex.uploadFromBitmapData( bd(size, 0xff0000), 0, mm)
+            tex.uploadFromBitmapData( bd(size, 0x00ff00), 1, mm)
+            tex.uploadFromBitmapData( bd(size, 0x0000ff), 2, mm)
+            tex.uploadFromBitmapData( bd(size, 0xff00ff), 3, mm)
+            tex.uploadFromBitmapData( bd(size, 0xffff00), 4, mm)
+            tex.uploadFromBitmapData( bd(size, 0x00ffff), 5, mm)
+            mm ++;
+        }*/
         }
     }
 
@@ -277,20 +337,36 @@ class Graphics
         var context3D:Context3D = getCurrentContext().context3D;
         var texture:Texture;
 
+        validate(textureData, width, height);
+
         switch(textureFormat)
         {
             case(TextureFormatRGB565):
-                texture = context3D.createTexture( width, height, Context3DTextureFormat.BGR_PACKED,  false );
+                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGR_PACKED,  false );
 
             case(TextureFormatA8):
-                texture = context3D.createTexture( width, height, Context3DTextureFormat.BGRA,        false );
+                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.COMPRESSED_ALPHA,        false );
 
             case(TextureFormatRGBA8888):
-                texture = context3D.createTexture( width, height, Context3DTextureFormat.BGRA,        false );
+                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA,        false );
         }
 
         textureData.texture = texture;
         texture.uploadFromByteArray(data.byteArray, 0, 0);
+    }
+
+    private function validate(textureData:TextureData, originalWidth:Int, originlaHeight:Int):Void
+    {
+        var width = checkPowerOfTwo(originalWidth);
+        var height = checkPowerOfTwo(originlaHeight);
+        if(width != originalWidth || height!=originlaHeight)
+        {
+            var newBmpData:BitmapData = new BitmapData(width, height, true, 0x00000000);
+            newBmpData.setPixels(new Rectangle(0, 0, originalWidth, originlaHeight), textureData.data.byteArray);
+            textureData.originalWidth = width;
+            textureData.originalHeight = height;
+            textureData.data.byteArray = newBmpData.getPixels(newBmpData.rect);
+        }
     }
 
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
@@ -313,60 +389,124 @@ class Graphics
         switch(factor)
         {
             case BlendFactorZero:
-                 factorValue = Context3DBlendFactor.ZERO;
+                factorValue = Context3DBlendFactor.ZERO;
 
             case BlendFactorOne:
-                 factorValue = Context3DBlendFactor.ONE;
+                factorValue = Context3DBlendFactor.ONE;
 
             case BlendFactorSrcColor:
-                 factorValue = Context3DBlendFactor.SOURCE_COLOR;
+                factorValue = Context3DBlendFactor.SOURCE_COLOR;
 
             case BlendFactorOneMinusSrcColor:
-                 factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR;
+                factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR;
 
             case BlendFactorSrcAlpha:
-                 factorValue = Context3DBlendFactor.SOURCE_ALPHA;
+                factorValue = Context3DBlendFactor.SOURCE_ALPHA;
 
             case BlendFactorOneMinusSrcAlpha:
-                 factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
+                factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
 
             case BlendFactorDstAlpha:
-                 factorValue = Context3DBlendFactor.DESTINATION_ALPHA;
+                factorValue = Context3DBlendFactor.DESTINATION_ALPHA;
 
             case BlendFactorOneMinusDstAlpha:
-                 factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA;
+                factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA;
 
             case BlendFactorDstColor:
-                 factorValue = Context3DBlendFactor.DESTINATION_COLOR;
+                factorValue = Context3DBlendFactor.DESTINATION_COLOR;
 
             case BlendFactorOneMinusDstColor:
-                 factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR;
+                factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR;
 
             case BlendFactorSrcAlphaSaturate:
-                 //TODO
-                 factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
+                //TODO
+                factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
         }
 
         return factorValue;
     }
 
-    public function loadFilledContext(context : GraphicsContext) : Void
+    public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
     {
+        var context = getCurrentContext();
 
+        if(renderTarget == context.defaultRenderTarget)
+        {
+            return;
+        }
+
+        if(renderTarget.depthTextureData != null || renderTarget.stencilTextureData!=null)
+            throw new Error("Graphics::loadFilledRenderTarget depth and stencil buffer are not suppoerted on the flash target");
+
+        var context3D:Context3D = context.context3D;
+        if(renderTarget.colorTextureData != null)
+        {
+            renderTarget.colorTextureData.textureID = 0;
+            loadFilledTextureData(renderTarget.colorTextureData);
+        }
+        else
+        {
+            throw new Error("Graphics::loadFilledRenderTarget renderTarget.colorTextureData has not been set");
+        }
+
+        renderTarget.alreadyLoaded = true;
     }
 
-    public function isLoadedContext(context:GraphicsContext) : Void
+    public function pushRenderTarget(renderTarget : RenderTarget) : Void
     {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
 
+        var textureID = renderTarget.colorTextureData.textureID;
+
+        if(context.currentRenderTargetStack.first().colorTextureData.textureID != textureID)
+        {
+            var enableDepthAndStencil = true;
+            var antiAlias = 0;
+            var surfaceSelector = 0;
+
+            context3D.setRenderToTexture(renderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
+        }
+
+        context.currentRenderTargetStack.add(renderTarget);
     }
 
-    public function unloadFilledContext(context : GraphicsContext) : Void
+    public function popRenderTarget() : Void
     {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
+        context.currentRenderTargetStack.pop();
+        if(!context.currentRenderTargetStack.isEmpty())
+        {
+            var nextRenderTarget = context.currentRenderTargetStack.first();
 
+            var enableDepthAndStencil = true;
+            var antiAlias = 0;
+            var surfaceSelector = 0;
+
+            if(nextRenderTarget == context.defaultRenderTarget)context3D.setRenderToBackBuffer();
+            else context3D.setRenderToTexture(nextRenderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
+        }
     }
 
-    public function present():Void{
-        getCurrentContext().context3D.present();
+    public function unloadRenderTarget(renderTarget : RenderTarget) : Void
+    {
+        var context = getCurrentContext();
+
+        if(renderTarget == context.defaultRenderTarget)
+        {
+            return;
+        }
+
+        renderTarget.colorTextureData.texture.dispose();
+        renderTarget.colorTextureData = null;
+
+        renderTarget.alreadyLoaded = false;
+    }
+
+    public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
+    {
+        return renderTarget.alreadyLoaded;
     }
 
     public function setClearColor(color : Color4B) : Void
@@ -374,9 +514,11 @@ class Graphics
         var renderTarget:RenderTarget = getCurrentContext().currentRenderTargetStack.first();
 
         if( renderTarget.currentClearColor.r != color.r ||
-            renderTarget.currentClearColor.g != color.g ||
-            renderTarget.currentClearColor.b != color.b ||
-            renderTarget.currentClearColor.a != color.a )
+        renderTarget.currentClearColor.g != color.g ||
+        renderTarget.currentClearColor.b != color.b ||
+
+
+        renderTarget.currentClearColor.a != color.a )
         {
             renderTarget.currentClearColor.data.writeData(color.data);
         }
@@ -387,25 +529,12 @@ class Graphics
         var context = getCurrentContext();
         var color:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
-        context.context3D.clear(color.r/255,
-                                color.g/255,
-                                color.b/255,
-                                color.a/255);
-    }
-
-    public function getCurrentContext() : GraphicsContext
-    {
-        return contextStack.first();
-    }
-
-    public function pushContext(context : GraphicsContext) : Void
-    {
-        contextStack.add(context);
-    }
-
-    public function popContext(context : GraphicsContext) : Void
-    {
-        contextStack.pop();
+        context.context3D.clear(
+            color.r/255,
+            color.g/255,
+            color.b/255,
+            color.a/255,
+            1,0,0xFFFFFF);
     }
 }
 
