@@ -41,6 +41,8 @@ class RenderTarget
         depthStencilRenderbufferID = GL.nullRenderbuffer;
         framebufferID = GL.nullFramebuffer;
 
+        currentClearColor = new Color4B();
+
         alreadyLoaded = false;
     }
 
