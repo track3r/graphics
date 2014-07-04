@@ -291,7 +291,10 @@ class Graphics
     public function bindTextureData(texture : TextureData, position : Int) : Void
     {
         if(texture == null)
+        {
+            getCurrentContext().context3D.setTextureAt(position, null);
             return;
+        }
 
         texture.textureID = position;
 
@@ -313,7 +316,7 @@ class Graphics
     {
         if(texture.textureType == TextureType2D)
         {
-            pushTextureDataForType(texture , texture.textureID, texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
+            pushTextureDataForType(texture , texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
         }
         else
         {
@@ -332,7 +335,7 @@ class Graphics
         }
     }
 
-    private function pushTextureDataForType(textureData:TextureData, textureType : Int, textureFormat : TextureFormat, data : Data, width : Int, height : Int) :Void
+    private function pushTextureDataForType(textureData:TextureData, textureFormat : TextureFormat, data : Data, width : Int, height : Int) :Void
     {
         var context3D:Context3D = getCurrentContext().context3D;
         var texture:Texture;
@@ -345,10 +348,10 @@ class Graphics
                 texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGR_PACKED,  false );
 
             case(TextureFormatA8):
-                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.COMPRESSED_ALPHA,        false );
+                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.COMPRESSED_ALPHA,  false );
 
             case(TextureFormatRGBA8888):
-                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA,        false );
+                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA,  false );
         }
 
         textureData.texture = texture;
@@ -441,8 +444,8 @@ class Graphics
         var context3D:Context3D = context.context3D;
         if(renderTarget.colorTextureData != null)
         {
-            renderTarget.colorTextureData.textureID = 0;
-            loadFilledTextureData(renderTarget.colorTextureData);
+            var texture = renderTarget.colorTextureData;
+            pushTextureDataForType(texture , texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
         }
         else
         {
@@ -457,9 +460,7 @@ class Graphics
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
 
-        var textureID = renderTarget.colorTextureData.textureID;
-
-        if(context.currentRenderTargetStack.first().colorTextureData.textureID != textureID)
+        if(context.currentRenderTargetStack.first() != renderTarget)
         {
             var enableDepthAndStencil = true;
             var antiAlias = 0;
@@ -480,12 +481,16 @@ class Graphics
         {
             var nextRenderTarget = context.currentRenderTargetStack.first();
 
-            var enableDepthAndStencil = true;
-            var antiAlias = 0;
-            var surfaceSelector = 0;
-
-            if(nextRenderTarget == context.defaultRenderTarget)context3D.setRenderToBackBuffer();
-            else context3D.setRenderToTexture(nextRenderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
+            if(nextRenderTarget == context.defaultRenderTarget){
+                context3D.setRenderToBackBuffer();
+            }
+            else
+            {
+                var enableDepthAndStencil = true;
+                var antiAlias = 0;
+                var surfaceSelector = 0;
+                context3D.setRenderToTexture(nextRenderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
+            }
         }
     }
 
