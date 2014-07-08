@@ -34,6 +34,7 @@ import graphics.RenderTarget;
 import graphics.Shader;
 import types.Data;
 import types.Color4B;
+import types.DataType;
 
 class Graphics
 {
@@ -45,7 +46,8 @@ class Graphics
         contextStack = new GenericStack<GraphicsContext>();
     }
 
-    public static function initialize(callback:Void->Void) : Void{
+    public static function initialize(callback:Void->Void) : Void
+    {
         var stage:Stage = flash.Lib.current.stage;
         var stage3D : Stage3D = stage.stage3Ds[0];
 
@@ -169,19 +171,23 @@ class Graphics
     public function loadFilledMeshData(meshData : MeshData)
     {
         if(meshData == null)
+        {
+            trace("MeshData was null in graphics stage3d");
             return;
+        }
 
         loadFilledVertexBuffer(meshData.attributeBuffer, meshData);
         loadFilledIndexBuffer(meshData.indexBuffer , meshData);
     }
 
-    private function loadFilledVertexBuffer(meshDataBuffer : MeshDataBuffer, meshData:MeshData):Void
+    public function loadFilledVertexBuffer(meshDataBuffer : MeshDataBuffer, meshData:MeshData):Void
     {
         if(meshDataBuffer == null)
             return;
 
         var context:Context3D = getCurrentContext().context3D;
-        meshData.vertexBufferInstance = context.createVertexBuffer(meshData.vertexCount, cast meshData.attributeStride / 4);
+
+        meshData.vertexBufferInstance = context.createVertexBuffer(meshData.vertexCount, cast (meshData.attributeStride / 4));
 
         if(meshDataBuffer.data == null)trace("vertexBufferInstance meshDataBuffer.data is null");
         try
@@ -194,7 +200,7 @@ class Graphics
         }
     }
 
-    private function loadFilledIndexBuffer(meshDataBuffer : MeshDataBuffer,  meshData:MeshData):Void
+    public function loadFilledIndexBuffer(meshDataBuffer : MeshDataBuffer,  meshData:MeshData):Void
     {
         if(meshDataBuffer == null)
             return;
@@ -221,7 +227,7 @@ class Graphics
         for(attributeConfig in data.attributeConfigs)
         {
             context3D.setVertexBufferAt(attributeConfig.attributeNumber, data.vertexBufferInstance, headStep, getFormat(attributeConfig));
-            headStep += attributeConfig.vertexElementCount;
+            headStep += cast ((attributeConfig.vertexElementCount * DataTypeUtils.dataTypeByteSize(attributeConfig.vertexElementType)) / 4);
         }
     }
 
@@ -250,6 +256,7 @@ class Graphics
 
         var context3D:Context3D = getCurrentContext().context3D;
         if(meshData.indexBufferInstance == null)trace("meshData.indexBufferInstance is null");
+
         context3D.drawTriangles(meshData.indexBufferInstance);
     }
 
