@@ -58,95 +58,95 @@ class ShaderUniformInterface
     public function writeMatrix(matrix : Data) : Void
     {
         matrix.offset = 0;
-        var m01 = matrix.readFloat(DataTypeFloat32);
+        var m00 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 4;
-        var m02 = matrix.readFloat(DataTypeFloat32);
+        var m01 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 8;
-        var m03 = matrix.readFloat(DataTypeFloat32);
+        var m02 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 12;
-        var m04 = matrix.readFloat(DataTypeFloat32);
+        var m03 = matrix.readFloat(DataTypeFloat32);
 
         matrix.offset = 16;
-        var m05 = matrix.readFloat(DataTypeFloat32);
+        var m04 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 20;
-        var m06 = matrix.readFloat(DataTypeFloat32);
+        var m05 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 24;
-        var m07 = matrix.readFloat(DataTypeFloat32);
+        var m06 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 28;
-        var m08 = matrix.readFloat(DataTypeFloat32);
+        var m07 = matrix.readFloat(DataTypeFloat32);
 
         matrix.offset = 32;
-        var m09 = matrix.readFloat(DataTypeFloat32);
+        var m08 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 36;
-        var m10 = matrix.readFloat(DataTypeFloat32);
+        var m09 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 40;
-        var m11 = matrix.readFloat(DataTypeFloat32);
+        var m10 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 44;
-        var m12 = matrix.readFloat(DataTypeFloat32);
+        var m11 = matrix.readFloat(DataTypeFloat32);
 
         matrix.offset = 48;
-        var m13 = matrix.readFloat(DataTypeFloat32);
+        var m12 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 52;
-        var m14 = matrix.readFloat(DataTypeFloat32);
+        var m13 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 56;
-        var m15 = matrix.readFloat(DataTypeFloat32);
+        var m14 = matrix.readFloat(DataTypeFloat32);
         matrix.offset = 60;
-        var m16 = matrix.readFloat(DataTypeFloat32);
+        var m15 = matrix.readFloat(DataTypeFloat32);
 
         matrix.offset = 0;
 
         // Transpose Matrix for flash
 
         data.offset = 0;
-        data.writeFloat(m01, DataTypeFloat32);
+        data.writeFloat(m00, DataTypeFloat32);
 
         data.offset = 4;
-        data.writeFloat(m05, DataTypeFloat32);
+        data.writeFloat(m04, DataTypeFloat32);
 
         data.offset = 8;
-        data.writeFloat(m09, DataTypeFloat32);
+        data.writeFloat(m08, DataTypeFloat32);
 
         data.offset = 12;
-        data.writeFloat(m13, DataTypeFloat32);
+        data.writeFloat(m12, DataTypeFloat32);
 
 
         data.offset = 16;
-        data.writeFloat(m02, DataTypeFloat32);
+        data.writeFloat(m01, DataTypeFloat32);
 
         data.offset = 20;
-        data.writeFloat(m06, DataTypeFloat32);
+        data.writeFloat(m05, DataTypeFloat32);
 
         data.offset = 24;
-        data.writeFloat(m10, DataTypeFloat32);
+        data.writeFloat(m09, DataTypeFloat32);
 
         data.offset = 28;
-        data.writeFloat(m14, DataTypeFloat32);
+        data.writeFloat(m13, DataTypeFloat32);
 
 
         data.offset = 32;
-        data.writeFloat(m03, DataTypeFloat32);
+        data.writeFloat(m02, DataTypeFloat32);
 
         data.offset = 36;
-        data.writeFloat(m07, DataTypeFloat32);
+        data.writeFloat(m06, DataTypeFloat32);
 
         data.offset = 40;
-        data.writeFloat(m11, DataTypeFloat32);
+        data.writeFloat(m10, DataTypeFloat32);
 
         data.offset = 44;
-        data.writeFloat(m15, DataTypeFloat32);
+        data.writeFloat(m14, DataTypeFloat32);
 
 
         data.offset = 48;
-        data.writeFloat(m04, DataTypeFloat32);
+        data.writeFloat(m03, DataTypeFloat32);
 
         data.offset = 52;
-        data.writeFloat(m08, DataTypeFloat32);
+        data.writeFloat(m07, DataTypeFloat32);
 
         data.offset = 56;
-        data.writeFloat(m12, DataTypeFloat32);
+        data.writeFloat(m11, DataTypeFloat32);
 
         data.offset = 60;
-        data.writeFloat(m16, DataTypeFloat32);
+        data.writeFloat(m15, DataTypeFloat32);
 
         data.offset = 0;
     }

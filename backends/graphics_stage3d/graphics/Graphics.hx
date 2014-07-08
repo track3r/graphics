@@ -369,14 +369,14 @@ class Graphics
     {
         var width = checkPowerOfTwo(originalWidth);
         var height = checkPowerOfTwo(originlaHeight);
-        if(width != originalWidth || height!=originlaHeight)
-        {
+       // if(width != originalWidth || height!=originlaHeight)
+       // {
             var newBmpData:BitmapData = new BitmapData(width, height, true, 0x00000000);
             newBmpData.setPixels(new Rectangle(0, 0, originalWidth, originlaHeight), textureData.data.byteArray);
             textureData.originalWidth = width;
             textureData.originalHeight = height;
             textureData.data.byteArray = newBmpData.getPixels(newBmpData.rect);
-        }
+       // }
     }
 
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
