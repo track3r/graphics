@@ -156,7 +156,7 @@ class Graphics
 
 		if(meshDataBuffer.data != null)
 		{
-			if(meshDataBuffer.data.offsetLength < meshDataBuffer.sizeOfHardwareBuffer)
+			if(meshDataBuffer.data.offsetLength <= meshDataBuffer.sizeOfHardwareBuffer)
 			{
 				GL.bindBuffer(bufferType, meshDataBuffer.glBuffer);
 				GL.bufferSubData(bufferType, 0, meshDataBuffer.data);

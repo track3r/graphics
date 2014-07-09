@@ -1,4 +1,6 @@
 package graphics;
+
+import flash.display3D.Context3DCompareMode;
 import flash.display3D.Context3DProfile;
 import flash.system.Capabilities;
 import flash.display3D.Context3DRenderMode;
@@ -64,11 +66,14 @@ class Graphics
             throw new Error(event.toString());
         });
 
-        stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void{
+        stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void
+        {
             var contextWrapper:GraphicsContext = new GraphicsContext();
             contextWrapper.context3D = stage3D.context3D;
             contextWrapper.context3D.enableErrorChecking = isDebugBuild();
+
             contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
+            contextWrapper.context3D.setDepthTest(false, Context3DCompareMode.LESS);
             sharedInstance.pushContext(contextWrapper);
             callback();
         });
@@ -187,16 +192,37 @@ class Graphics
 
         var context:Context3D = getCurrentContext().context3D;
 
-        meshData.vertexBufferInstance = context.createVertexBuffer(meshData.vertexCount, cast (meshData.attributeStride / 4));
+        if (!meshDataBuffer.bufferAlreadyOnHardware)
+        {
+            meshDataBuffer.sizeOfHardwareBuffer = 0;
+        }
 
         if(meshDataBuffer.data == null)trace("vertexBufferInstance meshDataBuffer.data is null");
         try
         {
-            meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
+            if(meshData.vertexCount <= meshDataBuffer.sizeOfHardwareBuffer && meshDataBuffer.bufferAlreadyOnHardware)
+            {
+
+                meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
+            }
+            else
+            {
+                // Recreate because we need more space
+                if (meshData.vertexBufferInstance != null)
+                {
+                    meshData.vertexBufferInstance.dispose();
+                }
+
+                meshData.vertexBufferInstance = context.createVertexBuffer(meshData.vertexCount, cast (meshData.attributeStride / 4));
+                meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
+
+                meshDataBuffer.sizeOfHardwareBuffer = meshData.vertexCount;
+                meshDataBuffer.bufferAlreadyOnHardware = true;
+            }
         }
         catch(er:Error)
         {
-            trace(er);
+           trace(er);
         }
     }
 
@@ -204,12 +230,34 @@ class Graphics
     {
         if(meshDataBuffer == null)
             return;
+
         var context3D:Context3D = getCurrentContext().context3D;
-        meshData.indexBufferInstance = context3D.createIndexBuffer(meshData.indexCount);
+
+        if (!meshDataBuffer.bufferAlreadyOnHardware)
+        {
+            meshDataBuffer.sizeOfHardwareBuffer = 0;
+        }
 
         if(meshDataBuffer.data == null)trace("indexBufferInstance meshDataBuffer.data is null");
         try
         {
+            if(meshData.indexCount <= meshDataBuffer.sizeOfHardwareBuffer && meshDataBuffer.bufferAlreadyOnHardware)
+            {
+                meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
+            }
+            else
+            {
+                if (meshData.indexBufferInstance != null)
+                {
+                    meshData.indexBufferInstance.dispose();
+                }
+
+                // Recreate because we need more space
+                meshData.indexBufferInstance = context3D.createIndexBuffer(meshData.indexCount);
+                meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
+                meshDataBuffer.bufferAlreadyOnHardware = true;
+            }
+
             meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
         }
         catch(er:Error)
@@ -257,7 +305,8 @@ class Graphics
         var context3D:Context3D = getCurrentContext().context3D;
         if(meshData.indexBufferInstance == null)trace("meshData.indexBufferInstance is null");
 
-        context3D.drawTriangles(meshData.indexBufferInstance);
+        var numTriangles : Int = cast (meshData.indexCount / 3);
+        context3D.drawTriangles(meshData.indexBufferInstance, 0, numTriangles);
     }
 
     public function loadFilledTextureData(texture : TextureData) : Void
@@ -388,6 +437,7 @@ class Graphics
         {
             context.currentBlendFactorSrc = sourceFactor;
             context.currentBlendFactorDest = destinationFactor;
+
             context3D.setBlendFactors( getBlendFactor(sourceFactor), getBlendFactor(destinationFactor) );
         }
     }
@@ -435,6 +485,24 @@ class Graphics
 
         return factorValue;
     }
+
+    public function enableDepthWrite(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+        if(context.currentDepthWrite == enabled)
+            return;
+
+        var context3D:Context3D = context.context3D;
+        context3D.setDepthTest(enabled, Context3DCompareMode.LESS);
+        context.currentDepthWrite = enabled;
+    }
+
+    public function isDepthWriting() : Bool
+    {
+        var context = getCurrentContext();
+        return context.currentDepthWrite;
+    }
+
 
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
     {

@@ -12,6 +12,9 @@ class MeshDataBuffer
     public function new(){}
     public var bufferMode : BufferMode;
     public var data : Data;
+
+    public var sizeOfHardwareBuffer : Int;
+    public var bufferAlreadyOnHardware : Bool;
 }
 
 class MeshDataAttributeConfig
