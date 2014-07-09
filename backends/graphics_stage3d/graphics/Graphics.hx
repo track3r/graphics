@@ -411,21 +411,25 @@ class Graphics
         }
 
         textureData.texture = texture;
-        texture.uploadFromByteArray(data.byteArray, 0, 0);
+        texture.uploadFromByteArray(textureData.data.byteArray, 0, 0);
     }
 
-    private function validate(textureData:TextureData, originalWidth:Int, originlaHeight:Int):Void
+    private function validate(textureData:TextureData, originalWidth:Int, originalHeight:Int):Void
     {
         var width = checkPowerOfTwo(originalWidth);
-        var height = checkPowerOfTwo(originlaHeight);
-       // if(width != originalWidth || height!=originlaHeight)
-       // {
+        var height = checkPowerOfTwo(originalHeight);
+
+        if(width != originalWidth || height!=originalHeight)
+        {
             var newBmpData:BitmapData = new BitmapData(width, height, true, 0x00000000);
-            newBmpData.setPixels(new Rectangle(0, 0, originalWidth, originlaHeight), textureData.data.byteArray);
+
+                // TODO ByteArray Data needs to be fixed
+            newBmpData.setPixels(new Rectangle(0, 0, originalWidth, originalHeight), textureData.data.byteArray);
+
             textureData.originalWidth = width;
             textureData.originalHeight = height;
             textureData.data.byteArray = newBmpData.getPixels(newBmpData.rect);
-       // }
+        }
     }
 
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
