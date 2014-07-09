@@ -55,45 +55,45 @@ class ShaderUniformInterface
     public var offset: Int = 0;
     public var isVertexConstant:Bool=true;
 
-    public function writeMatrix(matrix : Data) : Void
+    public function writeMatrixData(matrixData : Data) : Void
     {
-        matrix.offset = 0;
-        var m00 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 4;
-        var m01 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 8;
-        var m02 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 12;
-        var m03 = matrix.readFloat(DataTypeFloat32);
+        matrixData.offset = 0;
+        var m00 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 4;
+        var m01 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 8;
+        var m02 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 12;
+        var m03 = matrixData.readFloat(DataTypeFloat32);
 
-        matrix.offset = 16;
-        var m04 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 20;
-        var m05 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 24;
-        var m06 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 28;
-        var m07 = matrix.readFloat(DataTypeFloat32);
+        matrixData.offset = 16;
+        var m04 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 20;
+        var m05 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 24;
+        var m06 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 28;
+        var m07 = matrixData.readFloat(DataTypeFloat32);
 
-        matrix.offset = 32;
-        var m08 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 36;
-        var m09 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 40;
-        var m10 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 44;
-        var m11 = matrix.readFloat(DataTypeFloat32);
+        matrixData.offset = 32;
+        var m08 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 36;
+        var m09 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 40;
+        var m10 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 44;
+        var m11 = matrixData.readFloat(DataTypeFloat32);
 
-        matrix.offset = 48;
-        var m12 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 52;
-        var m13 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 56;
-        var m14 = matrix.readFloat(DataTypeFloat32);
-        matrix.offset = 60;
-        var m15 = matrix.readFloat(DataTypeFloat32);
+        matrixData.offset = 48;
+        var m12 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 52;
+        var m13 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 56;
+        var m14 = matrixData.readFloat(DataTypeFloat32);
+        matrixData.offset = 60;
+        var m15 = matrixData.readFloat(DataTypeFloat32);
 
-        matrix.offset = 0;
+        matrixData.offset = 0;
 
         // Transpose Matrix for flash
 
