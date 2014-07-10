@@ -421,14 +421,39 @@ class Graphics
 
         if(width != originalWidth || height!=originalHeight)
         {
-            var newBmpData:BitmapData = new BitmapData(width, height, true, 0x00000000);
+            // Resample smaller image onto bigger
 
-                // TODO ByteArray Data needs to be fixed
-            newBmpData.setPixels(new Rectangle(0, 0, originalWidth, originalHeight), textureData.data.byteArray);
+            var bytesPerPixel:Int = 4;
+            var pixelCountSource:Int = cast (originalWidth * originalHeight);
+            var pixelCountDestination:Int = cast (width * height);
+            var bytesSizeTexture:Int = bytesPerPixel * pixelCountDestination;
+
+            var bytesData:Data = new Data(bytesSizeTexture);
+
+            var destinationY = 0;
+            var destinationHead = 0;
+
+            for (pixelIndex in 0...pixelCountSource)
+            {
+                var float32Head:Int = pixelIndex * bytesPerPixel;
+
+                textureData.data.offset = float32Head;
+                bytesData.offset = destinationHead;
+
+                bytesData.writeInt(textureData.data.readInt(DataTypeInt32), DataTypeInt32);
+
+                destinationHead += bytesPerPixel;
+
+                if (float32Head % (originalWidth * bytesPerPixel) == 0)
+                {
+                    destinationY++;
+                    destinationHead = destinationY * width * bytesPerPixel;
+                }
+            }
 
             textureData.originalWidth = width;
             textureData.originalHeight = height;
-            textureData.data.byteArray = newBmpData.getPixels(newBmpData.rect);
+            textureData.data = bytesData;
         }
     }
 
