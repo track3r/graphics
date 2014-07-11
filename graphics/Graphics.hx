@@ -28,7 +28,8 @@ extern class Graphics
 
     ///######## LOAD ########
 	public function loadFilledMeshData(meshData : MeshData) : Void;
-    public function loadFilledMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void; ///called by loadFilledMeshData
+    public function loadFilledVertexBuffer(meshData : MeshData) : Void;///called by loadFilledMeshData
+    public function loadFilledIndexBuffer(meshData : MeshData) : Void;///called by loadFilledMeshData
 	public function loadFilledShader(shader : Shader) : Void;
 	public function loadFilledTextureData(textureData : TextureData) : Void;
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void;
@@ -40,7 +41,6 @@ extern class Graphics
     public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool;
 
     public function unloadMeshData(meshData : MeshData) : Void;
-    public function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void; ///called by unloadMeshData
     public function unloadShader(shader : Shader) : Void;
     public function unloadTextureData(textureData : TextureData) : Void;
     public function unloadRenderTarget(renderTarget : RenderTarget) : Void;
@@ -84,6 +84,7 @@ extern class Graphics
 	public function bindMeshData(meshData : MeshData, bakedFrame : Int) : Void;
 	public function bindTextureData(texture : TextureData, position : Int) : Void;
 	public function render(meshData : MeshData, bakedFrame : Int) : Void;
+    public function present() : Void;
 
     ///######## RENDER TARGET ########
 	public function setClearColor(color : Color4B) : Void;

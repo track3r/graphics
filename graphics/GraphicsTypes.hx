@@ -2,13 +2,13 @@ package graphics;
 
 enum PrimitiveType
 {
-	PrimitiveTypeTriangles;
-	PrimitiveTypeTriangleStrip;
+	PrimitiveTypeTriangles;      // Stage3d just supports triangles with indexed draw elements
+/*	PrimitiveTypeTriangleStrip;
 	PrimitiveTypeTriangleFan;
 	PrimitiveTypeLines;
 	PrimitiveTypeLineLoop;
 	PrimitiveTypeLineStrip;
-	PrimitiveTypePoints;
+	PrimitiveTypePoints;     */
 }
 
 

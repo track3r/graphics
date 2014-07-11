@@ -59,15 +59,15 @@ class GLUtils
 	{
 		switch (primitiveType)
         {
-			case PrimitiveTypeTriangleFan:
+			/*case PrimitiveTypeTriangleFan:
 				return GLDefines.TRIANGLE_FAN;
 
 			case PrimitiveTypeTriangleStrip:
 				return GLDefines.TRIANGLE_STRIP;
-
+                                           */
 			case PrimitiveTypeTriangles:
 				return GLDefines.TRIANGLES;
-
+                              /*
 			case PrimitiveTypeLines:
 				return GLDefines.LINES;
 
@@ -78,7 +78,7 @@ class GLUtils
 				return GLDefines.LINE_STRIP;
 
 			case PrimitiveTypePoints:
-				return GLDefines.POINTS;
+				return GLDefines.POINTS; */
 
 			default:
 				return 0;

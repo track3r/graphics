@@ -123,7 +123,8 @@ class Graphics
         contextStack.pop();
     }
 
-    public function present():Void{
+    public function present() : Void
+    {
         getCurrentContext().context3D.present();
     }
 
@@ -148,6 +149,23 @@ class Graphics
             // than 200 hardware instructions.
             trace("Couldn't upload shader program: " + err);
             return;
+        }
+    }
+
+    public function unloadShader(shader : Shader) : Void
+    {
+        if (shader.program != null)
+        {
+            try
+            {
+                shader.program.dispose();
+                shader.program = null;
+            }
+            catch (err:Error)
+            {
+                trace("Couldn't dispose shader program: " + err);
+                return;
+            }
         }
     }
 
@@ -177,16 +195,17 @@ class Graphics
     {
         if(meshData == null)
         {
-            trace("MeshData was null in graphics stage3d");
             return;
         }
 
-        loadFilledVertexBuffer(meshData.attributeBuffer, meshData);
-        loadFilledIndexBuffer(meshData.indexBuffer , meshData);
+        loadFilledVertexBuffer(meshData);
+        loadFilledIndexBuffer(meshData);
     }
 
-    public function loadFilledVertexBuffer(meshDataBuffer : MeshDataBuffer, meshData:MeshData):Void
+    public function loadFilledVertexBuffer(meshData : MeshData) : Void
     {
+        var meshDataBuffer : MeshDataBuffer = meshData.attributeBuffer;
+
         if(meshDataBuffer == null)
             return;
 
@@ -226,8 +245,10 @@ class Graphics
         }
     }
 
-    public function loadFilledIndexBuffer(meshDataBuffer : MeshDataBuffer,  meshData:MeshData):Void
+    public function loadFilledIndexBuffer(meshData : MeshData) : Void
     {
+        var meshDataBuffer : MeshDataBuffer = meshData.indexBuffer;
+
         if(meshDataBuffer == null)
             return;
 
@@ -263,6 +284,27 @@ class Graphics
         catch(er:Error)
         {
             trace(er);
+        }
+    }
+
+    public function unloadMeshData(meshData : MeshData) : Void
+    {
+        if(meshData.attributeBuffer != null)
+        {
+            if(meshData.attributeBuffer.bufferAlreadyOnHardware)
+            {
+                meshData.vertexBufferInstance.dispose();
+                meshData.attributeBuffer.bufferAlreadyOnHardware = false;
+            }
+        }
+
+        if(meshData.indexBuffer != null)
+        {
+            if(meshData.indexBuffer.bufferAlreadyOnHardware)
+            {
+                meshData.indexBufferInstance.dispose();
+                meshData.indexBuffer.bufferAlreadyOnHardware = false;
+            }
         }
     }
 
@@ -313,6 +355,15 @@ class Graphics
     {
         pushTextureData(texture);
         bindTexture(texture);
+    }
+
+    public function unloadTextureData(textureData : TextureData) : Void
+    {
+        if (textureData.texture != null)
+        {
+            textureData.texture.dispose();
+            textureData.texture = null;
+        }
     }
 
     private function checkPowerOfTwo(value : Int) :Int
@@ -616,6 +667,40 @@ class Graphics
     public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
     {
         return renderTarget.alreadyLoaded;
+    }
+
+    public function isLoadedMeshData(meshData : MeshData) : Bool
+    {
+        var attributeBuffer : Bool = false;
+        if(meshData.attributeBuffer != null)
+        {
+            attributeBuffer = isLoadedMeshDataBuffer(meshData.attributeBuffer);
+        }
+
+        var indexBuffer : Bool = false;
+        if(meshData.indexBuffer != null)
+        {
+            indexBuffer = isLoadedMeshDataBuffer(meshData.indexBuffer);
+        }
+
+        return attributeBuffer && indexBuffer;
+    }
+
+    public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool
+    {
+        if(meshDataBuffer != null)
+            return meshDataBuffer.bufferAlreadyOnHardware;
+        return false;
+    }
+
+    public function isLoadedShader(shader : Shader) : Bool
+    {
+        return shader.program != null;
+    }
+
+    public function isLoadedTextureData(textureData : TextureData) : Bool
+    {
+        return textureData.texture != null;
     }
 
     public function setClearColor(color : Color4B) : Void

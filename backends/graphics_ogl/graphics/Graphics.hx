@@ -137,13 +137,25 @@ class Graphics
 	public function loadFilledMeshData(meshData : MeshData)
 	{
 		if(meshData == null)
-			return;
+        {
+            return;
+        }
 
-		loadFilledMeshDataBuffer(GLDefines.ARRAY_BUFFER, cast meshData.attributeBuffer);
-		loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, cast meshData.indexBuffer);
+        loadFilledVertexBuffer(meshData);
+        loadFilledIndexBuffer(meshData);
 	}
-	
-	public function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
+
+    public function loadFilledVertexBuffer(meshData : MeshData) : Void
+    {
+        loadFilledMeshDataBuffer(GLDefines.ARRAY_BUFFER, meshData.attributeBuffer);
+    }
+
+    public function loadFilledIndexBuffer(meshData : MeshData) : Void
+    {
+        loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
+    }
+
+	private function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
 	{
 		if(meshDataBuffer == null)
 			return;
@@ -599,13 +611,13 @@ class Graphics
 
     public function isLoadedMeshData(meshData : MeshData) : Bool
     {
-        var attributeBuffer : Bool = true;
+        var attributeBuffer : Bool = false;
         if(meshData.attributeBuffer != null)
         {
             attributeBuffer = isLoadedMeshDataBuffer(meshData.attributeBuffer);
         }
 
-        var indexBuffer : Bool = true;
+        var indexBuffer : Bool = false;
         if(meshData.indexBuffer != null)
         {
             indexBuffer = isLoadedMeshDataBuffer(meshData.indexBuffer);
@@ -631,7 +643,7 @@ class Graphics
         return textureData.alreadyLoaded;
     }
 
-    public function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void
+    private function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void
     {
         if(meshDataBuffer.bufferAlreadyOnHardware)
         {
@@ -1144,7 +1156,12 @@ class Graphics
 						  offset, 
 						  count);
 		}
-	};
+	}
+
+    public function present() : Void
+    {
+        // When we clean up lime, I asume we would have some code here.
+    }
 
 	public function bindTextureData(texture : TextureData, position : Int) : Void
 	{
