@@ -174,15 +174,21 @@ class Graphics
         var context3D:Context3D = getCurrentContext().context3D;
         var currentVertexIndex = 0;
         var currentFragmentIndex = 0;
-        var constantType;
-        var selectIndex;
+
         for(uniformInterface in shader.uniformInterfaces)
         {
-            constantType = uniformInterface.isVertexConstant ? Context3DProgramType.VERTEX : Context3DProgramType.FRAGMENT;
-            selectIndex = uniformInterface.isVertexConstant ? currentVertexIndex : currentFragmentIndex;
-            context3D.setProgramConstantsFromByteArray(constantType, selectIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
-            selectIndex++;
+            if (uniformInterface.isVertexConstant == true)
+            {
+                context3D.setProgramConstantsFromByteArray(Context3DProgramType.VERTEX, currentVertexIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
+                ++currentVertexIndex;
+            }
+            else
+            {
+                context3D.setProgramConstantsFromByteArray(Context3DProgramType.FRAGMENT, currentFragmentIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
+                ++currentFragmentIndex;
+            }
         }
+
         context3D.setProgram(shader.program);
     }
 
