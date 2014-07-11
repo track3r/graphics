@@ -57,14 +57,17 @@ class GLUtils
 
 	public static function convertPrimitiveTypeToOGL(primitiveType : PrimitiveType) : Int
 	{
+        return GLDefines.TRIANGLES;
+
+           /*
 		switch (primitiveType)
         {
-			/*case PrimitiveTypeTriangleFan:
+			case PrimitiveTypeTriangleFan:
 				return GLDefines.TRIANGLE_FAN;
 
 			case PrimitiveTypeTriangleStrip:
 				return GLDefines.TRIANGLE_STRIP;
-                                           */
+
 			case PrimitiveTypeTriangles:
 				return GLDefines.TRIANGLES;
                               /*
@@ -78,11 +81,12 @@ class GLUtils
 				return GLDefines.LINE_STRIP;
 
 			case PrimitiveTypePoints:
-				return GLDefines.POINTS; */
+				return GLDefines.POINTS;
 
 			default:
 				return 0;
 		}
+*/
 	}
 
 	public static function convertTextureTypeToOGL(textureType : TextureType) : Int
