@@ -16,9 +16,6 @@ import types.Data;
 
 import haxe.ds.GenericStack;
 
-#if cpp
-import cpp.vm.Thread;
-#end
 
 #if html5
 import platform.Platform;
@@ -27,36 +24,21 @@ import lime.Lime;
 
 class Graphics
 {
-#if cpp
-    private var contextStackPerThread : Map<Dynamic, GenericStack<GraphicsContext> >;
-#else
-    private var contextStack : GenericStack<GraphicsContext>;
-#end
+    private var context : GraphicsContext;
 
 	private function new() 
 	{
-		#if html5
+        #if html5
 		GL.context = Platform.instance().lime.render.direct_renderer_handle;
 		#end
 
-
-        #if cpp
-            contextStackPerThread = new Map<Thread, GenericStack<GraphicsContext>>();
-        #else
-            contextStack = new GenericStack<GraphicsContext>();
-        #end
-
-
+        context = new GraphicsContext();
 	}
 
     public static function initialize(callback:Void->Void)
     {
 
         sharedInstance = new Graphics();
-
-        ///TEMPORARY
-        var context = new GraphicsContext();
-        sharedInstance.pushContext(new GraphicsContext());
 
         ///blending is not enabled by default on webgl
         GL.enable(GLDefines.BLEND);
@@ -92,45 +74,17 @@ class Graphics
 
     public function getCurrentContext() : GraphicsContext
     {
-        #if cpp
-        if(!contextStackPerThread.exists(Thread.current().handle))
-        {
-            return null;
-        }
-        else
-        {
-            return contextStackPerThread[Thread.current().handle].first();
-        }
-        #else
-        return contextStack.first();
-        #end
+        return context;
 
     }
 
     public function pushContext(context : GraphicsContext) : Void
     {
-        #if cpp
-            if(!contextStackPerThread.exists(Thread.current().handle))
-            {
-                contextStackPerThread.set(Thread.current().handle, new GenericStack<GraphicsContext>());
-            }
-            contextStackPerThread.get(Thread.current().handle).add(context);
-        #else
-            contextStack.add(context);
-        #end
+
     }
 
     public function popContext(context : GraphicsContext) : Void
     {
-        #if cpp
-            if(contextStackPerThread.exists(Thread.current().handle))
-            {
-                contextStackPerThread.get(Thread.current().handle).pop();
-            }
-        #else
-            contextStack.pop();
-        #end
-
 
     }
 
