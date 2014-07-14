@@ -57,6 +57,9 @@ class GLUtils
 
 	public static function convertPrimitiveTypeToOGL(primitiveType : PrimitiveType) : Int
 	{
+        return GLDefines.TRIANGLES;
+
+           /*
 		switch (primitiveType)
         {
 			case PrimitiveTypeTriangleFan:
@@ -67,7 +70,7 @@ class GLUtils
 
 			case PrimitiveTypeTriangles:
 				return GLDefines.TRIANGLES;
-
+                              /*
 			case PrimitiveTypeLines:
 				return GLDefines.LINES;
 
@@ -83,6 +86,7 @@ class GLUtils
 			default:
 				return 0;
 		}
+*/
 	}
 
 	public static function convertTextureTypeToOGL(textureType : TextureType) : Int

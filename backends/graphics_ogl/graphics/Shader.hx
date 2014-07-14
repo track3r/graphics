@@ -23,11 +23,13 @@ class Shader
 
     public var attributeNames : Array<String>;
 
+    public var alreadyLoaded : Bool;
+
     public function new() : Void {}
 
     /// specific to ogl
     public var programName : GLProgram;
-    public var alreadyLoaded : Bool;
+
 }
 
 class ShaderUniformInterface
@@ -49,6 +51,30 @@ class ShaderUniformInterface
 
         data = new Data(count * GraphicsTypesUtils.uniformTypeElementSize(uniformType));
         dataActiveCount = 0;
+    }
+
+    public function writeMatrix44Data(matrixData : Data, count:Int = 1) : Void
+    {
+        data.offset = 0;
+        matrixData.offset = 0;
+
+        dataActiveCount = count;
+        data.writeData(matrixData);
+
+        data.offset = 0;
+        matrixData.offset = 0;
+    }
+
+    public function writeMatrix33Data(matrixData : Data, count:Int = 1) : Void
+    {
+        data.offset = 0;
+        matrixData.offset = 0;
+
+        dataActiveCount = count;
+        data.writeData(matrixData);
+
+        data.offset = 0;
+        matrixData.offset = 0;
     }
 
     /// specific to ogl

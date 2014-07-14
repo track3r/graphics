@@ -1,4 +1,6 @@
 package graphics;
+
+import flash.display3D.Context3DCompareMode;
 import flash.display3D.Context3DProfile;
 import flash.system.Capabilities;
 import flash.display3D.Context3DRenderMode;
@@ -34,6 +36,7 @@ import graphics.RenderTarget;
 import graphics.Shader;
 import types.Data;
 import types.Color4B;
+import types.DataType;
 
 class Graphics
 {
@@ -45,7 +48,8 @@ class Graphics
         contextStack = new GenericStack<GraphicsContext>();
     }
 
-    public static function initialize(callback:Void->Void) : Void{
+    public static function initialize(callback:Void->Void) : Void
+    {
         var stage:Stage = flash.Lib.current.stage;
         var stage3D : Stage3D = stage.stage3Ds[0];
 
@@ -62,11 +66,14 @@ class Graphics
             throw new Error(event.toString());
         });
 
-        stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void{
+        stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void
+        {
             var contextWrapper:GraphicsContext = new GraphicsContext();
             contextWrapper.context3D = stage3D.context3D;
             contextWrapper.context3D.enableErrorChecking = isDebugBuild();
+
             contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
+            contextWrapper.context3D.setDepthTest(false, Context3DCompareMode.LESS);
             sharedInstance.pushContext(contextWrapper);
             callback();
         });
@@ -116,7 +123,8 @@ class Graphics
         contextStack.pop();
     }
 
-    public function present():Void{
+    public function present() : Void
+    {
         getCurrentContext().context3D.present();
     }
 
@@ -144,20 +152,43 @@ class Graphics
         }
     }
 
+    public function unloadShader(shader : Shader) : Void
+    {
+        if (shader.program != null)
+        {
+            try
+            {
+                shader.program.dispose();
+                shader.program = null;
+            }
+            catch (err:Error)
+            {
+                trace("Couldn't dispose shader program: " + err);
+                return;
+            }
+        }
+    }
+
     public function bindShader(shader : Shader)
     {
         var context3D:Context3D = getCurrentContext().context3D;
         var currentVertexIndex = 0;
         var currentFragmentIndex = 0;
-        var constantType;
-        var selectIndex;
+
         for(uniformInterface in shader.uniformInterfaces)
         {
-            constantType = uniformInterface.isVertexConstant ? Context3DProgramType.VERTEX : Context3DProgramType.FRAGMENT;
-            selectIndex = uniformInterface.isVertexConstant ? currentVertexIndex : currentFragmentIndex;
-            context3D.setProgramConstantsFromByteArray(constantType, selectIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
-            selectIndex++;
+            if (uniformInterface.isVertexConstant == true)
+            {
+                context3D.setProgramConstantsFromByteArray(Context3DProgramType.VERTEX, currentVertexIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
+                ++currentVertexIndex;
+            }
+            else
+            {
+                context3D.setProgramConstantsFromByteArray(Context3DProgramType.FRAGMENT, currentFragmentIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
+                ++currentFragmentIndex;
+            }
         }
+
         context3D.setProgram(shader.program);
     }
 
@@ -169,46 +200,117 @@ class Graphics
     public function loadFilledMeshData(meshData : MeshData)
     {
         if(meshData == null)
+        {
             return;
+        }
 
-        loadFilledVertexBuffer(meshData.attributeBuffer, meshData);
-        loadFilledIndexBuffer(meshData.indexBuffer , meshData);
+        loadFilledVertexBuffer(meshData);
+        loadFilledIndexBuffer(meshData);
     }
 
-    private function loadFilledVertexBuffer(meshDataBuffer : MeshDataBuffer, meshData:MeshData):Void
+    public function loadFilledVertexBuffer(meshData : MeshData) : Void
     {
+        var meshDataBuffer : MeshDataBuffer = meshData.attributeBuffer;
+
         if(meshDataBuffer == null)
             return;
 
         var context:Context3D = getCurrentContext().context3D;
-        meshData.vertexBufferInstance = context.createVertexBuffer(meshData.vertexCount, cast meshData.attributeStride / 4);
+
+        if (!meshDataBuffer.bufferAlreadyOnHardware)
+        {
+            meshDataBuffer.sizeOfHardwareBuffer = 0;
+        }
 
         if(meshDataBuffer.data == null)trace("vertexBufferInstance meshDataBuffer.data is null");
         try
         {
-            meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
+            if(meshData.vertexCount <= meshDataBuffer.sizeOfHardwareBuffer && meshDataBuffer.bufferAlreadyOnHardware)
+            {
+
+                meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
+            }
+            else
+            {
+                // Recreate because we need more space
+                if (meshData.vertexBufferInstance != null)
+                {
+                    meshData.vertexBufferInstance.dispose();
+                }
+
+                meshData.vertexBufferInstance = context.createVertexBuffer(meshData.vertexCount, cast (meshData.attributeStride / 4));
+                meshData.vertexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.vertexCount);
+
+                meshDataBuffer.sizeOfHardwareBuffer = meshData.vertexCount;
+                meshDataBuffer.bufferAlreadyOnHardware = true;
+            }
         }
         catch(er:Error)
         {
-            trace(er);
+           trace(er);
         }
     }
 
-    private function loadFilledIndexBuffer(meshDataBuffer : MeshDataBuffer,  meshData:MeshData):Void
+    public function loadFilledIndexBuffer(meshData : MeshData) : Void
     {
+        var meshDataBuffer : MeshDataBuffer = meshData.indexBuffer;
+
         if(meshDataBuffer == null)
             return;
+
         var context3D:Context3D = getCurrentContext().context3D;
-        meshData.indexBufferInstance = context3D.createIndexBuffer(meshData.indexCount);
+
+        if (!meshDataBuffer.bufferAlreadyOnHardware)
+        {
+            meshDataBuffer.sizeOfHardwareBuffer = 0;
+        }
 
         if(meshDataBuffer.data == null)trace("indexBufferInstance meshDataBuffer.data is null");
         try
         {
+            if(meshData.indexCount <= meshDataBuffer.sizeOfHardwareBuffer && meshDataBuffer.bufferAlreadyOnHardware)
+            {
+                meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
+            }
+            else
+            {
+                if (meshData.indexBufferInstance != null)
+                {
+                    meshData.indexBufferInstance.dispose();
+                }
+
+                // Recreate because we need more space
+                meshData.indexBufferInstance = context3D.createIndexBuffer(meshData.indexCount);
+                meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
+                meshDataBuffer.bufferAlreadyOnHardware = true;
+            }
+
             meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
         }
         catch(er:Error)
         {
             trace(er);
+        }
+    }
+
+    public function unloadMeshData(meshData : MeshData) : Void
+    {
+        if(meshData.attributeBuffer != null)
+        {
+            if(meshData.attributeBuffer.bufferAlreadyOnHardware)
+            {
+                meshData.vertexBufferInstance.dispose();
+                meshData.attributeBuffer.bufferAlreadyOnHardware = false;
+            }
+        }
+
+        if(meshData.indexBuffer != null)
+        {
+            if(meshData.indexBuffer.bufferAlreadyOnHardware)
+            {
+                meshData.indexBufferInstance.dispose();
+                meshData.indexBuffer.bufferAlreadyOnHardware = false;
+            }
         }
     }
 
@@ -221,7 +323,7 @@ class Graphics
         for(attributeConfig in data.attributeConfigs)
         {
             context3D.setVertexBufferAt(attributeConfig.attributeNumber, data.vertexBufferInstance, headStep, getFormat(attributeConfig));
-            headStep += attributeConfig.vertexElementCount;
+            headStep += cast ((attributeConfig.vertexElementCount * DataTypeUtils.dataTypeByteSize(attributeConfig.vertexElementType)) / 4);
         }
     }
 
@@ -250,13 +352,24 @@ class Graphics
 
         var context3D:Context3D = getCurrentContext().context3D;
         if(meshData.indexBufferInstance == null)trace("meshData.indexBufferInstance is null");
-        context3D.drawTriangles(meshData.indexBufferInstance);
+
+        var numTriangles : Int = cast (meshData.indexCount / 3);
+        context3D.drawTriangles(meshData.indexBufferInstance, 0, numTriangles);
     }
 
     public function loadFilledTextureData(texture : TextureData) : Void
     {
         pushTextureData(texture);
         bindTexture(texture);
+    }
+
+    public function unloadTextureData(textureData : TextureData) : Void
+    {
+        if (textureData.texture != null)
+        {
+            textureData.texture.dispose();
+            textureData.texture = null;
+        }
     }
 
     private function checkPowerOfTwo(value : Int) :Int
@@ -291,7 +404,10 @@ class Graphics
     public function bindTextureData(texture : TextureData, position : Int) : Void
     {
         if(texture == null)
+        {
+            getCurrentContext().context3D.setTextureAt(position, null);
             return;
+        }
 
         texture.textureID = position;
 
@@ -313,7 +429,7 @@ class Graphics
     {
         if(texture.textureType == TextureType2D)
         {
-            pushTextureDataForType(texture , texture.textureID, texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
+            pushTextureDataForType(texture , texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
         }
         else
         {
@@ -332,7 +448,7 @@ class Graphics
         }
     }
 
-    private function pushTextureDataForType(textureData:TextureData, textureType : Int, textureFormat : TextureFormat, data : Data, width : Int, height : Int) :Void
+    private function pushTextureDataForType(textureData:TextureData, textureFormat : TextureFormat, data : Data, width : Int, height : Int) :Void
     {
         var context3D:Context3D = getCurrentContext().context3D;
         var texture:Texture;
@@ -345,27 +461,56 @@ class Graphics
                 texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGR_PACKED,  false );
 
             case(TextureFormatA8):
-                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.COMPRESSED_ALPHA,        false );
+                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.COMPRESSED_ALPHA,  false );
 
             case(TextureFormatRGBA8888):
-                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA,        false );
+                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA,  false );
         }
 
         textureData.texture = texture;
-        texture.uploadFromByteArray(data.byteArray, 0, 0);
+        texture.uploadFromByteArray(textureData.data.byteArray, 0, 0);
     }
 
-    private function validate(textureData:TextureData, originalWidth:Int, originlaHeight:Int):Void
+    private function validate(textureData:TextureData, originalWidth:Int, originalHeight:Int):Void
     {
         var width = checkPowerOfTwo(originalWidth);
-        var height = checkPowerOfTwo(originlaHeight);
-        if(width != originalWidth || height!=originlaHeight)
+        var height = checkPowerOfTwo(originalHeight);
+
+        if(width != originalWidth || height!=originalHeight)
         {
-            var newBmpData:BitmapData = new BitmapData(width, height, true, 0x00000000);
-            newBmpData.setPixels(new Rectangle(0, 0, originalWidth, originlaHeight), textureData.data.byteArray);
+            // Resample smaller image onto bigger
+
+            var bytesPerPixel:Int = 4;
+            var pixelCountSource:Int = cast (originalWidth * originalHeight);
+            var pixelCountDestination:Int = cast (width * height);
+            var bytesSizeTexture:Int = bytesPerPixel * pixelCountDestination;
+
+            var bytesData:Data = new Data(bytesSizeTexture);
+
+            var destinationY = 0;
+            var destinationHead = 0;
+
+            for (pixelIndex in 0...pixelCountSource)
+            {
+                var float32Head:Int = pixelIndex * bytesPerPixel;
+
+                textureData.data.offset = float32Head;
+                bytesData.offset = destinationHead;
+
+                bytesData.writeInt(textureData.data.readInt(DataTypeInt32), DataTypeInt32);
+
+                destinationHead += bytesPerPixel;
+
+                if (float32Head % (originalWidth * bytesPerPixel) == 0)
+                {
+                    destinationY++;
+                    destinationHead = destinationY * width * bytesPerPixel;
+                }
+            }
+
             textureData.originalWidth = width;
             textureData.originalHeight = height;
-            textureData.data.byteArray = newBmpData.getPixels(newBmpData.rect);
+            textureData.data = bytesData;
         }
     }
 
@@ -378,6 +523,7 @@ class Graphics
         {
             context.currentBlendFactorSrc = sourceFactor;
             context.currentBlendFactorDest = destinationFactor;
+
             context3D.setBlendFactors( getBlendFactor(sourceFactor), getBlendFactor(destinationFactor) );
         }
     }
@@ -426,6 +572,24 @@ class Graphics
         return factorValue;
     }
 
+    public function enableDepthWrite(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+        if(context.currentDepthWrite == enabled)
+            return;
+
+        var context3D:Context3D = context.context3D;
+        context3D.setDepthTest(enabled, Context3DCompareMode.LESS);
+        context.currentDepthWrite = enabled;
+    }
+
+    public function isDepthWriting() : Bool
+    {
+        var context = getCurrentContext();
+        return context.currentDepthWrite;
+    }
+
+
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
     {
         var context = getCurrentContext();
@@ -441,8 +605,8 @@ class Graphics
         var context3D:Context3D = context.context3D;
         if(renderTarget.colorTextureData != null)
         {
-            renderTarget.colorTextureData.textureID = 0;
-            loadFilledTextureData(renderTarget.colorTextureData);
+            var texture = renderTarget.colorTextureData;
+            pushTextureDataForType(texture , texture.pixelFormat, texture.data, texture.originalWidth, texture.originalHeight);
         }
         else
         {
@@ -457,9 +621,7 @@ class Graphics
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
 
-        var textureID = renderTarget.colorTextureData.textureID;
-
-        if(context.currentRenderTargetStack.first().colorTextureData.textureID != textureID)
+        if(context.currentRenderTargetStack.first() != renderTarget)
         {
             var enableDepthAndStencil = true;
             var antiAlias = 0;
@@ -480,12 +642,16 @@ class Graphics
         {
             var nextRenderTarget = context.currentRenderTargetStack.first();
 
-            var enableDepthAndStencil = true;
-            var antiAlias = 0;
-            var surfaceSelector = 0;
-
-            if(nextRenderTarget == context.defaultRenderTarget)context3D.setRenderToBackBuffer();
-            else context3D.setRenderToTexture(nextRenderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
+            if(nextRenderTarget == context.defaultRenderTarget){
+                context3D.setRenderToBackBuffer();
+            }
+            else
+            {
+                var enableDepthAndStencil = true;
+                var antiAlias = 0;
+                var surfaceSelector = 0;
+                context3D.setRenderToTexture(nextRenderTarget.colorTextureData.texture, enableDepthAndStencil, antiAlias, surfaceSelector);
+            }
         }
     }
 
@@ -507,6 +673,40 @@ class Graphics
     public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
     {
         return renderTarget.alreadyLoaded;
+    }
+
+    public function isLoadedMeshData(meshData : MeshData) : Bool
+    {
+        var attributeBuffer : Bool = false;
+        if(meshData.attributeBuffer != null)
+        {
+            attributeBuffer = isLoadedMeshDataBuffer(meshData.attributeBuffer);
+        }
+
+        var indexBuffer : Bool = false;
+        if(meshData.indexBuffer != null)
+        {
+            indexBuffer = isLoadedMeshDataBuffer(meshData.indexBuffer);
+        }
+
+        return attributeBuffer && indexBuffer;
+    }
+
+    public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool
+    {
+        if(meshDataBuffer != null)
+            return meshDataBuffer.bufferAlreadyOnHardware;
+        return false;
+    }
+
+    public function isLoadedShader(shader : Shader) : Bool
+    {
+        return shader.program != null;
+    }
+
+    public function isLoadedTextureData(textureData : TextureData) : Bool
+    {
+        return textureData.texture != null;
     }
 
     public function setClearColor(color : Color4B) : Void

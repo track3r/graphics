@@ -91,13 +91,25 @@ class Graphics
 	public function loadFilledMeshData(meshData : MeshData)
 	{
 		if(meshData == null)
-			return;
+        {
+            return;
+        }
 
-		loadFilledMeshDataBuffer(GLDefines.ARRAY_BUFFER, cast meshData.attributeBuffer);
-		loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, cast meshData.indexBuffer);
+        loadFilledVertexBuffer(meshData);
+        loadFilledIndexBuffer(meshData);
 	}
-	
-	public function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
+
+    public function loadFilledVertexBuffer(meshData : MeshData) : Void
+    {
+        loadFilledMeshDataBuffer(GLDefines.ARRAY_BUFFER, meshData.attributeBuffer);
+    }
+
+    public function loadFilledIndexBuffer(meshData : MeshData) : Void
+    {
+        loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
+    }
+
+	private function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
 	{
 		if(meshDataBuffer == null)
 			return;
@@ -110,7 +122,7 @@ class Graphics
 
 		if(meshDataBuffer.data != null)
 		{
-			if(meshDataBuffer.data.offsetLength < meshDataBuffer.sizeOfHardwareBuffer)
+			if(meshDataBuffer.data.offsetLength <= meshDataBuffer.sizeOfHardwareBuffer)
 			{
 				GL.bindBuffer(bufferType, meshDataBuffer.glBuffer);
 				GL.bufferSubData(bufferType, 0, meshDataBuffer.data);
@@ -553,13 +565,13 @@ class Graphics
 
     public function isLoadedMeshData(meshData : MeshData) : Bool
     {
-        var attributeBuffer : Bool = true;
+        var attributeBuffer : Bool = false;
         if(meshData.attributeBuffer != null)
         {
             attributeBuffer = isLoadedMeshDataBuffer(meshData.attributeBuffer);
         }
 
-        var indexBuffer : Bool = true;
+        var indexBuffer : Bool = false;
         if(meshData.indexBuffer != null)
         {
             indexBuffer = isLoadedMeshDataBuffer(meshData.indexBuffer);
@@ -585,7 +597,7 @@ class Graphics
         return textureData.alreadyLoaded;
     }
 
-    public function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void
+    private function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void
     {
         if(meshDataBuffer.bufferAlreadyOnHardware)
         {
@@ -1098,7 +1110,12 @@ class Graphics
 						  offset, 
 						  count);
 		}
-	};
+	}
+
+    public function present() : Void
+    {
+        // When we clean up lime, I asume we would have some code here.
+    }
 
 	public function bindTextureData(texture : TextureData, position : Int) : Void
 	{
@@ -1141,7 +1158,10 @@ class Graphics
         var context = getCurrentContext();
         var renderTarget = context.currentRenderTargetStack.first();
 
-        if(renderTarget.currentClearColor.r != color.r || renderTarget.currentClearColor.g != color.g ||
+        var fuckingLimeNeedsACleanUp:Bool = true;  // We can not cache this when lime/nme is taking care of the opengl state
+
+        if(fuckingLimeNeedsACleanUp == true ||
+            renderTarget.currentClearColor.r != color.r || renderTarget.currentClearColor.g != color.g ||
            renderTarget.currentClearColor.b != color.b || renderTarget.currentClearColor.a != color.a)
         {
             renderTarget.currentClearColor.data.writeData(color.data);

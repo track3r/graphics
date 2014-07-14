@@ -30,6 +30,8 @@ class GraphicsContext {
     public var currentActiveTextures = new Array<Texture>();
     public var currentActiveTexture : Int;
 
+    public var currentDepthWrite : Bool;
+
     public var currentRenderTargetStack:GenericStack<RenderTarget>;
 
     public var context3D(get_context3D, set_context3D):Context3D;
@@ -48,5 +50,6 @@ class GraphicsContext {
         currentRenderTargetStack = new GenericStack<RenderTarget>();
         defaultRenderTarget = new RenderTarget();
         currentRenderTargetStack.add(defaultRenderTarget);
+        currentDepthWrite = false;
     }
 }
