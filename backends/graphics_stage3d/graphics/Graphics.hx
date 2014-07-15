@@ -175,21 +175,22 @@ class Graphics
         var currentVertexIndex = 0;
         var currentFragmentIndex = 0;
 
+        context3D.setProgram(shader.program);
+
         for(uniformInterface in shader.uniformInterfaces)
         {
             if (uniformInterface.isVertexConstant == true)
             {
                 context3D.setProgramConstantsFromByteArray(Context3DProgramType.VERTEX, currentVertexIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
-                ++currentVertexIndex;
+                currentVertexIndex+=uniformInterface.numRegisters;
             }
             else
             {
                 context3D.setProgramConstantsFromByteArray(Context3DProgramType.FRAGMENT, currentFragmentIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
-                ++currentFragmentIndex;
+                currentFragmentIndex+=uniformInterface.numRegisters;
             }
         }
 
-        context3D.setProgram(shader.program);
     }
 
     private function compileShader(type : Context3DProgramType, code : String):ByteArray
@@ -284,8 +285,6 @@ class Graphics
                 meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
                 meshDataBuffer.bufferAlreadyOnHardware = true;
             }
-
-            meshData.indexBufferInstance.uploadFromByteArray(meshDataBuffer.data.byteArray, 0, 0, meshData.indexCount);
         }
         catch(er:Error)
         {
