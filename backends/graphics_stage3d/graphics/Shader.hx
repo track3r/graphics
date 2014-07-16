@@ -77,6 +77,7 @@ class ShaderUniformInterface
         var m14:Float;
         var m15:Float;
 
+        dataActiveCount = count;
         data.offset = 0;
         matrixData.offset = 0;
 
@@ -185,6 +186,7 @@ class ShaderUniformInterface
 
             --count;
         }
+
 
         matrixData.offset = 0;
         data.offset = 0;

@@ -1,14 +1,15 @@
 package graphics;
 
+import backends.graphics_stage3d.assembler.AGALMiniAssembler;
 import flash.display3D.Context3DCompareMode;
 import flash.display3D.Context3DProfile;
 import flash.system.Capabilities;
 import flash.display3D.Context3DRenderMode;
 import flash.geom.Rectangle;
 import flash.display.BitmapData;
+import flash.utils.ByteArray;
 import flash.display3D.Context3DTextureFormat;
 import flash.display3D.Context3DBlendFactor;
-import aglsl.assembler.AGALMiniAssembler;
 import flash.display3D.textures.Texture;
 import flash.display3D.Context3DTriangleFace;
 import flash.Vector;
@@ -40,11 +41,11 @@ import types.DataType;
 
 class Graphics
 {
-    private var assembler:AGALMiniAssembler;
     private var currentStage3DIndex:Int = 0;
     private var contextStack : GenericStack<GraphicsContext>;
-    public function new(){
-        assembler = new AGALMiniAssembler();
+
+    public function new()
+    {
         contextStack = new GenericStack<GraphicsContext>();
     }
 
@@ -193,9 +194,34 @@ class Graphics
 
     }
 
-    private function compileShader(type : Context3DProgramType, code : String):ByteArray
+    private function compileShader(programType : Context3DProgramType, source : String) : ByteArray
     {
-        return  assembler.assemble(type, code);
+        var agalMiniAssembler : AGALMiniAssembler = new AGALMiniAssembler();
+
+        var data : ByteArray;
+        var concatSource : String;
+
+        switch(programType)
+        {
+            case "vertex":
+                {
+                    concatSource = "part vertex 1 \n" + source + "endpart";
+                    agalMiniAssembler.assemble(concatSource);
+                    data = agalMiniAssembler.r.get("vertex").data;
+                }
+
+            case "fragment":
+                {
+                    concatSource = "part fragment 1 \n" + source + "endpart";
+                    agalMiniAssembler.assemble(concatSource);
+                    data = agalMiniAssembler.r.get("fragment").data;
+                }
+
+            default:
+                throw "Unknown Context3DProgramType";
+        }
+
+        return data;
     }
 
     public function loadFilledMeshData(meshData : MeshData)
