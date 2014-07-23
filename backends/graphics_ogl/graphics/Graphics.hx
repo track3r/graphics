@@ -968,7 +968,11 @@ class Graphics
                 case UniformTypeMatrix4:
                     GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
                 case UniformTypeMatrix4Transposed:
+                #if html5
+                    GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, false, uniformInterface.data);
+                #else
                     GL.uniformMatrix4fv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, true, uniformInterface.data);
+                #end
 
                 default:
 			}
