@@ -75,6 +75,7 @@ class Graphics
 
             contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
             contextWrapper.context3D.setDepthTest(false, Context3DCompareMode.LESS);
+            contextWrapper.context3D.setCulling(Context3DTriangleFace.BACK);
             sharedInstance.pushContext(contextWrapper);
             callback();
         });
@@ -759,7 +760,7 @@ class Graphics
             color.g/255,
             color.b/255,
             color.a/255,
-            1,0,0xFFFFFF);
+            1, 0x00, 0xffffffff);
     }
 }
 

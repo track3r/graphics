@@ -45,6 +45,10 @@ class Graphics
         ///clear color is black by default on webgl
         GL.clearColor(1.0, 1.0, 1.0, 1.0);
 
+        GL.cullFace(GLDefines.BACK);    // To harmonize with flash
+        GL.enable(GLDefines.CULL_FACE);  // To harmonize with flash
+        GL.frontFace(GLDefines.CW);    // To harmonize with flash
+
         callback();
     }
 
