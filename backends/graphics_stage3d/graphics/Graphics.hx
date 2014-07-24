@@ -181,18 +181,19 @@ class Graphics
 
         for(uniformInterface in shader.uniformInterfaces)
         {
-            if (uniformInterface.isVertexConstant == true)
+            switch (uniformInterface.shaderType)
             {
-                context3D.setProgramConstantsFromByteArray(Context3DProgramType.VERTEX, currentVertexIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
-                currentVertexIndex+=uniformInterface.numRegisters;
-            }
-            else
-            {
-                context3D.setProgramConstantsFromByteArray(Context3DProgramType.FRAGMENT, currentFragmentIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
-                currentFragmentIndex+=uniformInterface.numRegisters;
+                case ShaderTypeVertex:
+                    context3D.setProgramConstantsFromByteArray(Context3DProgramType.VERTEX, currentVertexIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
+                    currentVertexIndex+=uniformInterface.numRegisters;
+
+                case ShaderTypeFragment:
+                    context3D.setProgramConstantsFromByteArray(Context3DProgramType.FRAGMENT, currentFragmentIndex, uniformInterface.numRegisters, uniformInterface.data.byteArray, uniformInterface.offset);
+                    currentFragmentIndex+=uniformInterface.numRegisters;
+
+                default:
             }
         }
-
     }
 
     private function compileShader(programType : Context3DProgramType, source : String) : ByteArray

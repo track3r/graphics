@@ -26,19 +26,20 @@ class ShaderUniformInterface
 {
     public var dataCount : Int = 0;
     public var uniformType : UniformType;
+    public var shaderType : ShaderType;
 
     public var shaderVariableName : String;
 
     public var data : Data;
     public var dataActiveCount : Int = 0;
 
-
     public function new() : Void {}
 
-    public function setup(shaderVariableName : String, uniformType : UniformType, count : Int) : Void
+    public function setup(shaderVariableName : String, uniformType : UniformType, shaderType : ShaderType, count : Int = 1) : Void
     {
         this.shaderVariableName = shaderVariableName;
         this.uniformType = uniformType;
+        this.shaderType = shaderType;
         this.dataSize = GraphicsTypesUtils.uniformTypeElementSize(uniformType);
 
         //deal with flash limitations on register size
@@ -48,35 +49,9 @@ class ShaderUniformInterface
         numRegisters = Math.ceil(data.offsetLength/minRegisterSize);
     }
 
-//flash only
+/// specific to flash
     public var dataSize: Int = 0;
     public var numRegisters: Int = 0;
     public var minRegisterSize: Int = 16;
     public var offset: Int = 0;
-    public var isVertexConstant:Bool=true;
-
-
-    public function writeMatrix44Data(matrixData : Data, count:Int = 1) : Void
-    {
-        data.offset = 0;
-        matrixData.offset = 0;
-
-        dataActiveCount = count;
-        data.writeData(matrixData);
-
-        data.offset = 0;
-        matrixData.offset = 0;
-    }
-
-    public function writeMatrix33Data(matrixData : Data, count:Int = 1) : Void
-    {
-        data.offset = 0;
-        matrixData.offset = 0;
-
-        dataActiveCount = count;
-        data.writeData(matrixData);
-
-        data.offset = 0;
-        matrixData.offset = 0;
-    }
 }
