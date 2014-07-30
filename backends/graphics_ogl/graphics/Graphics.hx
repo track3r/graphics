@@ -35,20 +35,34 @@ class Graphics
         context = new GraphicsContext();
 	}
 
-    public static function initialize(callback:Void->Void)
+    public function setDefaultGraphicsState() : Void
     {
+        /// Default state to sync with all other platforms
 
-        sharedInstance = new Graphics();
+        enableBlending(true);
 
-        ///blending is not enabled by default on webgl
-        GL.enable(GLDefines.BLEND);
-        ///clear color is black by default on webgl
+        enableDepthTesting(true);  // TODO Currently not configured with Lime/NME
+        enableStencilTest(true);   // TODO Currently not configured with Lime/NME
+
+        setStencilFunc(StencilFuncAlways, 0, 255);
+        setStencilOp(StencilOpKeep,StencilOpKeep,StencilOpKeep);
+        setStencilMask(255);
+
+        setDepthFunc(DepthFuncLess);
+        enableDepthWrite(false);
+
         GL.clearColor(1.0, 1.0, 1.0, 1.0);
 
-        GL.cullFace(GLDefines.BACK);    // To harmonize with flash
-        GL.enable(GLDefines.CULL_FACE);  // To harmonize with flash
-        GL.frontFace(GLDefines.CW);    // To harmonize with flash
+        setFaceCullingMode(FaceCullingModeBack);
 
+        GL.frontFace(GLDefines.CW);
+
+        enableScissorTesting(false);
+    }
+
+    public static function initialize(callback:Void->Void)
+    {
+        sharedInstance = new Graphics();
         callback();
     }
 
@@ -681,6 +695,31 @@ class Graphics
         }
     }
 
+    public function enableBlending(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+
+        if(context.currentBlendingEnabled == enabled)
+            return;
+
+        if(enabled)
+        {
+            GL.enable(GLDefines.BLEND);
+        }
+        else
+        {
+            GL.disable(GLDefines.BLEND);
+        }
+
+        context.currentBlendingEnabled = enabled;
+    }
+
+    public function isBlending() : Bool
+    {
+        var context = getCurrentContext();
+        return context.currentBlendingEnabled;
+    }
+
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
     {
         var context = getCurrentContext();
@@ -761,27 +800,48 @@ class Graphics
         context.currentDepthTesting = enabled;
     }
 
-    public function enableDepthWrite(enabled : Bool) : Void
-    {
-        var context = getCurrentContext();
-        if(context.currentDepthWrite == enabled)
-            return;
-
-        GL.depthMask(enabled);
-        context.currentDepthWrite = enabled;
-    }
-
     public function isDepthTesting() : Bool
     {
         var context = getCurrentContext();
         return context.currentDepthTesting;
     }
 
+
+    public function enableDepthWrite(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+        if(context.depthWrite == enabled)
+            return;
+
+        GL.depthMask(enabled);
+        context.depthWrite = enabled;
+    }
+
     public function isDepthWriting() : Bool
     {
         var context = getCurrentContext();
-        return context.currentDepthWrite;
+        return context.depthWrite;
     }
+
+
+    public function setDepthFunc(depthFunc : DepthFunc) : Void
+    {
+        var context = getCurrentContext();
+
+        if (context.depthFunc == depthFunc)
+            return;
+
+        GL.depthFunc(GLUtils.convertDepthFuncToOGL(depthFunc));
+
+        context.depthFunc = depthFunc;
+    }
+
+    public function getDepthFunc() : DepthFunc
+    {
+        var context = getCurrentContext();
+        return context.depthFunc;
+    }
+
 
     public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void
     {
@@ -824,9 +884,9 @@ class Graphics
         context.currentLineWidth = lineWidth;
     }
 
-    public function setColorMask(writeRed : Bool, writeGreen : Bool, writeRed : Bool, writeAlpha : Bool) : Void
+    public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void
     {
-        GL.colorMask(writeRed, writeGreen, writeRed, writeAlpha);
+        GL.colorMask(writeRed, writeGreen, writeBlue, writeAlpha);
     }
 
     public function pushRenderTarget(renderTarget : RenderTarget) : Void
@@ -1193,24 +1253,34 @@ class Graphics
     }
     public function clearAllBuffers() : Void
     {
-        GL.clear(GLDefines.COLOR_BUFFER_BIT & GLDefines.DEPTH_BUFFER_BIT & GLDefines.STENCIL_BUFFER_BIT);
+        GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.DEPTH_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
     }
 
     public function enableStencilTest(enabled : Bool) : Void
     {
+        var context = getCurrentContext();
+
         if(enabled)
         {
-            GL.enable(GLDefines.SCISSOR_TEST);
+            GL.enable(GLDefines.STENCIL_TEST);
         }
         else
         {
-            GL.disable(GLDefines.SCISSOR_TEST);
+            GL.disable(GLDefines.STENCIL_TEST);
         }
+
+        context.stencilingEnabled = enabled;
     }
 
     public function isStencilTestEnabled() : Bool
     {
-        return GL.getParameter(GLDefines.STENCIL_TEST);
+        var context = getCurrentContext();
+        return context.stencilingEnabled;
+    }
+
+    public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
+    {
+        GL.stencilFunc(GLUtils.convertStencilFuncToOGL(stencilFunc), referenceValue, readMask);
     }
 
     public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void
@@ -1219,8 +1289,10 @@ class Graphics
                      GLUtils.convertStencilOpToOGL(depthFail),
                      GLUtils.convertStencilOpToOGL(stencilAndDepthPass));
     }
-    public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, mask : Int) : Void
+
+    public function setStencilMask(writeMask : Int) : Void
     {
-        GL.stencilFunc(GLUtils.convertStencilFuncToOGL(stencilFunc), referenceValue, mask);
+        GL.stencilMask(writeMask);
     }
+
 }

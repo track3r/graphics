@@ -1,5 +1,7 @@
 package graphics;
 
+import flash.display3D.Context3DClearMask;
+import flash.display3D.Context3DStencilAction;
 import backends.graphics_stage3d.assembler.AGALMiniAssembler;
 import flash.display3D.Context3DCompareMode;
 import flash.display3D.Context3DProfile;
@@ -49,6 +51,22 @@ class Graphics
         contextStack = new GenericStack<GraphicsContext>();
     }
 
+    public function setDefaultGraphicsState() : Void
+    {
+        // Blending is always enabled on stage3d
+        // Depth Testing is always enabled on stage3d
+
+        setDepthFunc(DepthFuncLess);
+        enableDepthWrite(false);
+        setFaceCullingMode(FaceCullingMode.FaceCullingModeBack);
+
+        // Vertex winding is always clock-wise on stage3d
+
+        enableScissorTesting(false);
+
+        enableStencilTest(true);
+    }
+
     public static function initialize(callback:Void->Void) : Void
     {
         var stage:Stage = flash.Lib.current.stage;
@@ -73,9 +91,8 @@ class Graphics
             contextWrapper.context3D = stage3D.context3D;
             contextWrapper.context3D.enableErrorChecking = isDebugBuild();
 
-            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
-            contextWrapper.context3D.setDepthTest(false, Context3DCompareMode.LESS);
-            contextWrapper.context3D.setCulling(Context3DTriangleFace.BACK);
+            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
+
             sharedInstance.pushContext(contextWrapper);
             callback();
         });
@@ -169,6 +186,96 @@ class Graphics
                 return;
             }
         }
+    }
+
+    public function enableScissorTesting(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
+
+        context.currentScissoringEnabled = enabled;
+
+        if (enabled)
+        {
+            context3D.setScissorRectangle(context.currentScissorRect);
+        }
+        else
+        {
+            context3D.setScissorRectangle(null);
+        }
+    }
+
+    public function setScissorTestRect(x : Int, y : Int, width : Int, height : Int) : Void
+    {
+        var context = getCurrentContext();
+
+        context.currentScissorRect = new Rectangle(x, (flash.Lib.current.stage.stageHeight - y) - height, width, height);  // UGLY inverting for stage3d
+
+        enableScissorTesting(context.currentScissoringEnabled);
+    }
+
+
+    public function enableStencilTest(enabled : Bool) : Void
+    {
+        var context = getCurrentContext();
+
+        context.stencilingEnabled = enabled;
+
+        updateStage3dStencilSettings();
+    }
+
+    public function isStencilTestEnabled() : Bool
+    {
+        var context = getCurrentContext();
+
+        return context.stencilingEnabled;
+    }
+
+    public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
+    {
+        var context = getCurrentContext();
+
+        context.currentStencilFunc = stencilFunc;
+        context.currentReferenceValue = referenceValue;
+        context.currentStencilReadMask = readMask;
+
+        updateStage3dStencilSettings();
+    }
+
+    public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void
+    {
+        var context = getCurrentContext();
+
+        context.currentStencilFail = stencilFail;
+        context.currentDepthFail = depthFail;
+        context.currentStencilAndDepthPass = stencilAndDepthPass;
+
+        updateStage3dStencilSettings();
+    }
+
+    public function setStencilMask(writeMask : Int) : Void
+    {
+        var context = getCurrentContext();
+
+        context.currentStencilWriteMask = writeMask;
+
+        updateStage3dStencilSettings();
+    }
+
+    private function updateStage3dStencilSettings() : Void
+    {
+        var context = getCurrentContext();
+        var context3D:Context3D = context.context3D;
+
+        context3D.setStencilReferenceValue(context.currentReferenceValue, context.currentStencilReadMask, context.currentStencilWriteMask);
+
+        var compareMode : Context3DCompareMode = Stage3dUtils.convertStencilFuncToStage3d(context.currentStencilFunc);
+
+        var actionOnBothPass : Context3DStencilAction = Stage3dUtils.convertStencilOpToStage3d(context.currentStencilAndDepthPass);
+        var actionOnDepthFail : Context3DStencilAction = Stage3dUtils.convertStencilOpToStage3d(context.currentDepthFail);
+        var actionOnDepthPassStencilFail : Context3DStencilAction = Stage3dUtils.convertStencilOpToStage3d(context.currentStencilFail);
+
+        context3D.setStencilActions(Context3DTriangleFace.FRONT_AND_BACK, compareMode, actionOnBothPass, actionOnDepthFail, actionOnDepthPassStencilFail);
     }
 
     public function bindShader(shader : Shader)
@@ -551,71 +658,63 @@ class Graphics
             context.currentBlendFactorSrc = sourceFactor;
             context.currentBlendFactorDest = destinationFactor;
 
-            context3D.setBlendFactors( getBlendFactor(sourceFactor), getBlendFactor(destinationFactor) );
+            context3D.setBlendFactors(Stage3dUtils.convertBlendFactorToStage3d(sourceFactor), Stage3dUtils.convertBlendFactorToStage3d(destinationFactor));
         }
     }
 
-    inline private function getBlendFactor(factor:BlendFactor) :Context3DBlendFactor
+    public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void
     {
-        var factorValue:Context3DBlendFactor;
+        var context = getCurrentContext();
 
-        switch(factor)
+        if(cullingMode != context.currentFaceCullingMode)
         {
-            case BlendFactorZero:
-                factorValue = Context3DBlendFactor.ZERO;
-
-            case BlendFactorOne:
-                factorValue = Context3DBlendFactor.ONE;
-
-            case BlendFactorSrcColor:
-                factorValue = Context3DBlendFactor.SOURCE_COLOR;
-
-            case BlendFactorOneMinusSrcColor:
-                factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_COLOR;
-
-            case BlendFactorSrcAlpha:
-                factorValue = Context3DBlendFactor.SOURCE_ALPHA;
-
-            case BlendFactorOneMinusSrcAlpha:
-                factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
-
-            case BlendFactorDstAlpha:
-                factorValue = Context3DBlendFactor.DESTINATION_ALPHA;
-
-            case BlendFactorOneMinusDstAlpha:
-                factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA;
-
-            case BlendFactorDstColor:
-                factorValue = Context3DBlendFactor.DESTINATION_COLOR;
-
-            case BlendFactorOneMinusDstColor:
-                factorValue = Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR;
-
-            case BlendFactorSrcAlphaSaturate:
-                //TODO
-                factorValue = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
+            context.context3D.setCulling(Stage3dUtils.convertFaceCullingModeToStage3d(cullingMode));
+            context.currentFaceCullingMode = cullingMode;
         }
+    }
 
-        return factorValue;
+    public function getFaceCullingMode() : FaceCullingMode
+    {
+        var context = getCurrentContext();
+
+        return context.currentFaceCullingMode;
     }
 
     public function enableDepthWrite(enabled : Bool) : Void
     {
         var context = getCurrentContext();
-        if(context.currentDepthWrite == enabled)
+        if(context.depthWrite == enabled)
             return;
 
         var context3D:Context3D = context.context3D;
-        context3D.setDepthTest(enabled, Context3DCompareMode.LESS);
-        context.currentDepthWrite = enabled;
+        context3D.setDepthTest(enabled, Stage3dUtils.convertDepthFuncToStage3D(context.depthFunc));
+        context.depthWrite = enabled;
     }
 
     public function isDepthWriting() : Bool
     {
         var context = getCurrentContext();
-        return context.currentDepthWrite;
+        return context.depthWrite;
     }
 
+    public function setDepthFunc(depthFunc : DepthFunc) : Void
+    {
+        var context = getCurrentContext();
+
+        if (context.depthFunc == depthFunc)
+            return;
+
+        var context3D:Context3D = context.context3D;
+        context3D.setDepthTest(context.depthWrite, Stage3dUtils.convertDepthFuncToStage3D(depthFunc));
+
+        context.depthFunc = depthFunc;
+    }
+
+    public function getDepthFunc() : DepthFunc
+    {
+        var context = getCurrentContext();
+        return context.depthFunc;
+    }
 
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
     {
@@ -736,6 +835,13 @@ class Graphics
         return textureData.texture != null;
     }
 
+    public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void
+    {
+        var context = getCurrentContext();
+
+        context.context3D.setColorMask(writeRed, writeGreen, writeBlue, writeAlpha);
+    }
+
     public function setClearColor(color : Color4B) : Void
     {
         var renderTarget:RenderTarget = getCurrentContext().currentRenderTargetStack.first();
@@ -743,7 +849,6 @@ class Graphics
         if( renderTarget.currentClearColor.r != color.r ||
         renderTarget.currentClearColor.g != color.g ||
         renderTarget.currentClearColor.b != color.b ||
-
 
         renderTarget.currentClearColor.a != color.a )
         {
@@ -754,14 +859,33 @@ class Graphics
     public function clearColorBuffer() : Void
     {
         var context = getCurrentContext();
-        var color:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
+        var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
-        context.context3D.clear(
-            color.r/255,
-            color.g/255,
-            color.b/255,
-            color.a/255,
-            1, 0x00, 0xffffffff);
+        context.context3D.clear(clearColor.r/255, clearColor.g/255, clearColor.b/255, clearColor.a/255, 1, 0x00, Context3DClearMask.COLOR);
+    }
+
+    public function clearDepthBuffer() : Void
+    {
+        var context = getCurrentContext();
+        var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
+
+        context.context3D.clear(clearColor.r/255, clearColor.g/255, clearColor.b/255, clearColor.a/255, 1, 0x00, Context3DClearMask.DEPTH);
+    }
+
+    public function clearStencilBuffer() : Void
+    {
+        var context = getCurrentContext();
+        var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
+
+        context.context3D.clear(clearColor.r/255, clearColor.g/255, clearColor.b/255, clearColor.a/255, 1, 0x00, Context3DClearMask.STENCIL);
+    }
+
+    public function clearAllBuffers() : Void
+    {
+        var context = getCurrentContext();
+        var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
+
+        context.context3D.clear(clearColor.r/255, clearColor.g/255, clearColor.b/255, clearColor.a/255, 1, 0x00, Context3DClearMask.ALL);
     }
 }
 

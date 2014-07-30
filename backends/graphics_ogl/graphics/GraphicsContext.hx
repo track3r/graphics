@@ -16,12 +16,14 @@ import haxe.ds.GenericStack;
 
 class GraphicsContext
 {
-    public var alpha : Bool;
+    public var depthWrite : Bool;
+    public var depthFunc : DepthFunc;
+
+    public var stencilingEnabled : Bool;
+
     public var antialias : Bool;
-    public var depth : Bool;
     public var premultipliedAlpha : Bool;
     public var preserveDrawingBuffer : Bool;
-    public var stencil : Bool;
 
     /// implementation specific
     public var currentShader : GLProgram;
@@ -30,6 +32,7 @@ class GraphicsContext
     public var currentActiveTexture : Int;
     public var defaultRenderTarget : RenderTarget;
     public var currentRenderTargetStack : GenericStack<RenderTarget>;
+    public var currentBlendingEnabled : Bool;
     public var currentBlendFactorSrcRGB : BlendFactor;
     public var currentBlendFactorDestRGB : BlendFactor;
     public var currentBlendFactorSrcA : BlendFactor;
@@ -37,9 +40,10 @@ class GraphicsContext
     public var currentBlendModeRGB : BlendMode;
     public var currentBlendModeA : BlendMode;
     public var currentFaceCullingMode : FaceCullingMode;
+
     public var currentLineWidth : Float;
-    public var currentDepthWrite : Bool;
-    public var currentDepthTesting : Bool;
+
+    public var currentDepthTesting : Bool = true;
 
     public function new() : Void
     {
@@ -54,7 +58,6 @@ class GraphicsContext
         currentRenderTargetStack = new GenericStack<RenderTarget>();
         currentLineWidth = 1;
         currentDepthTesting = false;
-        currentDepthWrite = true;
 
         /// TEMPORARY, this is supposed to be created with each platform specific implementation
         defaultRenderTarget = new RenderTarget();

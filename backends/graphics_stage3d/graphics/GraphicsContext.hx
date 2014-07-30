@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import flash.geom.Rectangle;
 import flash.display3D.textures.Texture;
 import flash.display3D.Context3D;
 import graphics.GraphicsTypes;
@@ -14,25 +15,39 @@ import graphics.RenderTarget;
 
 import haxe.ds.GenericStack;
 
-class GraphicsContext {
-    public var alpha:Bool;
+class GraphicsContext
+{
+    public var depthWrite : Bool;
+    public var depthFunc : DepthFunc;
+
+    public var stencilingEnabled : Bool;
+
     public var antialias:Bool;
-    public var depth:Bool;
     public var premultipliedAlpha:Bool;
     public var preserveDrawingBuffer:Bool;
-    public var stencil:Bool;
 
     public var currentBlendFactorSrc : BlendFactor;
     public var currentBlendFactorDest : BlendFactor;
-
 
     public var defaultRenderTarget : RenderTarget;
     public var currentActiveTextures = new Array<Texture>();
     public var currentActiveTexture : Int;
 
-    public var currentDepthWrite : Bool;
-
+    public var currentFaceCullingMode : FaceCullingMode;
     public var currentRenderTargetStack:GenericStack<RenderTarget>;
+
+    public var currentScissoringEnabled : Bool;
+    public var currentScissorRect : Rectangle = null;
+
+    public var currentStencilFunc : StencilFunc = StencilFuncAlways;
+    public var currentReferenceValue : Int = 0;
+    public var currentStencilReadMask : Int = 255;   // All 1111s
+    public var currentStencilWriteMask : Int = 255;   // All 1111s
+
+    public var currentStencilFail : StencilOp = StencilOpKeep;
+    public var currentDepthFail : StencilOp = StencilOpKeep;
+    public var currentStencilAndDepthPass : StencilOp = StencilOpKeep;
+
 
     public var context3D(get_context3D, set_context3D):Context3D;
     private var _context3D:Context3D;
@@ -46,10 +61,10 @@ class GraphicsContext {
         return this._context3D;
     }
 
-    public function new():Void {
+    public function new():Void
+    {
         currentRenderTargetStack = new GenericStack<RenderTarget>();
         defaultRenderTarget = new RenderTarget();
         currentRenderTargetStack.add(defaultRenderTarget);
-        currentDepthWrite = false;
     }
 }

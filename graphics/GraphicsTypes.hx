@@ -88,6 +88,18 @@ enum DepthFormat
     DepthFormat24;
 }
 
+enum DepthFunc
+{
+    DepthFuncNever;
+    DepthFuncLess;
+    DepthFuncEqual;
+    DepthFuncLEqual;
+    DepthFuncGreater;
+    DepthFuncGEqual;
+    DepthFuncNotEqual;
+    DepthFuncAlways;
+}
+
 enum StencilFormat
 {
     StencilFormat8;
