@@ -56,6 +56,8 @@ class Graphics
         // Blending is always enabled on stage3d
         // Depth Testing is always enabled on stage3d
 
+        setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
+
         setDepthFunc(DepthFuncLess);
         enableDepthWrite(false);
         setFaceCullingMode(FaceCullingMode.FaceCullingModeBack);

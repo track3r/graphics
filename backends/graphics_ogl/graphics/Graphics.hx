@@ -40,6 +40,7 @@ class Graphics
         /// Default state to sync with all other platforms
 
         enableBlending(true);
+        setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
 
         enableDepthTesting(true);  // TODO Currently not configured with Lime/NME
         enableStencilTest(true);   // TODO Currently not configured with Lime/NME
