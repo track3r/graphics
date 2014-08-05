@@ -856,7 +856,7 @@ class Graphics
             }
             else
             {
-                GL.cullFace(GLDefines.CULL_FACE);
+                GL.cullFace(GLUtils.convertFaceCullingModeToOGL(cullingMode));
 
                 if(context.currentFaceCullingMode == FaceCullingModeOff || context.currentFaceCullingMode == null)
                 {
