@@ -96,6 +96,7 @@ class Graphics
             contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
 
             sharedInstance.pushContext(contextWrapper);
+            sharedInstance.setDefaultGraphicsState();
             callback();
         });
 

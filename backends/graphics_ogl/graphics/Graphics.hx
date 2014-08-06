@@ -64,6 +64,7 @@ class Graphics
     public static function initialize(callback:Void->Void)
     {
         sharedInstance = new Graphics();
+        sharedInstance.setDefaultGraphicsState();
         callback();
     }
 
