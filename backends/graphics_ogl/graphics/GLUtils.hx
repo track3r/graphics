@@ -57,9 +57,6 @@ class GLUtils
 
 	public static function convertPrimitiveTypeToOGL(primitiveType : PrimitiveType) : Int
 	{
-        return GLDefines.TRIANGLES;
-
-           /*
 		switch (primitiveType)
         {
 			case PrimitiveTypeTriangleFan:
@@ -70,7 +67,7 @@ class GLUtils
 
 			case PrimitiveTypeTriangles:
 				return GLDefines.TRIANGLES;
-                              /*
+
 			case PrimitiveTypeLines:
 				return GLDefines.LINES;
 
@@ -86,7 +83,6 @@ class GLUtils
 			default:
 				return 0;
 		}
-*/
 	}
 
 	public static function convertTextureTypeToOGL(textureType : TextureType) : Int
@@ -103,6 +99,38 @@ class GLUtils
 				return 0;
 		}
 	}
+
+    public static function convertDepthFuncToOGL(depthFunc : DepthFunc) : Int
+    {
+        switch (depthFunc)
+        {
+            case DepthFunc.DepthFuncLess:
+                return GLDefines.LESS;
+
+            case DepthFunc.DepthFuncAlways:
+                return GLDefines.ALWAYS;
+
+            case DepthFunc.DepthFuncEqual:
+                return GLDefines.EQUAL;
+
+            case DepthFunc.DepthFuncGEqual:
+                return GLDefines.GEQUAL;
+
+            case DepthFunc.DepthFuncGreater:
+                return GLDefines.GREATER;
+
+            case DepthFunc.DepthFuncLEqual:
+                return GLDefines.LEQUAL;
+
+            case DepthFunc.DepthFuncNever:
+                return GLDefines.NEVER;
+
+            case DepthFunc.DepthFuncNotEqual:
+                return GLDefines.NOTEQUAL;
+
+            default: return GLDefines.ALWAYS;
+        }
+    }
 
     public static function convertStencilOpToOGL(stencilOp : StencilOp) : Int
     {

@@ -8,10 +8,13 @@ package graphics;
 
 extern class GraphicsContext
 {
-    public var alpha : Bool;
+    public var depthWrite : Bool;
+    public var depthFunc : DepthFunc;
+
+    public var stencilingEnabled : Bool;
+
     public var antialias : Bool;
-    public var depth : Bool;
     public var premultipliedAlpha : Bool;
     public var preserveDrawingBuffer : Bool;
-    public var stencil : Bool;
+
 }

@@ -15,6 +15,9 @@ import types.Color4B;
 extern class Graphics
 {
 	private function new() : Void;
+
+    public function setDefaultGraphicsState() : Void;
+
 	public static function instance() : Graphics;
 	public static function initialize(onInitializd:Void->Void) : Void;
 
@@ -48,29 +51,19 @@ extern class Graphics
 
     ///######## BLENDING ########
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void;
-    public function setBlendFuncSeparate(sourceFactorRGB : BlendFactor,
-                                         destinationFactorRGB : BlendFactor,
-                                         sourceFactorA : BlendFactor,
-                                         destinationFactorA : BlendFactor) : Void;
-
-    public function setBlendMode(blendMode : BlendMode) : Void;
-    public function setBlendModeSeparate(blendModeRGB : BlendMode, blendModeA : BlendMode) : Void;
 
     ///######## DEPTH TESTING ########
-    public function enableDepthTesting(enabled : Bool) : Void;
     public function enableDepthWrite(enabled : Bool) : Void;
-    public function isDepthTesting() : Bool;
     public function isDepthWriting() : Bool;
+    public function setDepthFunc(depthFunc : DepthFunc) : Void;
+    public function getDepthFunc() : DepthFunc;
 
     ///######## FACE CULLING ########
     public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void;
     public function getFaceCullingMode() : FaceCullingMode;
 
-    ///######## LINE ########
-    public function setLineWidth(lineWidth : Float) : Void;
-
     ///######## COLOR MASK ########
-    public function setColorMask(writeRed : Bool, writeGreen : Bool, writeRed : Bool, writeAlpha : Bool) : Void;
+    public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void;
 
     ///######## RENDER TARGET ########
     public function pushRenderTarget(renderTarget : RenderTarget) : Void;
@@ -101,8 +94,10 @@ extern class Graphics
     ///######## STENCIL ########
     public function enableStencilTest(enabled : Bool) : Void;
     public function isStencilTestEnabled() : Bool;
+
+    public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void;
     public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void;
-    public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, mask : Int) : Void;
+    public function setStencilMask(writeMask : Int) : Void;
 
 	public static var maxActiveTextures : Int;
 }

@@ -26,6 +26,7 @@ extern class ShaderUniformInterface
 
     public var dataCount : Int;
     public var uniformType : UniformType;
+    public var shaderType : ShaderType;  /// To which shader this Const/Uniform belongs to
 
     public var shaderVariableName : String;
 
@@ -33,9 +34,5 @@ extern class ShaderUniformInterface
     public var dataActiveCount : Int;
 
     /// helper function, creates the underlying data with the appropriate size
-    public function setup(shaderVariableName : String, uniformType : UniformType, count : Int = 1) : Void;
-
-    // Helpers differs on flash target. (Flash target transpose the matrices on write)
-    public function writeMatrix44Data(matrixData : Data, count:Int = 1) : Void;
-    public function writeMatrix33Data(matrixData : Data, count:Int = 1) : Void;
+    public function setup(shaderVariableName : String, uniformType : UniformType, shaderType : ShaderType, count : Int = 1) : Void;
 }
