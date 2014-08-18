@@ -9,6 +9,7 @@ import graphics.TextureData;
 
 import types.DataType;
 import types.Data;
+import types.Color4B;
 
 
 extern class Graphics
