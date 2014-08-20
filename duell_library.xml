@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <library>
-	
+
+    <duelllib name="types" />
+
+    <include path="backends/graphics_ogl/duell_library.xml" if="desktop" />
+    <include path="backends/graphics_ogl/duell_library.xml" if="html5" />
+    <include path="backends/graphics_ogl/duell_library.xml" if="android" />
+    <include path="backends/graphics_ogl/duell_library.xml" if="ios" />
+    <include path="backends/graphics_stage3d/duell_library.xml" if="flash" />
+
 	<platform-config>
 
 		<ios>

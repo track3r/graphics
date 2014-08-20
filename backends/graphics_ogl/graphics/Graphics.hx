@@ -16,6 +16,8 @@ import types.Data;
 
 import haxe.ds.GenericStack;
 
+import cpp.Lib;
+
 
 #if html5
 import platform.Platform;
@@ -26,11 +28,17 @@ class Graphics
 {
     private var context : GraphicsContext;
 
+    private var ios_graphics_plugin_initialize = Lib.load ("graphics", "graphics_plugin_initialize", 0);
+
 	private function new() 
 	{
         #if html5
 		GL.context = Platform.instance().lime.render.direct_renderer_handle;
 		#end
+
+
+        // Wohoo
+        ios_graphics_plugin_initialize();
 
         context = new GraphicsContext();
 	}
@@ -64,7 +72,7 @@ class Graphics
     public static function initialize(callback:Void->Void)
     {
         sharedInstance = new Graphics();
-        sharedInstance.setDefaultGraphicsState();
+       // sharedInstance.setDefaultGraphicsState();
         callback();
     }
 

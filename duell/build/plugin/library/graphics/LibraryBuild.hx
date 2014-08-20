@@ -6,6 +6,7 @@
 
 package duell.build.plugin.library.graphics;
 
+/*
 import duell.build.objects.DuellProjectXML;
 import duell.build.objects.Configuration;
 import duell.build.helpers.TemplateHelper;
@@ -21,21 +22,27 @@ import duell.objects.Haxelib;
 
 import sys.FileSystem;
 import haxe.io.Path;
+*/
 
 class LibraryBuild
 {
-	public function postParse(args : Array<String>) : Void
-	{
+    public function new ()
+    {
+        trace("Initialize Graphics Library Plugin");
+    }
 
+	public function postParse() : Void
+	{
+        trace("PostParse in Graphics");
 	}
 	
-	public function preBuild(args : Array<String>) : Void
+	public function preBuild() : Void
 	{
-
+        trace("PreBuild in Graphics");
 	}
 	
-	public function postBuild(args : Array<String>) : Void
+	public function postBuild() : Void
 	{
-
+        trace("PostBuild in Graphics");
 	}
 }

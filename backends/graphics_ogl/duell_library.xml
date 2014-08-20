@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<library>
+
+	<duelllib name="opengl" />
+
+    <ndll name="graphics_plugin" build-file-path="project/Build.xml" bin-path="ndll" />
+
+</library>

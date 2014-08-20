@@ -6,6 +6,8 @@
  */
 package graphics;
 
+import graphics.GraphicsTypes;
+
 extern class GraphicsContext
 {
     public var depthWrite : Bool;

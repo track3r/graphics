@@ -1,0 +1,39 @@
+<xml>
+	
+	<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
+	
+	<set name="mobile" value="1"/>
+	
+	<files id="src">
+		
+		<compilerflag value="-Iinclude"/>
+		
+		<file name="src/GraphicsResponder.mm"/>
+		<file name="src/ExternalInterface.mm"/>
+		
+	</files>
+	
+	<set name="name_prefix" value="lib"/>
+	<set name="ARM_ARCH" value="-v7" if="HXCPP_ARMV7"/>
+	<set name="name_extra" value=".iphoneos${ARM_ARCH}" if="iphoneos"/>
+	<set name="name_extra" value=".iphonesim" if="iphonesim"/>
+	<set name="name_extra" value="-x86" if="simulator" unless="iphonesim" />
+	<set name="tool" value="static_link"/>
+	<set name="SLIBEXT" value=".a"/>
+	<set name="ndll-tool" value="static_link"/>
+	
+	<target id="NDLL" output="${name_prefix}graphics_plugin${debug_extra}${name_extra}" tool="linker" toolid="${ndll-tool}">
+		
+		<outdir name="../ndll/${BINDIR}"/>
+		<ext value=".a"/>
+		<files id="src"/>
+		
+	</target>
+	
+	<target id="default">
+		
+		<target id="NDLL"/>
+		
+	</target>
+	
+</xml>
