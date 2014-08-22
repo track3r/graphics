@@ -2,6 +2,7 @@
 <library>
 
     <duelllib name="types" />
+    <haxelib name="msignal" />
 
     <include path="backends/graphics_ogl/duell_library.xml" if="desktop" />
     <include path="backends/graphics_ogl/duell_library.xml" if="html5" />
@@ -13,6 +14,7 @@
 
 		<ios>
 			<framework name="OpenGLES.framework" />
+            <framework name="QuartzCore.framework" />
 		</ios>
 
 	</platform-config>

@@ -1,5 +1,6 @@
 package graphics;
 
+import msignal.Signal.Signal2;
 import graphics.Graphics;
 import graphics.GraphicsContext;
 import graphics.GraphicsTypes;
@@ -14,6 +15,8 @@ import types.Color4B;
 
 extern class Graphics
 {
+    public var onDraw(default, null) : Signal2<Float,Float>;
+
 	private function new() : Void;
 
     public function setDefaultGraphicsState() : Void;

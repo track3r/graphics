@@ -10,6 +10,8 @@
 		
 		<file name="src/GraphicsResponder.mm"/>
 		<file name="src/ExternalInterface.mm"/>
+        <file name="src/GLView.mm"/>
+        <file name="src/GLViewController.mm"/>
 		
 	</files>
 	
