@@ -4,7 +4,7 @@
     <duelllib name="types" />
     <haxelib name="msignal" />
 
-    <include path="backends/graphics_ogl/duell_library.xml" if="desktop" />
+    <include path="backends/graphics_ogl/duell_library.xml" if="mac" />
     <include path="backends/graphics_ogl/duell_library.xml" if="html5" />
     <include path="backends/graphics_ogl/duell_library.xml" if="android" />
     <include path="backends/graphics_ogl/duell_library.xml" if="ios" />
@@ -13,9 +13,15 @@
 	<platform-config>
 
 		<ios>
+            <framework name="UIKit.framework" />
 			<framework name="OpenGLES.framework" />
             <framework name="QuartzCore.framework" />
 		</ios>
+
+        <macane>
+            <framework name="OpenGL.framework" />
+            <framework name="QuartzCore.framework" />
+        </macane>
 
 	</platform-config>
 	

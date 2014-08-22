@@ -3,6 +3,6 @@
 
 	<duelllib name="opengl" />
 
-    <ndll name="graphics_plugin" build-file-path="project/Build.xml" bin-path="ndll" />
+    <ndll name="graphics_plugin" build-file-path="project/Build.xml" bin-path="ndll" if="ios"/>
 
 </library>
