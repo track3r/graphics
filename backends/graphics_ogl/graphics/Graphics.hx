@@ -28,7 +28,9 @@ class Graphics
 {
     private var context : GraphicsContext;
 
+    #if !macane
     private var ios_graphics_plugin_initialize = Lib.load ("graphics", "graphics_plugin_initialize", 0);
+    #end
 
 	private function new() 
 	{
@@ -38,7 +40,9 @@ class Graphics
 
 
         // Wohoo
+        #if !macane
         ios_graphics_plugin_initialize();
+        #end
 
         context = new GraphicsContext();
 	}
@@ -262,7 +266,7 @@ class Graphics
 
 	private function compileShader(type : Int, code : String) : GLShader
 	{
-		#if desktop
+		#if mac
 		code = StringTools.replace(code, "lowp", "");
 		code = StringTools.replace(code, "mediump", "");
 		code = StringTools.replace(code, "highp", "");
