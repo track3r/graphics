@@ -98,4 +98,10 @@
     return UIInterfaceOrientationMaskAll;
 }
 
+- (void)dealloc
+{
+    [self.view release];
+    [super dealloc];
+}
+
 @end

@@ -8,18 +8,16 @@
 
 @end
 
+static UIWindow *__window;
+
 @implementation GraphicsResponder
 
 + (void) initializeGraphics
 {
-    [[UIApplication sharedApplication] delegate].window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    __window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    __window.rootViewController = [[GLViewController alloc] init];
 
-    [[UIApplication sharedApplication] delegate].window.rootViewController = [[GLViewController alloc] init];
-
-    [[[UIApplication sharedApplication] delegate].window makeKeyAndVisible];
-
-
-
+    [__window makeKeyAndVisible];
 }
 
 @end

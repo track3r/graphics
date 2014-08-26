@@ -75,6 +75,10 @@ static double GetTimeMS()
     
     double _renderTime;
     BOOL _zeroDeltaTime;
+
+
+    // HAXE
+    //AutoGCRoot *_drawCallback;
 }
 
 @end
@@ -241,8 +245,6 @@ static double GetTimeMS()
 	if (_animating)
 	{
         [_displayLink invalidate];
-        _displayLink = nil;
-
 		_animating = FALSE;
 	}
 }
@@ -265,6 +267,17 @@ static double GetTimeMS()
     // tear down context
 	if ([EAGLContext currentContext] == _context)
         [EAGLContext setCurrentContext:nil];
+
+
+    if (_displayLink != nil)
+    {
+        [_displayLink invalidate];
+    }
+
+    if (_context != nil)
+    {
+        [_context release];
+    }
 }
 
 @end

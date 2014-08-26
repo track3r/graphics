@@ -50,11 +50,11 @@ class Graphics
         enableBlending(true);
         setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
 
-        enableDepthTesting(true);  // TODO Currently not configured with Lime/NME
-        enableStencilTest(true);   // TODO Currently not configured with Lime/NME
+        enableDepthTesting(true);
+        enableStencilTest(true);
 
         setStencilFunc(StencilFuncAlways, 0, 255);
-        setStencilOp(StencilOpKeep,StencilOpKeep,StencilOpKeep);
+        setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
         setStencilMask(255);
 
         setDepthFunc(DepthFuncLess);
