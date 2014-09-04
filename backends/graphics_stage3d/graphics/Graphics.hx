@@ -31,23 +31,37 @@ import flash.events.ErrorEvent;
 import flash.events.Event;
 import flash.display3D.Context3D;
 import flash.display.Stage;
+
 import haxe.ds.GenericStack;
+
 import graphics.GraphicsTypes;
 import graphics.GraphicsContext;
 import graphics.MeshData;
 import graphics.RenderTarget;
 import graphics.Shader;
+
 import types.Data;
 import types.Color4B;
 import types.DataType;
+
+import msignal.Signal;
 
 class Graphics
 {
     private var currentStage3DIndex:Int = 0;
     private var contextStack : GenericStack<GraphicsContext>;
+    
+    public var onRender(default, null) : Signal0;
+
+    public var onMainContextSizeChanged : Signal0;
+    public var mainContextWidth(get, null) : Int;
+    public var mainContextHeight(get, null) : Int;
 
     public function new()
     {
+        onRender = new Signal0();
+        onMainContextSizeChanged = new Signal0();
+
         contextStack = new GenericStack<GraphicsContext>();
     }
 
@@ -68,6 +82,15 @@ class Graphics
 
         enableStencilTest(true);
     }
+    public function get_mainContextWidth() : Int
+    {
+        return flash.Lib.current.stage.stageWidth;
+    }
+
+    public function get_mainContextHeight() : Int
+    {
+        return flash.Lib.current.stage.stageHeight;
+    }   
 
     public static function initialize(callback:Void->Void) : Void
     {
@@ -84,7 +107,7 @@ class Graphics
         }
 
         stage3D.addEventListener( ErrorEvent.ERROR, function(event:ErrorEvent):Void{
-            throw new Error(event.toString());
+           trace(event.toString());
         });
 
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void
@@ -97,8 +120,18 @@ class Graphics
 
             sharedInstance.pushContext(contextWrapper);
             sharedInstance.setDefaultGraphicsState();
+            flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, function(event:Event) : Void{
+                    sharedInstance.onRender.dispatch();
+                });
+
             callback();
+
         });
+        
+        stage.addEventListener(Event.RESIZE, function(event : Event){
+            sharedInstance.onMainContextSizeChanged.dispatch();
+        }); 
+
 
         stage3D.requestContext3D("auto");
     }
