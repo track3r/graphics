@@ -8,6 +8,7 @@ package graphics;
 
 import gl.GL;
 import gl.GLDefines;
+import gl.GLContext;
 import graphics.GraphicsTypes;
 import haxe.ds.GenericStack;
 import graphics.RenderTarget;
@@ -40,28 +41,13 @@ class GraphicsContext
     public var currentBlendModeRGB : BlendMode;
     public var currentBlendModeA : BlendMode;
     public var currentFaceCullingMode : FaceCullingMode;
-
     public var currentLineWidth : Float;
-
     public var currentDepthTesting : Bool = true;
+
+    public var glContext : GLContext;
 
     public function new() : Void
     {
-        currentShader = GL.nullProgram;
-        var maxActiveTextures = Graphics.maxActiveTextures;
-        currentActiveTexture = maxActiveTextures + 1;
-        for(val in 0...maxActiveTextures)
-        {
-            currentActiveTextures.push(GL.nullTexture);
-        }
-
-        currentRenderTargetStack = new GenericStack<RenderTarget>();
-        currentLineWidth = 1;
-        currentDepthTesting = false;
-
-        /// TEMPORARY, this is supposed to be created with each platform specific implementation
-        defaultRenderTarget = new RenderTarget();
-        defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
-        currentRenderTargetStack.add(defaultRenderTarget);
+        ///only the main context is currently implemented fully
     }
 }

@@ -7,44 +7,47 @@ import graphics.TextureData;
 import graphics.GraphicsTypes;
 import graphics.GLUtils;
 import graphics.GraphicsContext;
+import graphics.MainGraphicsContext;
 
 import gl.GL;
 import gl.GLDefines;
+import gl.GLContext;
 
 import types.DataType;
 import types.Data;
 
 import haxe.ds.GenericStack;
 
-import cpp.Lib;
-
-
-#if html5
-import platform.Platform;
-import lime.Lime;
-#end
+import msignal.Signal;
 
 class Graphics
 {
-    private var context : GraphicsContext;
+    public var onRender(default, null) : Signal0;
 
-    #if !macane
-    private var ios_graphics_plugin_initialize = Lib.load ("graphics", "graphics_plugin_initialize", 0);
-    #end
+    private var mainContext : GraphicsContext;
+    public var onMainContextSizeChanged : Signal0;
+    public var mainContextWidth(get, null) : Int;
+    public var mainContextHeight(get, null) : Int;
 
 	private function new() 
 	{
-        #if html5
-		GL.context = Platform.instance().lime.render.direct_renderer_handle;
-		#end
+        mainContext = new MainGraphicsContext();
 
+        onRender = new Signal0();
+        onMainContextSizeChanged = new Signal0();
+        
+        GLContext.onRenderOnMainContext.add(onRender.dispatch);
+        mainContext.glContext.onContextSizeChanged.add(onMainContextSizeChanged.dispatch);
+	}
 
-        // Wohoo
-        #if !macane
-        ios_graphics_plugin_initialize();
-        #end
+	public function get_mainContextWidth() : Int
+	{
+		return mainContext.glContext.contextWidth;
+	}
 
-        context = new GraphicsContext();
+	public function get_mainContextHeight() : Int
+	{
+		return mainContext.glContext.contextHeight;
 	}
 
     public function setDefaultGraphicsState() : Void
@@ -76,7 +79,7 @@ class Graphics
     public static function initialize(callback:Void->Void)
     {
         sharedInstance = new Graphics();
-       // sharedInstance.setDefaultGraphicsState();
+
         callback();
     }
 
@@ -88,6 +91,10 @@ class Graphics
 
 	public static var maxActiveTextures = 16;
 
+    public function getMainContext() : GraphicsContext
+    {
+    	return mainContext;
+    }
 
     public function loadFilledContext(context : GraphicsContext) : Void
     {
@@ -106,8 +113,8 @@ class Graphics
 
     public function getCurrentContext() : GraphicsContext
     {
-        return context;
-
+    	/// temporary
+        return mainContext;
     }
 
     public function pushContext(context : GraphicsContext) : Void

@@ -15,7 +15,10 @@ import types.Color4B;
 
 extern class Graphics
 {
-    public var onDraw(default, null) : Signal2<Float,Float>;
+    public var onRender(default, null) : Signal0;
+    public var onMainContextSizeChanged : Signal0;
+    public var mainContextWidth(default, null) : Int;
+    public var mainContextHeight(default, null) : Int;
 
 	private function new() : Void;
 
@@ -25,6 +28,8 @@ extern class Graphics
 	public static function initialize(onInitializd:Void->Void) : Void;
 
     ///######## CONTEXT ########
+    public function getMainContext() : GraphicsContext;
+
     public function loadFilledContext(context : GraphicsContext) : Void;
     public function isLoadedContext(context : GraphicsContext) : Void;
     public function unloadFilledContext(context : GraphicsContext) : Void;

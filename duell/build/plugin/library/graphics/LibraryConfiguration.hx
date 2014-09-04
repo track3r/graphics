@@ -7,8 +7,6 @@ package duell.build.plugin.library.graphics;
 
 import haxe.io.Path;
 
-import duell.build.helpers.XCodeHelper;
-
 typedef KeyValueArray = Array<{NAME : String, VALUE : String}>;
 
 

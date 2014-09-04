@@ -10,8 +10,6 @@ import duell.build.objects.Configuration;
 
 import duell.build.plugin.library.graphics.LibraryConfiguration;
 
-import duell.build.helpers.XCodeHelper;
-
 import duell.helpers.XMLHelper;
 import duell.helpers.LogHelper;
 
