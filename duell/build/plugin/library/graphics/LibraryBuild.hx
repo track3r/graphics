@@ -28,21 +28,17 @@ class LibraryBuild
 {
     public function new ()
     {
-        trace("Initialize Graphics Library Plugin");
     }
 
 	public function postParse() : Void
 	{
-        trace("PostParse in Graphics");
 	}
 	
 	public function preBuild() : Void
 	{
-        trace("PreBuild in Graphics");
 	}
 	
 	public function postBuild() : Void
 	{
-        trace("PostBuild in Graphics");
 	}
 }
