@@ -24,7 +24,7 @@ import msignal.Signal;
 class Graphics
 {
     public var onRender(default, null) : Signal0;
-    public var onTouches : Signal1<Array<Touch>>;
+    public var onTouches(default, null) : Signal1<Array<Touch>>;
 
     private var mainContext : GraphicsContext;
 
