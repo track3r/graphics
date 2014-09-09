@@ -15,6 +15,7 @@ import gl.GLContext;
 
 import types.DataType;
 import types.Data;
+import types.Touch;
 
 import haxe.ds.GenericStack;
 
@@ -23,41 +24,32 @@ import msignal.Signal;
 class Graphics
 {
     public var onRender(default, null) : Signal0;
+    public var onTouches(default, null) : Signal1<Array<Touch>>;
 
     private var mainContext : GraphicsContext;
+
     public var onMainContextSizeChanged : Signal0;
     public var mainContextWidth(get, null) : Int;
     public var mainContextHeight(get, null) : Int;
 
 	private function new() 
 	{
+
         mainContext = new MainGraphicsContext();
-
-        onRender = new Signal0();
-        onMainContextSizeChanged = new Signal0();
-
-        #if(!macane)
-        GLContext.onRenderOnMainContext.add(onRender.dispatch);
-        mainContext.glContext.onContextSizeChanged.add(onMainContextSizeChanged.dispatch);
-        #end
+        
+        onTouches = GLContext.onTouchesOnMainContext;
+        onRender = GLContext.onRenderOnMainContext;
+        onMainContextSizeChanged = mainContext.glContext.onContextSizeChanged;
 	}
 
 	public function get_mainContextWidth() : Int
 	{
-        #if(macane)
-        return 1024;
-        #else
-        return mainContext.glContext.contextWidth;
-        #end
+		return mainContext.glContext.contextWidth;
 	}
 
 	public function get_mainContextHeight() : Int
 	{
-        #if(macane)
-        return 768;
-		#else
-        return mainContext.glContext.contextHeight;
-        #end
+		return mainContext.glContext.contextHeight;
 	}
 
     public function setDefaultGraphicsState() : Void
