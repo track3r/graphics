@@ -36,7 +36,9 @@ class Graphics
         mainContext = new MainGraphicsContext();
         
         onRender = GLContext.onRenderOnMainContext;
+		#if macane
         onMainContextSizeChanged = mainContext.glContext.onContextSizeChanged;
+		#end
 	}
 
 	public function get_mainContextWidth() : Int
