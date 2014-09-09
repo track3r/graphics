@@ -41,12 +41,20 @@ class Graphics
 
 	public function get_mainContextWidth() : Int
 	{
+		#if macane
+		return 1024;
+		#else
 		return mainContext.glContext.contextWidth;
+		#end
 	}
 
 	public function get_mainContextHeight() : Int
 	{
+		#if macane
+		return 768;
+		#else
 		return mainContext.glContext.contextHeight;
+		#end
 	}
 
     public function setDefaultGraphicsState() : Void
