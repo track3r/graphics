@@ -17,7 +17,6 @@ import types.Touch;
 extern class Graphics
 {
     public var onRender(default, null) : Signal0;
-    public var onTouches(default, null) : Signal1<Array<Touch>>;
     public var onMainContextSizeChanged : Signal0;
     public var mainContextWidth(default, null) : Int;
     public var mainContextHeight(default, null) : Int;

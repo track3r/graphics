@@ -43,7 +43,6 @@ import graphics.Shader;
 import types.Data;
 import types.Color4B;
 import types.DataType;
-import types.Touch;
 
 import msignal.Signal;
 
@@ -53,7 +52,6 @@ class Graphics
     private var contextStack : GenericStack<GraphicsContext>;
     
     public var onRender(default, null) : Signal0;
-    public var onTouches(default, null) : Signal1<Array<Touch>>;
 
     public var onMainContextSizeChanged : Signal0;
     public var mainContextWidth(get, null) : Int;
@@ -62,7 +60,6 @@ class Graphics
     public function new()
     {
         onRender = new Signal0();
-        onTouches = new Signal1();
         onMainContextSizeChanged = new Signal0();
 
         contextStack = new GenericStack<GraphicsContext>();

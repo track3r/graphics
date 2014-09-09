@@ -15,7 +15,6 @@ import gl.GLContext;
 
 import types.DataType;
 import types.Data;
-import types.Touch;
 
 import haxe.ds.GenericStack;
 
@@ -24,7 +23,6 @@ import msignal.Signal;
 class Graphics
 {
     public var onRender(default, null) : Signal0;
-    public var onTouches(default, null) : Signal1<Array<Touch>>;
 
     private var mainContext : GraphicsContext;
 
@@ -37,7 +35,6 @@ class Graphics
 
         mainContext = new MainGraphicsContext();
         
-        onTouches = GLContext.onTouchesOnMainContext;
         onRender = GLContext.onRenderOnMainContext;
         onMainContextSizeChanged = mainContext.glContext.onContextSizeChanged;
 	}
