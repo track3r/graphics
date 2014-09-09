@@ -35,8 +35,8 @@ class Graphics
 
         mainContext = new MainGraphicsContext();
         
+		#if(!macane)
         onRender = GLContext.onRenderOnMainContext;
-		#if macane
         onMainContextSizeChanged = mainContext.glContext.onContextSizeChanged;
 		#end
 	}
