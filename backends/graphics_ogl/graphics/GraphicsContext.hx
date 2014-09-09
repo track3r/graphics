@@ -8,7 +8,10 @@ package graphics;
 
 import gl.GL;
 import gl.GLDefines;
+
+#if(!macane)
 import gl.GLContext;
+#end
 import graphics.GraphicsTypes;
 import haxe.ds.GenericStack;
 import graphics.RenderTarget;
@@ -44,8 +47,9 @@ class GraphicsContext
     public var currentLineWidth : Float;
     public var currentDepthTesting : Bool = true;
 
+    #if(!macane)
     public var glContext : GLContext;
-
+    #end
     public function new() : Void
     {
         ///only the main context is currently implemented fully
