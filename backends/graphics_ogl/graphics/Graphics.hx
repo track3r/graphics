@@ -35,19 +35,29 @@ class Graphics
 
         onRender = new Signal0();
         onMainContextSizeChanged = new Signal0();
-        
+
+        #if(!macane)
         GLContext.onRenderOnMainContext.add(onRender.dispatch);
         mainContext.glContext.onContextSizeChanged.add(onMainContextSizeChanged.dispatch);
+        #end
 	}
 
 	public function get_mainContextWidth() : Int
 	{
-		return mainContext.glContext.contextWidth;
+        #if(macane)
+        return 1024;
+        #else
+        return mainContext.glContext.contextWidth;
+        #end
 	}
 
 	public function get_mainContextHeight() : Int
 	{
-		return mainContext.glContext.contextHeight;
+        #if(macane)
+        return 768;
+		#else
+        return mainContext.glContext.contextHeight;
+        #end
 	}
 
     public function setDefaultGraphicsState() : Void
