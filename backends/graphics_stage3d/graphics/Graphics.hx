@@ -122,7 +122,7 @@ class Graphics
             contextWrapper.context3D = stage3D.context3D;
             contextWrapper.context3D.enableErrorChecking = isDebugBuild();
 
-            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
+            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
 
             sharedInstance.pushContext(contextWrapper);
             sharedInstance.setDefaultGraphicsState();
