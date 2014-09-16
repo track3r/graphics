@@ -67,6 +67,8 @@ class Graphics
 
     public function setDefaultGraphicsState() : Void
     {
+        // TODO make this functionality available in the library configuration
+
         // Blending is always enabled on stage3d
         // Depth Testing is always enabled on stage3d
 
@@ -77,6 +79,10 @@ class Graphics
         setFaceCullingMode(FaceCullingMode.FaceCullingModeBack);
 
         // Vertex winding is always clock-wise on stage3d
+
+        var clearColor : Color4B = new Color4B();
+        clearColor.setRGBA(164,25,27,255);
+        setClearColor(clearColor);
 
         enableScissorTesting(false);
 
@@ -116,7 +122,7 @@ class Graphics
             contextWrapper.context3D = stage3D.context3D;
             contextWrapper.context3D.enableErrorChecking = isDebugBuild();
 
-            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
+            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 0, true, false);
 
             sharedInstance.pushContext(contextWrapper);
             sharedInstance.setDefaultGraphicsState();
@@ -885,7 +891,6 @@ class Graphics
         if( renderTarget.currentClearColor.r != color.r ||
         renderTarget.currentClearColor.g != color.g ||
         renderTarget.currentClearColor.b != color.b ||
-
         renderTarget.currentClearColor.a != color.a )
         {
             renderTarget.currentClearColor.data.writeData(color.data);
@@ -921,7 +926,7 @@ class Graphics
         var context = getCurrentContext();
         var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
-        context.context3D.clear(clearColor.r/255, clearColor.g/255, clearColor.b/255, clearColor.a/255, 1, 0x00, Context3DClearMask.ALL);
+        context.context3D.clear(clearColor.r/255.0, clearColor.g/255.0, clearColor.b/255.0, 1.0, 1, 0x00, Context3DClearMask.ALL);
     }
 }
 

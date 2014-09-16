@@ -61,6 +61,7 @@ class Graphics
 
     public function setDefaultGraphicsState() : Void
     {
+        // TODO make this functionality available in the library configuration
         /// Default state to sync with all other platforms
 
         enableBlending(true);
@@ -76,7 +77,9 @@ class Graphics
         setDepthFunc(DepthFuncLess);
         enableDepthWrite(false);
 
-        GL.clearColor(1.0, 1.0, 1.0, 1.0);
+        var clearColor : Color4B = new Color4B();
+        clearColor.setRGBA(164,25,27,255);
+        setClearColor(clearColor);
 
         setFaceCullingMode(FaceCullingModeBack);
 
@@ -88,7 +91,7 @@ class Graphics
     public static function initialize(callback:Void->Void)
     {
         sharedInstance = new Graphics();
-
+        sharedInstance.setDefaultGraphicsState();
         callback();
     }
 
@@ -1256,10 +1259,7 @@ class Graphics
         var context = getCurrentContext();
         var renderTarget = context.currentRenderTargetStack.first();
 
-        var fuckingLimeNeedsACleanUp:Bool = true;  // We can not cache this when lime/nme is taking care of the opengl state
-
-        if(fuckingLimeNeedsACleanUp == true ||
-            renderTarget.currentClearColor.r != color.r || renderTarget.currentClearColor.g != color.g ||
+        if(renderTarget.currentClearColor.r != color.r || renderTarget.currentClearColor.g != color.g ||
            renderTarget.currentClearColor.b != color.b || renderTarget.currentClearColor.a != color.a)
         {
             renderTarget.currentClearColor.data.writeData(color.data);
