@@ -33,12 +33,6 @@ class Graphics
 	private function new() 
 	{
 
-        mainContext = new MainGraphicsContext();
-        
-		#if(!macane)
-        onRender = GLContext.onRenderOnMainContext;
-        onMainContextSizeChanged = mainContext.glContext.onContextSizeChanged;
-		#end
 	}
 
 	public function get_mainContextWidth() : Int
@@ -91,8 +85,20 @@ class Graphics
     public static function initialize(callback:Void->Void)
     {
         sharedInstance = new Graphics();
-        sharedInstance.setDefaultGraphicsState();
-        callback();
+
+        sharedInstance.mainContext = new MainGraphicsContext();
+
+        cast(sharedInstance.mainContext, MainGraphicsContext).initialize(function()
+        {
+			#if(!macane)
+	        sharedInstance.onRender = GLContext.onRenderOnMainContext;
+	        sharedInstance.onMainContextSizeChanged = sharedInstance.mainContext.glContext.onContextSizeChanged;
+			#end
+
+	        sharedInstance.setDefaultGraphicsState();
+	        callback();
+        });
+        
     }
 
 	static var sharedInstance : Graphics;
@@ -1215,7 +1221,6 @@ class Graphics
 
     public function present() : Void
     {
-        // When we clean up lime, I asume we would have some code here.
     }
 
 	public function bindTextureData(texture : TextureData, position : Int) : Void

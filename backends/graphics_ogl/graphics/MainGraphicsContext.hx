@@ -22,7 +22,10 @@ class MainGraphicsContext extends GraphicsContext
     public function new() : Void
     {
         super();
-    
+    }
+
+    public function initialize(finishedCallback : Void->Void)
+    {
         currentShader = GL.nullProgram;
         var maxActiveTextures = Graphics.maxActiveTextures;
         currentActiveTexture = maxActiveTextures + 1;
@@ -36,13 +39,21 @@ class MainGraphicsContext extends GraphicsContext
         currentDepthTesting = false;
 
         #if(!macane)
-        GLContext.setupMainContext(null);
-        glContext = GLContext.getMainContext();
-        #end
+        GLContext.setupMainContext(function () {
 
-        defaultRenderTarget = new RenderTarget();
-        defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
-        currentRenderTargetStack.add(defaultRenderTarget);
+            glContext = GLContext.getMainContext();
+            defaultRenderTarget = new RenderTarget();
+            defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
+            currentRenderTargetStack.add(defaultRenderTarget);
+            finishedCallback();
+        });
+
+        #else
+            defaultRenderTarget = new RenderTarget();
+            defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
+            currentRenderTargetStack.add(defaultRenderTarget);
+            finishedCallback();
+        #end
 
     }
 }
