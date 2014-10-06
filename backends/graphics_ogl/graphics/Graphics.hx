@@ -37,21 +37,13 @@ class Graphics
 
 	public function get_mainContextWidth() : Int
 	{
-		#if macane
-		return 1024;
-		#else
 		return mainContext.glContext.contextWidth;
-		#end
 	}
 
 	public function get_mainContextHeight() : Int
 	{
-		#if macane
-		return 768;
-		#else
 		return mainContext.glContext.contextHeight;
-		#end
-	}
+    }
 
     public function setDefaultGraphicsState() : Void
     {
@@ -90,10 +82,8 @@ class Graphics
 
         cast(sharedInstance.mainContext, MainGraphicsContext).initialize(function()
         {
-			#if(!macane)
 	        sharedInstance.onRender = GLContext.onRenderOnMainContext;
 	        sharedInstance.onMainContextSizeChanged = sharedInstance.mainContext.glContext.onContextSizeChanged;
-			#end
 
 	        sharedInstance.setDefaultGraphicsState();
 	        callback();

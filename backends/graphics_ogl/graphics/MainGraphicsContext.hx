@@ -8,9 +8,7 @@ package graphics;
 
 import gl.GL;
 import gl.GLDefines;
-#if(!macane)
 import gl.GLContext;
-#end
 import graphics.GraphicsTypes;
 import haxe.ds.GenericStack;
 import graphics.RenderTarget;
@@ -37,8 +35,6 @@ class MainGraphicsContext extends GraphicsContext
         currentRenderTargetStack = new GenericStack<RenderTarget>();
         currentLineWidth = 1;
         currentDepthTesting = false;
-
-        #if(!macane)
         GLContext.setupMainContext(function () {
 
             glContext = GLContext.getMainContext();
@@ -47,13 +43,5 @@ class MainGraphicsContext extends GraphicsContext
             currentRenderTargetStack.add(defaultRenderTarget);
             finishedCallback();
         });
-
-        #else
-            defaultRenderTarget = new RenderTarget();
-            defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
-            currentRenderTargetStack.add(defaultRenderTarget);
-            finishedCallback();
-        #end
-
     }
 }
