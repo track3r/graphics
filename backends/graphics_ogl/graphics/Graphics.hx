@@ -53,15 +53,17 @@ class Graphics
         enableBlending(true);
         setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
 
-        enableDepthTesting(true);
-        enableStencilTest(true);
+        /// Depth
+        enableDepthTesting(false);
+        setDepthFunc(DepthFuncLess);
+        enableDepthWrite(false);
 
+        /// Stencil
+        enableStencilTest(true);
         setStencilFunc(StencilFuncAlways, 0, 255);
         setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
         setStencilMask(255);
 
-        setDepthFunc(DepthFuncLess);
-        enableDepthWrite(false);
 
         var clearColor : Color4B = new Color4B();
         clearColor.setRGBA(164,25,27,255);
@@ -815,8 +817,8 @@ class Graphics
     {
         var context = getCurrentContext();
 
-        if(context.currentDepthTesting == enabled)
-            return;
+       // if(context.currentDepthTesting == enabled)
+         //   return;
 
         if(enabled)
         {
@@ -839,10 +841,11 @@ class Graphics
     public function enableDepthWrite(enabled : Bool) : Void
     {
         var context = getCurrentContext();
-        if(context.depthWrite == enabled)
-            return;
+       // if(context.depthWrite == enabled)
+         //   return;
 
         GL.depthMask(enabled);
+
         context.depthWrite = enabled;
     }
 
@@ -857,8 +860,8 @@ class Graphics
     {
         var context = getCurrentContext();
 
-        if (context.depthFunc == depthFunc)
-            return;
+       // if (context.depthFunc == depthFunc)
+         //   return;
 
         GL.depthFunc(GLUtils.convertDepthFuncToOGL(depthFunc));
 
