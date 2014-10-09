@@ -629,8 +629,6 @@ class Graphics
         var context3D:Context3D = getCurrentContext().context3D;
         var texture:Texture;
 
-        validate(textureData, width, height);
-
         switch(textureFormat)
         {
             case(TextureFormatRGB565):
@@ -647,48 +645,6 @@ class Graphics
         texture.uploadFromByteArray(textureData.data.byteArray, 0, 0);
     }
 
-    private function validate(textureData:TextureData, originalWidth:Int, originalHeight:Int):Void
-    {
-        var width = checkPowerOfTwo(originalWidth);
-        var height = checkPowerOfTwo(originalHeight);
-
-        if(width != originalWidth || height!=originalHeight)
-        {
-            // Resample smaller image onto bigger
-
-            var bytesPerPixel:Int = 4;
-            var pixelCountSource:Int = cast (originalWidth * originalHeight);
-            var pixelCountDestination:Int = cast (width * height);
-            var bytesSizeTexture:Int = bytesPerPixel * pixelCountDestination;
-
-            var bytesData:Data = new Data(bytesSizeTexture);
-
-            var destinationY = 0;
-            var destinationHead = 0;
-
-            for (pixelIndex in 0...pixelCountSource)
-            {
-                var float32Head:Int = pixelIndex * bytesPerPixel;
-
-                textureData.data.offset = float32Head;
-                bytesData.offset = destinationHead;
-
-                bytesData.writeInt(textureData.data.readInt(DataTypeInt32), DataTypeInt32);
-
-                destinationHead += bytesPerPixel;
-
-                if (float32Head % (originalWidth * bytesPerPixel) == 0)
-                {
-                    destinationY++;
-                    destinationHead = destinationY * width * bytesPerPixel;
-                }
-            }
-
-            textureData.originalWidth = width;
-            textureData.originalHeight = height;
-            textureData.data = bytesData;
-        }
-    }
 
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
     {
