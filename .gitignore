@@ -1,2 +1,4 @@
 tests/Export
 backends/graphics_ogl/project/obj
+.idea/
+*.iml
