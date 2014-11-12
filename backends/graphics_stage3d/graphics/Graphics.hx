@@ -503,6 +503,19 @@ class Graphics
         }
     }
 
+    public function unbindMeshData(data : MeshData) : Void
+    {
+        var format;
+        var context3D:Context3D = getCurrentContext().context3D;
+        var headStep = 0;
+
+        for(attributeConfig in data.attributeConfigs)
+        {
+            context3D.setVertexBufferAt(attributeConfig.attributeNumber, null);
+            headStep += cast ((attributeConfig.vertexElementCount * DataTypeUtils.dataTypeByteSize(attributeConfig.vertexElementType)) / 4);
+        }
+    }
+
     inline private function getFormat(info:MeshDataAttributeConfig):Context3DVertexBufferFormat
     {
         if(info.format!=null)return info.format;

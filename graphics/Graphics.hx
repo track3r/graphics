@@ -85,6 +85,7 @@ extern class Graphics
     ///######## RENDER ########
 	public function bindShader(shader : Shader) : Void;
 	public function bindMeshData(meshData : MeshData, bakedFrame : Int) : Void;
+    public function unbindMeshData(meshData : MeshData) : Void;
 	public function bindTextureData(texture : TextureData, position : Int) : Void;
 	public function render(meshData : MeshData, bakedFrame : Int) : Void;
     public function present() : Void;
