@@ -54,9 +54,9 @@ class Graphics
         setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
 
         /// Depth
-        enableDepthTesting(false);
-        setDepthFunc(DepthFuncLess);
-        enableDepthWrite(false);
+        enableDepthTesting(true);
+        setDepthFunc(DepthFunc.DepthFuncLEqual);
+        enableDepthWrite(true);
 
         /// Stencil
         enableStencilTest(true);
@@ -66,7 +66,7 @@ class Graphics
 
 
         var clearColor : Color4B = new Color4B();
-        clearColor.setRGBA(164,25,27,255);
+        clearColor.setRGBA(255,255,255,255);
         setClearColor(clearColor);
 
         setFaceCullingMode(FaceCullingModeBack);

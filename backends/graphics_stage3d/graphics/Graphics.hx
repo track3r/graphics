@@ -74,14 +74,14 @@ class Graphics
 
         setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
 
-        setDepthFunc(DepthFuncLess);
-        enableDepthWrite(false);
+        setDepthFunc(DepthFunc.DepthFuncLEqual);
+        enableDepthWrite(true);
         setFaceCullingMode(FaceCullingMode.FaceCullingModeBack);
 
         // Vertex winding is always clock-wise on stage3d
 
         var clearColor : Color4B = new Color4B();
-        clearColor.setRGBA(164,25,27,255);
+        clearColor.setRGBA(255,255,255,255);
         setClearColor(clearColor);
 
         enableScissorTesting(false);
@@ -694,8 +694,8 @@ class Graphics
     public function enableDepthWrite(enabled : Bool) : Void
     {
         var context = getCurrentContext();
-        if(context.depthWrite == enabled)
-            return;
+       // if(context.depthWrite == enabled)
+         //   return;
 
         var context3D:Context3D = context.context3D;
         context3D.setDepthTest(enabled, Stage3dUtils.convertDepthFuncToStage3D(context.depthFunc));
@@ -712,8 +712,8 @@ class Graphics
     {
         var context = getCurrentContext();
 
-        if (context.depthFunc == depthFunc)
-            return;
+        //if (context.depthFunc == depthFunc)
+          //  return;
 
         var context3D:Context3D = context.context3D;
         context3D.setDepthTest(context.depthWrite, Stage3dUtils.convertDepthFuncToStage3D(depthFunc));
