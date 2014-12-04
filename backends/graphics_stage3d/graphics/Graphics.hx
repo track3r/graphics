@@ -595,11 +595,12 @@ class Graphics
         if(texture == null)
         {
             getCurrentContext().context3D.setTextureAt(position, null);
+            getCurrentContext().currentActiveTextures[position] = null;
             return;
         }
 
         texture.textureID = position;
-
+        activeTexture(position);
         bindTexture(texture);
     }
 
@@ -607,11 +608,28 @@ class Graphics
     {
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
+
         if(context.currentActiveTextures[context.currentActiveTexture] != texture.texture)
         {
             context.currentActiveTextures[context.currentActiveTexture] = texture.texture;
             context3D.setTextureAt(texture.textureID, texture.texture);
         }
+    }
+
+    private function activeTexture(position)
+    {
+        if(position > maxActiveTextures)
+        {
+            trace("Tried to active a texture at position " + position + ", and max active textures is " + maxActiveTextures + "!");
+            return;
+        }
+
+        var context = getCurrentContext();
+        if(position != context.currentActiveTexture)
+        {
+            context.currentActiveTexture = position;
+        }
+
     }
 
     private function pushTextureData(texture : TextureData) : Void

@@ -1252,7 +1252,6 @@ class Graphics
 		{
             context.currentActiveTexture = position;
 			GL.activeTexture(position + GLDefines.TEXTURE0);
-
 		}
 
 	}
