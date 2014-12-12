@@ -54,8 +54,9 @@ class Graphics
     public var onRender(default, null) : Signal0;
 
     public var onMainContextSizeChanged : Signal0;
-    public var mainContextWidth(get, null) : Int;
-    public var mainContextHeight(get, null) : Int;
+
+    public var mainContextWidth(default, null) : Int;
+    public var mainContextHeight(default, null) : Int;
 
     public function new()
     {
@@ -88,15 +89,6 @@ class Graphics
 
         enableStencilTest(true);
     }
-    public function get_mainContextWidth() : Int
-    {
-        return flash.Lib.current.stage.stageWidth;
-    }
-
-    public function get_mainContextHeight() : Int
-    {
-        return flash.Lib.current.stage.stageHeight;
-    }   
 
     public static function initialize(callback:Void->Void) : Void
     {
@@ -135,6 +127,8 @@ class Graphics
         });
         
         stage.addEventListener(Event.RESIZE, function(event : Event){
+            sharedInstance.mainContextWidth = stage.stageWidth;
+            sharedInstance.mainContextHeight = stage.stageHeight;
             sharedInstance.onMainContextSizeChanged.dispatch();
         }); 
 
