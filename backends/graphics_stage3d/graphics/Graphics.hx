@@ -116,17 +116,23 @@ class Graphics
 
             contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
 
+            sharedInstance.mainContextWidth = stage.stageWidth;
+            sharedInstance.mainContextHeight = stage.stageHeight;
+
             sharedInstance.pushContext(contextWrapper);
             sharedInstance.setDefaultGraphicsState();
-            flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, function(event:Event) : Void{
-                    sharedInstance.onRender.dispatch();
-                });
+
+            flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, function(event: Event): Void
+            {
+                sharedInstance.onRender.dispatch();
+            });
 
             callback();
 
         });
         
-        stage.addEventListener(Event.RESIZE, function(event : Event){
+        stage.addEventListener(Event.RESIZE, function(event : Event)
+        {
             sharedInstance.mainContextWidth = stage.stageWidth;
             sharedInstance.mainContextHeight = stage.stageHeight;
             sharedInstance.onMainContextSizeChanged.dispatch();
