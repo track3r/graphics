@@ -50,6 +50,7 @@ class Graphics
 {
     private var currentStage3DIndex:Int = 0;
     private var contextStack : GenericStack<GraphicsContext>;
+    private var initializeCallback: Void->Void;
     
     public var onRender(default, null) : Signal0;
 
@@ -104,42 +105,66 @@ class Graphics
             sharedInstance = new Graphics();
         }
 
-        stage3D.addEventListener( ErrorEvent.ERROR, function(event:ErrorEvent):Void{
-           trace(event.toString());
-        });
+        sharedInstance.initializeCallback = callback;
 
-        stage3D.addEventListener(Event.CONTEXT3D_CREATE, function (event:Event):Void
-        {
-            var contextWrapper:GraphicsContext = new GraphicsContext();
-            contextWrapper.context3D = stage3D.context3D;
-            contextWrapper.context3D.enableErrorChecking = isDebugBuild();
+        stage3D.addEventListener( ErrorEvent.ERROR, sharedInstance.onError);
 
-            contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
-
-            sharedInstance.mainContextWidth = stage.stageWidth;
-            sharedInstance.mainContextHeight = stage.stageHeight;
-
-            sharedInstance.pushContext(contextWrapper);
-            sharedInstance.setDefaultGraphicsState();
-
-            flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, function(event: Event): Void
-            {
-                sharedInstance.onRender.dispatch();
-            });
-
-            callback();
-
-        });
+        stage3D.addEventListener(Event.CONTEXT3D_CREATE, sharedInstance.onContext3DCreate);
         
-        stage.addEventListener(Event.RESIZE, function(event : Event)
-        {
-            sharedInstance.mainContextWidth = stage.stageWidth;
-            sharedInstance.mainContextHeight = stage.stageHeight;
-            sharedInstance.onMainContextSizeChanged.dispatch();
-        }); 
+        stage.addEventListener(Event.RESIZE, sharedInstance.onResize);
 
+        flash.Lib.current.addEventListener(Event.REMOVED_FROM_STAGE, sharedInstance.onRemovedFromStage); 
 
         stage3D.requestContext3D("auto");
+    }
+
+    private function onResize(event: Event): Void
+    {
+        var stage:Stage = flash.Lib.current.stage;
+        sharedInstance.mainContextWidth = stage.stageWidth;
+        sharedInstance.mainContextHeight = stage.stageHeight;
+        sharedInstance.onMainContextSizeChanged.dispatch();
+    }
+
+    private function onContext3DCreate(event: Event): Void
+    {
+        var stage:Stage = flash.Lib.current.stage;
+        var stage3D : Stage3D = stage.stage3Ds[0];
+        var contextWrapper:GraphicsContext = new GraphicsContext();
+        contextWrapper.context3D = stage3D.context3D;
+        contextWrapper.context3D.enableErrorChecking = isDebugBuild();
+
+        contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
+
+        sharedInstance.mainContextWidth = stage.stageWidth;
+        sharedInstance.mainContextHeight = stage.stageHeight;
+
+        sharedInstance.pushContext(contextWrapper);
+        sharedInstance.setDefaultGraphicsState();
+
+        flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, function(event: Event): Void
+        {
+            sharedInstance.onRender.dispatch();
+        });
+
+        initializeCallback();
+    }
+
+    private function onRemovedFromStage(event: Event): Void
+    {
+        var stage:Stage = flash.Lib.current.stage;
+        var stage3D : Stage3D = stage.stage3Ds[0];
+
+        stage3D.removeEventListener( ErrorEvent.ERROR, onError);
+
+        stage3D.removeEventListener(Event.CONTEXT3D_CREATE, onContext3DCreate);
+        
+        stage.removeEventListener(Event.RESIZE, onResize);
+    }
+
+    private function onError(event: Event): Void
+    {
+           throw event;
     }
 
     public static function isDebugBuild():Bool {
