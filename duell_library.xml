@@ -4,10 +4,7 @@
     <duelllib name="types" version="2.*.*" />
     <haxelib name="msignal" />
 
-    <include path="backends/graphics_ogl/duell_library.xml" if="mac" />
-    <include path="backends/graphics_ogl/duell_library.xml" if="html5" />
-    <include path="backends/graphics_ogl/duell_library.xml" if="android" />
-    <include path="backends/graphics_ogl/duell_library.xml" if="ios" />
+    <include path="backends/graphics_ogl/duell_library.xml" if="mac||html5||android||ios" />
     <include path="backends/graphics_stage3d/duell_library.xml" if="flash" />
 
 	<platform-config>
