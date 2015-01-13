@@ -289,6 +289,10 @@ class Graphics
     public function enableStencilTest(enabled : Bool) : Void
     {
         var context = getCurrentContext();
+        if (context.stencilingEnabled == enabled)
+        {
+            return;
+        }
 
         context.stencilingEnabled = enabled;
 
@@ -298,10 +302,9 @@ class Graphics
     public function isStencilTestEnabled() : Bool
     {
         var context = getCurrentContext();
-
-        return context.stencilingEnabled;
+        return (context.stencilingEnabled == null ? false : context.stencilingEnabled);
     }
-
+    
     public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
     {
         var context = getCurrentContext();
@@ -738,11 +741,13 @@ class Graphics
         return context.currentFaceCullingMode;
     }
 
-    public function enableDepthWrite(enabled : Bool) : Void
+    public function enableDepthWrite(enabled: Bool): Void
     {
         var context = getCurrentContext();
-       // if(context.depthWrite == enabled)
-         //   return;
+        if (context.depthWrite == enabled)
+        {
+            return;
+        }
 
         var context3D:Context3D = context.context3D;
         context3D.setDepthTest(enabled, Stage3dUtils.convertDepthFuncToStage3D(context.depthFunc));
@@ -752,7 +757,7 @@ class Graphics
     public function isDepthWriting() : Bool
     {
         var context = getCurrentContext();
-        return context.depthWrite;
+        return (context.depthWrite == null ? false : context.depthWrite);
     }
 
     public function setDepthFunc(depthFunc : DepthFunc) : Void

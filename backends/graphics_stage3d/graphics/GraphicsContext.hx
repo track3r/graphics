@@ -17,14 +17,14 @@ import haxe.ds.GenericStack;
 
 class GraphicsContext
 {
-    public var depthWrite : Bool;
+    public var depthWrite : Null<Bool> = null;
     public var depthFunc : DepthFunc;
 
-    public var stencilingEnabled : Bool;
+    public var stencilingEnabled : Null<Bool> = null;
 
-    public var antialias:Bool;
-    public var premultipliedAlpha:Bool;
-    public var preserveDrawingBuffer:Bool;
+    public var antialias: Bool;
+    public var premultipliedAlpha: Bool;
+    public var preserveDrawingBuffer: Bool;
 
     public var currentBlendFactorSrc : BlendFactor;
     public var currentBlendFactorDest : BlendFactor;

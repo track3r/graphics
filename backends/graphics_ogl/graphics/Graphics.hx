@@ -839,24 +839,24 @@ class Graphics
         return context.currentDepthTesting;
     }
 
-
-    public function enableDepthWrite(enabled : Bool) : Void
+    public function enableDepthWrite(enabled: Bool): Void
     {
         var context = getCurrentContext();
-       // if(context.depthWrite == enabled)
-         //   return;
+        if (context.depthWrite == enabled)
+        {
+        	return;
+        }
 
         GL.depthMask(enabled);
 
         context.depthWrite = enabled;
     }
 
-    public function isDepthWriting() : Bool
+    public function isDepthWriting(): Bool
     {
         var context = getCurrentContext();
-        return context.depthWrite;
+        return (context.depthWrite == null ? false : context.depthWrite);
     }
-
 
     public function setDepthFunc(depthFunc : DepthFunc) : Void
     {
@@ -1263,8 +1263,10 @@ class Graphics
         var context = getCurrentContext();
         var renderTarget = context.currentRenderTargetStack.first();
 
-        if(renderTarget.currentClearColor.r != color.r || renderTarget.currentClearColor.g != color.g ||
-           renderTarget.currentClearColor.b != color.b || renderTarget.currentClearColor.a != color.a)
+        if (renderTarget.currentClearColor.r != color.r 
+        	|| renderTarget.currentClearColor.g != color.g 
+        	|| renderTarget.currentClearColor.b != color.b
+        	|| renderTarget.currentClearColor.a != color.a)
         {
             renderTarget.currentClearColor.data.writeData(color.data);
             GL.clearColor(color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
@@ -1293,8 +1295,12 @@ class Graphics
     public function enableStencilTest(enabled : Bool) : Void
     {
         var context = getCurrentContext();
+        if (context.stencilingEnabled == enabled)
+        {
+        	return;
+        }
 
-        if(enabled)
+        if (enabled)
         {
             GL.enable(GLDefines.STENCIL_TEST);
         }
@@ -1309,7 +1315,7 @@ class Graphics
     public function isStencilTestEnabled() : Bool
     {
         var context = getCurrentContext();
-        return context.stencilingEnabled;
+        return (context.stencilingEnabled == null ? false : context.stencilingEnabled);
     }
 
     public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
