@@ -6,39 +6,38 @@
 
 package duell.build.plugin.library.graphics;
 
-/*
-import duell.build.objects.DuellProjectXML;
 import duell.build.objects.Configuration;
-import duell.build.helpers.TemplateHelper;
-import duell.build.helpers.XCodeHelper;
-
-import duell.helpers.PathHelper;
-import duell.helpers.LogHelper;
-import duell.helpers.FileHelper;
-import duell.helpers.ProcessHelper;
 
 import duell.objects.DuellLib;
-import duell.objects.Haxelib;
+import duell.helpers.TemplateHelper;
 
-import sys.FileSystem;
 import haxe.io.Path;
-*/
+
 
 class LibraryBuild
 {
     public function new ()
-    {
-    }
+    {}
 
 	public function postParse() : Void
 	{
+		if (Configuration.getData().LIBRARY.OPENGL == null)
+		{
+			Configuration.getData().LIBRARY.OPENGL = LibraryConfiguration.getData();
+		}
 	}
 	
 	public function preBuild() : Void
 	{
+        var libPath : String = DuellLib.getDuellLib("graphics").getPath();
+
+        var exportPath : String = Path.join([Configuration.getData().OUTPUT,"haxe","graphics"]);
+
+        var classSourcePath : String = Path.join([libPath,"template","graphics"]);
+
+        TemplateHelper.recursiveCopyTemplatedFiles(classSourcePath, exportPath, Configuration.getData(), Configuration.getData().TEMPLATE_FUNCTIONS);
 	}
 	
 	public function postBuild() : Void
-	{
-	}
+	{}
 }

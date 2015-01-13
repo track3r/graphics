@@ -11,7 +11,11 @@ typedef KeyValueArray = Array<{NAME : String, VALUE : String}>;
 
 
 typedef LibraryConfigurationData = {
-	DEPTH_TEST : Bool
+	DEPTH_TEST: Bool,
+	CLEAR_COLOR_R: Float,
+	CLEAR_COLOR_G: Float,
+	CLEAR_COLOR_B: Float,
+	CLEAR_COLOR_A: Float
 }
 
 class LibraryConfiguration
@@ -39,8 +43,11 @@ class LibraryConfiguration
 	{
 		_configuration = 
 		{
-			DEPTH_TEST : true
+			DEPTH_TEST: true,
+			CLEAR_COLOR_R: 0.0,
+			CLEAR_COLOR_G: 0.0,
+			CLEAR_COLOR_B: 0.0,
+			CLEAR_COLOR_A: 1.0
 		};
-
 	}
 }

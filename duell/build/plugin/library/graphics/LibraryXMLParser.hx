@@ -30,7 +30,8 @@ class LibraryXMLParser
 			{
 				case 'depth-test':
 					parseDepthTestElement(element);
-
+				case 'clear-color':
+					parseClearColorElement(element);
 			}
 		}
 	}
@@ -40,6 +41,29 @@ class LibraryXMLParser
 		if (element.has.value)
 		{
 			LibraryConfiguration.getData().DEPTH_TEST = element.att.value == "true" ? true : false;
+		}
+	}
+
+	private static function parseClearColorElement(element : Fast)
+	{
+		if (element.has.r)
+		{
+			LibraryConfiguration.getData().CLEAR_COLOR_R = Std.parseFloat(element.att.r);
+		}
+
+		if (element.has.g)
+		{
+			LibraryConfiguration.getData().CLEAR_COLOR_G = Std.parseFloat(element.att.g);
+		}
+
+		if (element.has.b)
+		{
+			LibraryConfiguration.getData().CLEAR_COLOR_B = Std.parseFloat(element.att.b);
+		}
+
+		if (element.has.a)
+		{
+			LibraryConfiguration.getData().CLEAR_COLOR_A = Std.parseFloat(element.att.a);
 		}
 	}
 

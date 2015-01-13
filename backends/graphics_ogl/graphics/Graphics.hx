@@ -8,6 +8,7 @@ import graphics.GraphicsTypes;
 import graphics.GLUtils;
 import graphics.GraphicsContext;
 import graphics.MainGraphicsContext;
+import graphics.GraphicsInitialState;
 
 import gl.GL;
 import gl.GLDefines;
@@ -22,6 +23,8 @@ import msignal.Signal;
 
 class Graphics
 {
+	public static var maxActiveTextures = 16;
+
     public var onRender(default, null) : Signal0;
 
     private var mainContext : GraphicsContext;
@@ -31,9 +34,7 @@ class Graphics
     public var mainContextHeight(get, null) : Int;
 
 	private function new() 
-	{
-
-	}
+	{}
 
 	public function get_mainContextWidth() : Int
 	{
@@ -47,7 +48,8 @@ class Graphics
 
     public function setDefaultGraphicsState() : Void
     {
-        // TODO make this functionality available in the library configuration
+        // TODO: Make all of this functionality available in the library configuration
+
         /// Default state to sync with all other platforms
 
         enableBlending(true);
@@ -64,9 +66,12 @@ class Graphics
         setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
         setStencilMask(255);
 
-
         var clearColor : Color4B = new Color4B();
-        clearColor.setRGBA(255,255,255,255);
+        clearColor.setRGBA(
+        	Std.int(GraphicsInitialState.clearColorRed * 255), 
+        	Std.int(GraphicsInitialState.clearColorGreen * 255), 
+        	Std.int(GraphicsInitialState.clearColorBlue * 255), 
+        	Std.int(GraphicsInitialState.clearColorAlpha * 255));
         setClearColor(clearColor);
 
         setFaceCullingMode(FaceCullingModeBack);
@@ -90,7 +95,6 @@ class Graphics
 	        sharedInstance.setDefaultGraphicsState();
 	        callback();
         });
-        
     }
 
 	static var sharedInstance : Graphics;
@@ -98,8 +102,6 @@ class Graphics
 	{
 		return sharedInstance;
 	}
-
-	public static var maxActiveTextures = 16;
 
     public function getMainContext() : GraphicsContext
     {

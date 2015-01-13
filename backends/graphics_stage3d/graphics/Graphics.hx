@@ -83,7 +83,11 @@ class Graphics
         // Vertex winding is always clock-wise on stage3d
 
         var clearColor : Color4B = new Color4B();
-        clearColor.setRGBA(255,255,255,255);
+        clearColor.setRGBA(
+            Std.int(GraphicsInitialState.clearColorRed * 255), 
+            Std.int(GraphicsInitialState.clearColorGreen * 255), 
+            Std.int(GraphicsInitialState.clearColorBlue * 255), 
+            Std.int(GraphicsInitialState.clearColorAlpha * 255));
         setClearColor(clearColor);
 
         enableScissorTesting(false);
