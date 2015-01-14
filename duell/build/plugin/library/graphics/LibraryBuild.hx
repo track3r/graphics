@@ -21,9 +21,9 @@ class LibraryBuild
 
 	public function postParse() : Void
 	{
-		if (Configuration.getData().LIBRARY.OPENGL == null)
+		if (Configuration.getData().LIBRARY.GRAPHICS == null)
 		{
-			Configuration.getData().LIBRARY.OPENGL = LibraryConfiguration.getData();
+			Configuration.getData().LIBRARY.GRAPHICS = LibraryConfiguration.getData();
 		}
 	}
 	

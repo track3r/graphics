@@ -44,9 +44,9 @@ class LibraryConfiguration
 		_configuration = 
 		{
 			DEPTH_TEST: true,
-			CLEAR_COLOR_R: 0.0,
-			CLEAR_COLOR_G: 0.0,
-			CLEAR_COLOR_B: 0.0,
+			CLEAR_COLOR_R: 0.5,
+			CLEAR_COLOR_G: 0.5,
+			CLEAR_COLOR_B: 0.5,
 			CLEAR_COLOR_A: 1.0
 		};
 	}
