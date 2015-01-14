@@ -40,10 +40,8 @@ class RenderTarget
         stencilRenderbufferID = GL.nullRenderbuffer;
         depthStencilRenderbufferID = GL.nullRenderbuffer;
         framebufferID = GL.nullFramebuffer;
-
-        var clearColor : Color4B = new Color4B();
-        clearColor.setRGBA(0, 0, 0, 255);
-        currentClearColor = clearColor;
+        
+        currentClearColor = new Color4B();
 
         alreadyLoaded = false;
     }

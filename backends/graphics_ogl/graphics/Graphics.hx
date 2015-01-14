@@ -73,6 +73,7 @@ class Graphics
         	Std.int(GraphicsInitialState.clearColorBlue * 255), 
         	Std.int(GraphicsInitialState.clearColorAlpha * 255));
         setClearColor(clearColor);
+        clearAllBuffers();
 
         setFaceCullingMode(FaceCullingModeBack);
 
@@ -87,14 +88,16 @@ class Graphics
 
         sharedInstance.mainContext = new MainGraphicsContext();
 
-        cast(sharedInstance.mainContext, MainGraphicsContext).initialize(function()
-        {
-	        sharedInstance.onRender = GLContext.onRenderOnMainContext;
-	        sharedInstance.onMainContextSizeChanged = sharedInstance.mainContext.glContext.onContextSizeChanged;
+         cast(sharedInstance.mainContext, MainGraphicsContext).initialize(function()
+         {
+ 	        sharedInstance.onRender = GLContext.onRenderOnMainContext;
 
-	        sharedInstance.setDefaultGraphicsState();
-	        callback();
-        });
+ 	        sharedInstance.onRender.addOnceWithPriority(function() {
+ 	        	sharedInstance.setDefaultGraphicsState();
+ 	        	sharedInstance.onMainContextSizeChanged = sharedInstance.mainContext.glContext.onContextSizeChanged;
+ 	        	callback();
+ 	        });
+ 	    });
     }
 
 	static var sharedInstance : Graphics;
