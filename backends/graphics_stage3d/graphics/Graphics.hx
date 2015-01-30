@@ -78,7 +78,7 @@ class Graphics
 
         setDepthFunc(DepthFunc.DepthFuncLEqual);
         enableDepthWrite(true);
-        setFaceCullingMode(FaceCullingMode.FaceCullingModeBack);
+        setFaceCullingMode(FaceCullingMode.FaceCullingModeOff);
 
         // Vertex winding is always clock-wise on stage3d
 

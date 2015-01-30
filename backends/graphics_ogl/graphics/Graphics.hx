@@ -75,7 +75,7 @@ class Graphics
         setClearColor(clearColor);
         clearAllBuffers();
 
-        setFaceCullingMode(FaceCullingModeBack);
+        setFaceCullingMode(FaceCullingMode.FaceCullingModeOff);
 
         GL.frontFace(GLDefines.CW);
 
