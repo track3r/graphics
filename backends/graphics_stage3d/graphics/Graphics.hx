@@ -76,8 +76,8 @@ class Graphics
 
         setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
 
-        setDepthFunc(DepthFunc.DepthFuncLEqual);
-        enableDepthWrite(true);
+        setDepthFunc(DepthFunc.DepthFuncLEqual); // This needs to be set before enable/disable
+        enableDepthWrite(false);
         setFaceCullingMode(FaceCullingMode.FaceCullingModeOff);
 
         // Vertex winding is always clock-wise on stage3d
@@ -92,7 +92,10 @@ class Graphics
 
         enableScissorTesting(false);
 
-        enableStencilTest(true);
+        enableStencilTest(false);
+        setStencilFunc(StencilFuncAlways, 0, 0xFF);
+        setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
+        setStencilMask(0xFF);
     }
 
     public static function initialize(callback:Void->Void) : Void

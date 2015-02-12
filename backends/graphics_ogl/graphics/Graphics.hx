@@ -56,15 +56,15 @@ class Graphics
         setBlendFunc(BlendFactor.BlendFactorSrcAlpha, BlendFactor.BlendFactorOneMinusSrcAlpha);
 
         /// Depth
-        enableDepthTesting(true);
         setDepthFunc(DepthFunc.DepthFuncLEqual);
-        enableDepthWrite(true);
+        enableDepthWrite(false);
+        enableDepthTesting(false);
 
         /// Stencil
-        enableStencilTest(true);
-        setStencilFunc(StencilFuncAlways, 0, 255);
+        enableStencilTest(false);
+        setStencilFunc(StencilFuncAlways, 0, 0xFF);
         setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
-        setStencilMask(255);
+        setStencilMask(0xFF);
 
         var clearColor : Color4B = new Color4B();
         clearColor.setRGBA(
@@ -75,9 +75,9 @@ class Graphics
         setClearColor(clearColor);
         clearAllBuffers();
 
-        setFaceCullingMode(FaceCullingMode.FaceCullingModeOff);
-
         GL.frontFace(GLDefines.CW);
+
+        setFaceCullingMode(FaceCullingMode.FaceCullingModeOff);
 
         enableScissorTesting(false);
     }
