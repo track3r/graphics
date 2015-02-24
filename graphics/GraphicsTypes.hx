@@ -185,7 +185,46 @@ class GraphicsTypesUtils
     static public var blendFunctionAlpha : BlendFunction = { src : BlendFactorSrcAlpha, dst : BlendFactorOneMinusSrcAlpha };
     static public var blendFunctionAlphaPremultiplied : BlendFunction = { src : BlendFactorOne, dst : BlendFactorOneMinusSrcAlpha };
     static public var blendFunctionAdditive : BlendFunction = { src : BlendFactorSrcAlpha, dst : BlendFactorOne };
-	static public function uniformTypeElementSize(uniform : UniformType)
+
+    static public function blendFactorFromDefine(define: Int): BlendFactor
+    {
+        switch (define)
+        {
+            case 0:   return BlendFactor.BlendFactorZero;                   // 0
+            case 1:   return BlendFactor.BlendFactorOne;                    // 1
+            case 768: return BlendFactor.BlendFactorSrcColor;               // 0x0300
+            case 769: return BlendFactor.BlendFactorOneMinusSrcColor;       // 0x0301
+            case 770: return BlendFactor.BlendFactorSrcAlpha;               // 0x0302
+            case 771: return BlendFactor.BlendFactorOneMinusSrcAlpha;       // 0x0303
+            case 772: return BlendFactor.BlendFactorDstAlpha;               // 0x0304
+            case 773: return BlendFactor.BlendFactorOneMinusDstAlpha;       // 0x0305
+            case 774: return BlendFactor.BlendFactorDstColor;               // 0x0306
+            case 775: return BlendFactor.BlendFactorOneMinusDstColor;       // 0x0307
+            case 776: return BlendFactor.BlendFactorSrcAlphaSaturate;       // 0x0308
+            default:  return BlendFactor.BlendFactorZero;
+        }
+    }
+
+    static public function defineFromBlendFactor(blendFactor): Int
+    {
+        switch (blendFactor)
+        {
+            case BlendFactor.BlendFactorZero:             return 0;         // 0
+            case BlendFactor.BlendFactorOne:              return 1;         // 1
+            case BlendFactor.BlendFactorSrcColor:         return 768;       // 0x0300
+            case BlendFactor.BlendFactorOneMinusSrcColor: return 769;       // 0x0301
+            case BlendFactor.BlendFactorSrcAlpha:         return 770;       // 0x0302
+            case BlendFactor.BlendFactorOneMinusSrcAlpha: return 771;       // 0x0303
+            case BlendFactor.BlendFactorDstAlpha:         return 772;       // 0x0304
+            case BlendFactor.BlendFactorOneMinusDstAlpha: return 773;       // 0x0305
+            case BlendFactor.BlendFactorDstColor:         return 774;       // 0x0306
+            case BlendFactor.BlendFactorOneMinusDstColor: return 775;       // 0x0307
+            case BlendFactor.BlendFactorSrcAlphaSaturate: return 776;       // 0x0308
+            default: return 0;
+        }
+    }
+
+    static public function uniformTypeElementSize(uniform : UniformType)
 	{
 		switch (uniform)
 		{

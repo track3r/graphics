@@ -34,9 +34,9 @@ class TextureData
     public var dataForCubeMapPositiveZ : Data;
     public var dataForCubeMapNegativeZ : Data;
 
-    public function new() : Void {}
-
     /// specific to ogl
     public var glTexture : gl.GLTexture;
     public var alreadyLoaded : Bool;
+
+    public function new() : Void {}
 }

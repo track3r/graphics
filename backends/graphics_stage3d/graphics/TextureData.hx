@@ -29,12 +29,11 @@ class TextureData
     public var dataForCubeMapPositiveZ : Data;
     public var dataForCubeMapNegativeZ : Data;
 
-    public function new() : Void {}
-
     //flash specific
     public var texture : Texture;
     public var textureID : Int;
     public var mipMapsLevel : Int = 0;
     public var format : Context3DTextureFormat;
 
+    public function new() : Void {}
 }
