@@ -172,6 +172,7 @@ class Graphics
 		{
 			meshDataBuffer.glBuffer = GL.createBuffer();
 			meshDataBuffer.sizeOfHardwareBuffer = 0;
+            meshDataBuffer.bufferAlreadyOnHardware = true;
 		}
 
 		if(meshDataBuffer.data != null)
@@ -189,7 +190,6 @@ class Graphics
 
 			}
 			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.offsetLength;
-			meshDataBuffer.bufferAlreadyOnHardware = true;
 		}
 		GL.bindBuffer(bufferType, GL.nullBuffer);
 	}
