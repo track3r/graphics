@@ -1125,9 +1125,17 @@ class Graphics
 		}
 	}
 
-	public function unbindMeshData(meshData : MeshData) : Void
+	public function unbindMeshData(data : MeshData) : Void
 	{
-		// TODO
+        if(data.attributeBuffer != null)
+        {
+            GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
+        }
+
+        if(data.indexBuffer != null)
+        {
+            GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, GL.nullBuffer);
+        }
 	}
 
 	private function enableVertexAttributes(meshData : MeshData)
@@ -1160,7 +1168,7 @@ class Graphics
 				}
 				else
 				{
-					GL.enableVertexAttribArray(i);
+					GL.disableVertexAttribArray(i);
 				}
 			}
 

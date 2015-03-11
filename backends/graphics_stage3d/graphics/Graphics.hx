@@ -577,7 +577,7 @@ class Graphics
         var context3D:Context3D = getCurrentContext().context3D;
         if(meshData.indexBufferInstance == null)trace("meshData.indexBufferInstance is null");
 
-        var numTriangles : Int = cast (meshData.indexCount / 3);
+        var numTriangles: Int = Math.floor (meshData.indexCount / 3);
         context3D.drawTriangles(meshData.indexBufferInstance, 0, numTriangles);
     }
 
