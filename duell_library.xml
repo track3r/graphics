@@ -15,11 +15,6 @@
             <framework name="QuartzCore.framework" />
 		</ios>
 
-        <macane>
-            <framework name="OpenGL.framework" />
-            <framework name="QuartzCore.framework" />
-        </macane>
-
 	</platform-config>
 	
 </library>
