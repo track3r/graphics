@@ -403,12 +403,15 @@ class Graphics
 		switch(textureFormat)
 		{
 			case(TextureFormatRGB565):
+				GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 2);
 				GL.texImage2D(textureType, 0, GLDefines.RGB, width, height, 0, GLDefines.RGB, GLDefines.UNSIGNED_SHORT_5_6_5, data);
 
 			case(TextureFormatA8):
+				GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 1);
 				GL.texImage2D(textureType, 0, GLDefines.ALPHA, width, height, 0, GLDefines.ALPHA, GLDefines.UNSIGNED_BYTE, data);
 
 			case(TextureFormatRGBA8888):
+				GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 4);
 				GL.texImage2D(textureType, 0, GLDefines.RGBA, width, height, 0, GLDefines.RGBA, GLDefines.UNSIGNED_BYTE, data);
 		}
 	}
