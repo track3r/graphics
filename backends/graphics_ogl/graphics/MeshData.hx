@@ -20,8 +20,8 @@ class MeshDataBuffer
 
     public function new() : Void {}
 
-    public var sizeOfHardwareBuffer : Int;
-    public var bufferAlreadyOnHardware : Bool;
+    public var sizeOfHardwareBuffer : Int = 0;
+    public var bufferAlreadyOnHardware : Bool = false;
 
     /// specific to ogl
     public var glBuffer : GLBuffer;
