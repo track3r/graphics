@@ -51,7 +51,7 @@ class Graphics
     private var currentStage3DIndex:Int = 0;
     private var contextStack : GenericStack<GraphicsContext>;
     private var initializeCallback: Void->Void;
-    
+
     public var onRender(default, null) : Signal0;
 
     public var onMainContextSizeChanged : Signal0;
@@ -84,9 +84,9 @@ class Graphics
 
         var clearColor : Color4B = new Color4B();
         clearColor.setRGBA(
-            Std.int(GraphicsInitialState.clearColorRed * 255), 
-            Std.int(GraphicsInitialState.clearColorGreen * 255), 
-            Std.int(GraphicsInitialState.clearColorBlue * 255), 
+            Std.int(GraphicsInitialState.clearColorRed * 255),
+            Std.int(GraphicsInitialState.clearColorGreen * 255),
+            Std.int(GraphicsInitialState.clearColorBlue * 255),
             Std.int(GraphicsInitialState.clearColorAlpha * 255));
         setClearColor(clearColor);
 
@@ -117,12 +117,12 @@ class Graphics
         stage3D.addEventListener( ErrorEvent.ERROR, sharedInstance.onError);
 
         stage3D.addEventListener(Event.CONTEXT3D_CREATE, sharedInstance.onContext3DCreate);
-        
+
         stage.addEventListener(Event.RESIZE, sharedInstance.onResize);
 
-        flash.Lib.current.addEventListener(Event.REMOVED_FROM_STAGE, sharedInstance.onRemovedFromStage); 
+        flash.Lib.current.addEventListener(Event.REMOVED_FROM_STAGE, sharedInstance.onRemovedFromStage);
 
-        stage3D.requestContext3D("auto");
+        stage3D.requestContext3D(flash.display3D.Context3DRenderMode.AUTO);
     }
 
     private function onResize(event: Event): Void
@@ -165,7 +165,7 @@ class Graphics
         stage3D.removeEventListener( ErrorEvent.ERROR, onError);
 
         stage3D.removeEventListener(Event.CONTEXT3D_CREATE, onContext3DCreate);
-        
+
         stage.removeEventListener(Event.RESIZE, onResize);
     }
 
@@ -307,7 +307,7 @@ class Graphics
         var context = getCurrentContext();
         return (context.stencilingEnabled == null ? false : context.stencilingEnabled);
     }
-    
+
     public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
     {
         var context = getCurrentContext();
@@ -953,4 +953,3 @@ class Graphics
         context.context3D.clear(clearColor.r/255.0, clearColor.g/255.0, clearColor.b/255.0, 1.0, 1, 0x00, Context3DClearMask.ALL);
     }
 }
-
