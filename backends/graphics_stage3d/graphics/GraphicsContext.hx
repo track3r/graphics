@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import flash.display3D.textures.TextureBase;
 import flash.geom.Rectangle;
 import flash.display3D.textures.Texture;
 import flash.display3D.Context3D;
@@ -32,7 +33,7 @@ class GraphicsContext
     public var currentBlendFactorDest : BlendFactor;
 
     public var defaultRenderTarget : RenderTarget;
-    public var currentActiveTextures = new Array<Texture>();
+    public var currentActiveTextures = new Array<TextureBase>();
     public var currentActiveTexture : Int;
 
     public var currentFaceCullingMode : FaceCullingMode;

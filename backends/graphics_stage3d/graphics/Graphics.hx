@@ -1,5 +1,11 @@
 package graphics;
 
+import flash.display3D.Context3DMipFilter;
+import flash.display3D.Context3DMipFilter;
+import flash.display3D.Context3DTextureFilter;
+import flash.display3D.Context3DWrapMode;
+import flash.display3D.textures.RectangleTexture;
+import flash.display3D.textures.TextureBase;
 import flash.display3D.Context3DClearMask;
 import flash.display3D.Context3DStencilAction;
 import backends.graphics_stage3d.assembler.AGALMiniAssembler;
@@ -124,7 +130,8 @@ class Graphics
 
         flash.Lib.current.addEventListener(Event.REMOVED_FROM_STAGE, sharedInstance.onRemovedFromStage);
 
-        stage3D.requestContext3D(flash.display3D.Context3DRenderMode.AUTO);
+        // TODO make settings configurable
+        stage3D.requestContext3D(flash.display3D.Context3DRenderMode.AUTO, flash.display3D.Context3DProfile.BASELINE_EXTENDED);
     }
 
     private function onResize(event: Event): Void
@@ -684,6 +691,9 @@ class Graphics
         {
             context.currentActiveTexture = position;
         }
+
+        // Todo get settings from texture
+        context.context3D.setSamplerStateAt(position, Context3DWrapMode.CLAMP, Context3DTextureFilter.LINEAR, Context3DMipFilter.MIPNONE);
     }
 
     private function pushTextureData(texture : TextureData) : Void
@@ -709,25 +719,52 @@ class Graphics
         }
     }
 
-    private function pushTextureDataForType(textureData:TextureData, textureFormat : TextureFormat, data : Data, width : Int, height : Int) :Void
+    private function pushTextureDataForType(textureData:TextureData, textureFormat : TextureFormat, data : Data, width : Int, height : Int, optimizeForRenderToTexture: Bool = false) :Void
     {
         var context3D:Context3D = getCurrentContext().context3D;
-        var texture:Texture;
 
-        switch(textureFormat)
+        var isPot: Bool = isPowerOfTwo(width) && isPowerOfTwo(height);
+
+        if (isPot)
         {
-            case(TextureFormatRGB565):
-                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGR_PACKED,  false );
+            var potTexture: Texture;
 
-            case(TextureFormatA8):
-                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.COMPRESSED_ALPHA,  false );
+            switch(textureFormat)
+            {
+                case(TextureFormatRGB565):
+                    potTexture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGR_PACKED, optimizeForRenderToTexture);
 
-            case(TextureFormatRGBA8888):
-                texture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA,  false );
+                case(TextureFormatA8):
+                    potTexture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.COMPRESSED_ALPHA, optimizeForRenderToTexture);
+
+                case(TextureFormatRGBA8888):
+                    potTexture = context3D.createTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA, optimizeForRenderToTexture);
+            }
+
+            textureData.texture = potTexture;
+            potTexture.uploadFromByteArray(textureData.data.byteArray, 0, 0);
         }
+        else
+        {
+            var nPotTexture: RectangleTexture;
 
-        textureData.texture = texture;
-        texture.uploadFromByteArray(textureData.data.byteArray, 0, 0);
+            switch(textureFormat)
+            {
+                case(TextureFormatRGB565):
+                    nPotTexture = context3D.createRectangleTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGR_PACKED, optimizeForRenderToTexture);
+
+                case(TextureFormatA8):
+                    textureData.texture = null;
+                    trace("Alpha mask textures are not allowed to have non power of two size dimension on flash. No texture was created");
+                    return;
+
+                case(TextureFormatRGBA8888):
+                    nPotTexture = context3D.createRectangleTexture( textureData.originalWidth, textureData.originalHeight, Context3DTextureFormat.BGRA, optimizeForRenderToTexture);
+            }
+
+            textureData.texture = nPotTexture;
+            nPotTexture.uploadFromByteArray(textureData.data.byteArray, 0);
+        }
     }
 
 

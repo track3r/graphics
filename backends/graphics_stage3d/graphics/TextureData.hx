@@ -1,7 +1,7 @@
 package graphics;
 
+import flash.display3D.textures.TextureBase;
 import flash.display3D.Context3DTextureFormat;
-import flash.display3D.textures.Texture;
 import graphics.GraphicsTypes;
 
 import types.Data;
@@ -30,7 +30,8 @@ class TextureData
     public var dataForCubeMapNegativeZ : Data;
 
     //flash specific
-    public var texture : Texture;
+
+    public var texture : TextureBase;
     public var textureID : Int;
     public var mipMapsLevel : Int = 0;
     public var format : Context3DTextureFormat;

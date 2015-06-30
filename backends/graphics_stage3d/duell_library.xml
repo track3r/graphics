@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <library xmlns="duell">
+
+    <haxe-compile-arg value="-swf-version 11.8" />
+
 	<platform-config>
 		<flash>
 			<win-param key="wmode" value="direct" />
 		</flash>
 	</platform-config>
+
 </library>
