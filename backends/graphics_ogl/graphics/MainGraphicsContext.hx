@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import graphics.GraphicsContext;
 import gl.GL;
 import gl.GLDefines;
 import gl.GLContext;
@@ -25,8 +26,9 @@ class MainGraphicsContext extends GraphicsContext
     public function initialize(finishedCallback : Void->Void)
     {
         currentShader = GL.nullProgram;
-        var maxActiveTextures = Graphics.maxActiveTextures;
+        var maxActiveTextures = GraphicsContext.maxActiveTextures;
         currentActiveTexture = maxActiveTextures + 1;
+
         for(val in 0...maxActiveTextures)
         {
             currentActiveTextures.push(GL.nullTexture);

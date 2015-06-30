@@ -17,6 +17,8 @@ import haxe.ds.GenericStack;
 
 class GraphicsContext
 {
+    static public var maxActiveTextures = 16;
+
     public var depthWrite : Null<Bool> = null;
     public var depthFunc : DepthFunc;
 
@@ -41,11 +43,26 @@ class GraphicsContext
     public var currentBlendModeRGB : BlendMode;
     public var currentBlendModeA : BlendMode;
     public var currentFaceCullingMode : FaceCullingMode;
-    public var currentLineWidth : Float;
+    public var currentLineWidth : Float = 1.0;
     public var currentDepthTesting : Bool = true;
     public var glContext : GLContext;
+
     public function new() : Void
     {
         ///only the main context is currently implemented fully
+    }
+
+    public function invalidateCaches(): Void
+    {
+        currentAttributeFlags = 0;
+
+        currentLineWidth = 1.0;
+        currentActiveTexture = maxActiveTextures + 1;
+        currentShader = GL.nullProgram;
+
+        for (i in 0...maxActiveTextures)
+        {
+            currentActiveTextures[i] = GL.nullTexture;
+        }
     }
 }

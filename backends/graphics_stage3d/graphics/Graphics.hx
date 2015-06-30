@@ -54,6 +54,7 @@ class Graphics
 
     public var onRender(default, null) : Signal0;
 
+    public var onMainContextRecreated : Signal0;
     public var onMainContextSizeChanged : Signal0;
 
     public var mainContextWidth(default, null) : Int;
@@ -63,6 +64,7 @@ class Graphics
     {
         onRender = new Signal0();
         onMainContextSizeChanged = new Signal0();
+        onMainContextRecreated = new Signal0();
 
         contextStack = new GenericStack<GraphicsContext>();
     }
@@ -137,24 +139,42 @@ class Graphics
     {
         var stage:Stage = flash.Lib.current.stage;
         var stage3D : Stage3D = stage.stage3Ds[0];
-        var contextWrapper:GraphicsContext = new GraphicsContext();
-        contextWrapper.context3D = stage3D.context3D;
-        contextWrapper.context3D.enableErrorChecking = isDebugBuild();
 
-        contextWrapper.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
+        var context3D: Context3D = stage3D.context3D;
 
-        sharedInstance.mainContextWidth = stage.stageWidth;
-        sharedInstance.mainContextHeight = stage.stageHeight;
+        var oldGraphicsContext: GraphicsContext = getCurrentContext();
 
-        sharedInstance.pushContext(contextWrapper);
-        sharedInstance.setDefaultGraphicsState();
-
-        flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, function(event: Event): Void
+        if (oldGraphicsContext == null)   // Very first context creation
         {
-            sharedInstance.onRender.dispatch();
-        });
+            var graphicsContext: GraphicsContext = new GraphicsContext();
+            graphicsContext.context3D = context3D;
+            graphicsContext.context3D.enableErrorChecking = isDebugBuild();
 
-        initializeCallback();
+            graphicsContext.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
+
+            sharedInstance.mainContextWidth = stage.stageWidth;
+            sharedInstance.mainContextHeight = stage.stageHeight;
+
+            sharedInstance.pushContext(graphicsContext);
+            sharedInstance.setDefaultGraphicsState();
+
+            flash.Lib.current.stage.addEventListener(Event.ENTER_FRAME, function(event: Event): Void
+            {
+                sharedInstance.onRender.dispatch();
+            });
+
+            initializeCallback();
+        }
+        else    // There was a context recreation
+        {
+            oldGraphicsContext.context3D = context3D;
+            oldGraphicsContext.context3D.configureBackBuffer(stage.stageWidth, stage.stageHeight, 2, true, false);
+            sharedInstance.mainContextWidth = stage.stageWidth;
+            sharedInstance.mainContextHeight = stage.stageHeight;
+            sharedInstance.setDefaultGraphicsState();
+
+            sharedInstance.onMainContextRecreated.dispatch();
+        }
     }
 
     private function onRemovedFromStage(event: Event): Void
@@ -211,9 +231,9 @@ class Graphics
         contextStack.add(context);
     }
 
-    public function popContext(context : GraphicsContext) : Void
+    public function popContext() : GraphicsContext
     {
-        contextStack.pop();
+        return contextStack.pop();
     }
 
     public function present() : Void
@@ -221,7 +241,6 @@ class Graphics
         getCurrentContext().context3D.present();
     }
 
-    public static var maxActiveTextures = 16;
     public function loadFilledShader(shader : Shader)
     {
         var vs = compileShader(Context3DProgramType.VERTEX, shader.vertexShaderCode);
@@ -653,18 +672,18 @@ class Graphics
 
     private function activeTexture(position)
     {
-        if(position > maxActiveTextures)
+        var context = getCurrentContext();
+
+        if(position > GraphicsContext.maxActiveTextures)
         {
-            trace("Tried to active a texture at position " + position + ", and max active textures is " + maxActiveTextures + "!");
+            trace("Tried to active a texture at position " + position + ", and max active textures is " + GraphicsContext.maxActiveTextures + "!");
             return;
         }
 
-        var context = getCurrentContext();
         if(position != context.currentActiveTexture)
         {
             context.currentActiveTexture = position;
         }
-
     }
 
     private function pushTextureData(texture : TextureData) : Void
@@ -951,5 +970,15 @@ class Graphics
         var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
         context.context3D.clear(clearColor.r/255.0, clearColor.g/255.0, clearColor.b/255.0, 1.0, 1, 0x00, Context3DClearMask.ALL);
+    }
+
+    public function finishCommandPipeline() : Void
+    {
+        // Nothing in Stage3D
+    }
+
+    public function flushCommandPipeline() : Void
+    {
+        // Nothing in Stage3D
     }
 }

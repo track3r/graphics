@@ -17,6 +17,8 @@ import haxe.ds.GenericStack;
 
 class GraphicsContext
 {
+    static public var maxActiveTextures = 16;
+
     public var depthWrite : Null<Bool> = null;
     public var depthFunc : DepthFunc;
 
@@ -66,5 +68,15 @@ class GraphicsContext
         currentRenderTargetStack = new GenericStack<RenderTarget>();
         defaultRenderTarget = new RenderTarget();
         currentRenderTargetStack.add(defaultRenderTarget);
+    }
+
+    public function invalidateCaches(): Void
+    {
+        currentActiveTexture = maxActiveTextures + 1;
+
+        for (i in 0...maxActiveTextures)
+        {
+            currentActiveTextures[i] = null;
+        }
     }
 }

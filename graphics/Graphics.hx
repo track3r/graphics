@@ -18,6 +18,9 @@ extern class Graphics
 {
     public var onRender(default, null) : Signal0;
     public var onMainContextSizeChanged : Signal0;
+
+    // Context was lost, so you need to recreate all you graphic objects and invalidate all state caches
+    public var onMainContextRecreated : Signal0;
     public var mainContextWidth(default, null) : Int;
     public var mainContextHeight(default, null) : Int;
 
@@ -37,7 +40,7 @@ extern class Graphics
 
     public function getCurrentContext() : GraphicsContext;
     public function pushContext(context : GraphicsContext) : Void;
-    public function popContext(context : GraphicsContext) : Void;
+    public function popContext() : GraphicsContext;
 
     ///######## LOAD ########
 	public function loadFilledMeshData(meshData : MeshData) : Void;

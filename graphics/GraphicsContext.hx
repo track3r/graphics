@@ -18,4 +18,6 @@ extern class GraphicsContext
     public var antialias: Bool;
     public var premultipliedAlpha: Bool;
     public var preserveDrawingBuffer: Bool;
+
+    public function invalidateCaches(): Void;
 }    

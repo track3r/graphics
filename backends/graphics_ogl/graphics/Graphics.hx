@@ -1,5 +1,6 @@
 package graphics;
 
+import graphics.GraphicsContext;
 import types.Color4B;
 import graphics.MeshData;
 import graphics.Shader;
@@ -23,12 +24,11 @@ import msignal.Signal;
 
 class Graphics
 {
-	public static var maxActiveTextures = 16;
-
     public var onRender(default, null) : Signal0;
 
     private var mainContext : GraphicsContext;
 
+    public var onMainContextRecreated : Signal0;
     public var onMainContextSizeChanged : Signal0;
     public var mainContextWidth(get, null) : Int;
     public var mainContextHeight(get, null) : Int;
@@ -95,6 +95,7 @@ class Graphics
  	        sharedInstance.onRender.addOnceWithPriority(function() {
  	        	sharedInstance.setDefaultGraphicsState();
  	        	sharedInstance.onMainContextSizeChanged = sharedInstance.mainContext.glContext.onContextSizeChanged;
+                sharedInstance.onMainContextRecreated = sharedInstance.mainContext.glContext.onContextRecreated;
  	        	callback();
  	        });
  	    });
@@ -137,9 +138,9 @@ class Graphics
 
     }
 
-    public function popContext(context : GraphicsContext) : Void
+    public function popContext() : GraphicsContext
     {
-
+        return null;
     }
 
 	public function loadFilledMeshData(meshData : MeshData)
@@ -1257,13 +1258,14 @@ class Graphics
 
 	private function activeTexture(position)
 	{
-		if(position > maxActiveTextures)
+        var context = getCurrentContext();
+
+		if(position > GraphicsContext.maxActiveTextures)
 		{
-			trace("Tried to active a texture at position " + position + ", and max active textures is " + maxActiveTextures + "!");
+			trace("Tried to active a texture at position " + position + ", and max active textures is " + GraphicsContext.maxActiveTextures + "!");
 			return;
 		}
 
-        var context = getCurrentContext();
 		if(position != context.currentActiveTexture)
 		{
             context.currentActiveTexture = position;
@@ -1304,6 +1306,16 @@ class Graphics
     public function clearAllBuffers() : Void
     {
         GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.DEPTH_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
+    }
+
+    public function finishCommandPipeline() : Void
+    {
+        GL.finish();
+    }
+
+    public function flushCommandPipeline() : Void
+    {
+        GL.flush();
     }
 
     public function enableStencilTest(enabled : Bool) : Void
