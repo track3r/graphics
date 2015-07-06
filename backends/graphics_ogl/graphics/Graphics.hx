@@ -107,6 +107,19 @@ class Graphics
 		return sharedInstance;
 	}
 
+    private var graphicsDisabled: Bool = false;
+    public function enableGraphicsAPI(enable: Bool): Void
+    {
+        graphicsDisabled = !enable;
+    }
+
+    public function invalidateCaches(): Void
+    {
+        // TODO loop through all contexts, when we have them
+        var context = getCurrentContext();
+        context.invalidateCaches();
+    }
+
     public function getMainContext() : GraphicsContext
     {
     	return mainContext;
@@ -114,28 +127,29 @@ class Graphics
 
     public function loadFilledContext(context : GraphicsContext) : Void
     {
-
+        if (graphicsDisabled) return;
     }
 
     public function isLoadedContext(context:GraphicsContext) : Void
     {
-
+        if (graphicsDisabled) return;
     }
 
     public function unloadFilledContext(context : GraphicsContext) : Void
     {
-
+        if (graphicsDisabled) return;
     }
 
     public function getCurrentContext() : GraphicsContext
     {
+        if (graphicsDisabled) return null;
     	/// temporary
         return mainContext;
     }
 
     public function pushContext(context : GraphicsContext) : Void
     {
-
+        if (graphicsDisabled) return;
     }
 
     public function popContext() : GraphicsContext
@@ -145,6 +159,7 @@ class Graphics
 
 	public function loadFilledMeshData(meshData : MeshData)
 	{
+        if (graphicsDisabled) return;
 		if(meshData == null)
         {
             return;
@@ -156,18 +171,20 @@ class Graphics
 
     public function loadFilledVertexBuffer(meshData : MeshData) : Void
     {
+        if (graphicsDisabled) return;
         loadFilledMeshDataBuffer(GLDefines.ARRAY_BUFFER, meshData.attributeBuffer);
     }
 
     public function loadFilledIndexBuffer(meshData : MeshData) : Void
     {
+        if (graphicsDisabled) return;
         loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
     }
 
 	private function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
 	{
-		if(meshDataBuffer == null)
-			return;
+        if (graphicsDisabled) return;
+		if(meshDataBuffer == null) return;
 
 		if(!meshDataBuffer.bufferAlreadyOnHardware)
 		{
@@ -198,9 +215,8 @@ class Graphics
 
 	public function loadFilledShader(shader : Shader) 
 	{
-		if(shader.alreadyLoaded)
-			return;
-
+        if (graphicsDisabled) return;
+		if(shader.alreadyLoaded) return;
 
 		/// COMPILE
 
@@ -289,6 +305,7 @@ class Graphics
 
 	private function compileShader(type : Int, code : String) : GLShader
 	{
+        if (graphicsDisabled) return null;
 		#if mac
 		code = StringTools.replace(code, "lowp", "");
 		code = StringTools.replace(code, "mediump", "");
@@ -318,6 +335,7 @@ class Graphics
 
 	private function linkShader(shaderProgramName : GLProgram) : Bool
 	{
+        if (graphicsDisabled) return false;
 		GL.linkProgram(shaderProgramName);
 
 		#if debug
@@ -336,12 +354,11 @@ class Graphics
 
 	public function loadFilledTextureData(texture : TextureData) : Void
 	{
-        if(texture.alreadyLoaded)
-            return;
+        if (graphicsDisabled) return;
+        if(texture.alreadyLoaded) return;
 
 		texture.glTexture = GL.createTexture();
 		bindTexture(texture);
-
 		configureFilteringMode(texture);
 		configureMipmaps(texture);
 		configureWrap(texture);
@@ -353,6 +370,7 @@ class Graphics
 
 	private function pushTextureData(texture : TextureData) : Void
 	{
+        if (graphicsDisabled) return;
 		var glTextureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
 
 		if(texture.textureType == TextureType2D)
@@ -401,6 +419,7 @@ class Graphics
 
 	private function pushTextureDataForType(textureType : Int, textureFormat : TextureFormat, data : Data, width : Int, height : Int)
 	{
+        if (graphicsDisabled) return;
 		switch(textureFormat)
 		{
 			case(TextureFormatRGB565):
@@ -419,6 +438,7 @@ class Graphics
 
 	private function configureFilteringMode(texture : TextureData) : Void
 	{
+        if (graphicsDisabled) return;
 		bindTexture(texture);
 
 		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
@@ -445,6 +465,7 @@ class Graphics
 
 	private function configureWrap(texture : TextureData) : Void
 	{
+        if (graphicsDisabled) return;
 		bindTexture(texture);
 
 		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
@@ -462,6 +483,8 @@ class Graphics
 
 	private function configureMipmaps(texture : TextureData) : Void
 	{
+        if (graphicsDisabled) return;
+
 	    if(!texture.hasMipMaps)
 	        return;
 	    
@@ -477,6 +500,8 @@ class Graphics
 
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
         if(renderTarget == context.defaultRenderTarget)
@@ -548,6 +573,7 @@ class Graphics
 
     private function setupColorRenderbuffer(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
         if(renderTarget.colorFormat == null)
             return;
 
@@ -565,6 +591,7 @@ class Graphics
 
     private function setupDepthRenderbuffer(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
         if(renderTarget.depthFormat == null)
             return;
 
@@ -582,6 +609,8 @@ class Graphics
 
     private function setupStencilRenderbuffer(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
+
         if(renderTarget.stencilFormat == null)
             return;
 
@@ -593,6 +622,8 @@ class Graphics
 
     private function setupDepthStencilRenderbuffer(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
+
         if(renderTarget.stencilFormat == null && renderTarget.depthFormat == null)
             return;
 
@@ -618,11 +649,13 @@ class Graphics
 
     public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
     {
+        if (graphicsDisabled) return false;
         return renderTarget.alreadyLoaded;
     }
 
     public function isLoadedMeshData(meshData : MeshData) : Bool
     {
+        if (graphicsDisabled) return false;
         var attributeBuffer : Bool = false;
         if(meshData.attributeBuffer != null)
         {
@@ -640,6 +673,7 @@ class Graphics
 
     public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool
     {
+        if (graphicsDisabled) return false;
         if(meshDataBuffer != null)
             return meshDataBuffer.bufferAlreadyOnHardware;
         return false;
@@ -647,16 +681,19 @@ class Graphics
 
     public function isLoadedShader(shader : Shader) : Bool
     {
+        if (graphicsDisabled) return false;
         return shader.alreadyLoaded;
     }
 
     public function isLoadedTextureData(textureData : TextureData) : Bool
     {
+        if (graphicsDisabled) return false;
         return textureData.alreadyLoaded;
     }
 
     private function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void
     {
+        if (graphicsDisabled) return;
         if(meshDataBuffer.bufferAlreadyOnHardware)
         {
             GL.deleteBuffer(meshDataBuffer.glBuffer);
@@ -666,6 +703,8 @@ class Graphics
 
     public function unloadMeshData(meshData : MeshData) : Void
     {
+        if (graphicsDisabled) return;
+
         if(meshData.attributeBuffer != null)
         {
             unloadMeshDataBuffer(meshData.attributeBuffer);
@@ -679,6 +718,7 @@ class Graphics
 
     public function unloadShader(shader : Shader) : Void
     {
+        if (graphicsDisabled) return;
         if(shader.alreadyLoaded)
         {
             GL.deleteProgram(shader.programName);
@@ -688,6 +728,7 @@ class Graphics
 
     public function unloadTextureData(textureData : TextureData) : Void
     {
+        if (graphicsDisabled) return;
         if(textureData.alreadyLoaded)
         {
             GL.deleteTexture(textureData.glTexture);
@@ -697,6 +738,7 @@ class Graphics
 
     public function unloadRenderTarget(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
         if(renderTarget == context.defaultRenderTarget)
         {
@@ -710,6 +752,7 @@ class Graphics
 
     public function destroyRenderbuffers(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
         if(renderTarget.colorRenderbufferID != GL.nullRenderbuffer)
         {
             GL.deleteRenderbuffer(renderTarget.colorRenderbufferID);
@@ -737,9 +780,10 @@ class Graphics
 
     public function enableBlending(enabled : Bool) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-        if(context.currentBlendingEnabled == enabled)
+        if(context.currentBlendingEnabled != null && context.currentBlendingEnabled == enabled)
             return;
 
         if(enabled)
@@ -762,6 +806,7 @@ class Graphics
 
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(context.currentBlendFactorSrcRGB != sourceFactor || context.currentBlendFactorDestRGB != destinationFactor ||
@@ -781,6 +826,7 @@ class Graphics
                                          sourceFactorA : BlendFactor,
                                          destinationFactorA : BlendFactor) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(context.currentBlendFactorSrcRGB != sourceFactorRGB || context.currentBlendFactorDestRGB != destinationFactorRGB ||
@@ -799,6 +845,7 @@ class Graphics
 
     public function setBlendMode(blendMode : BlendMode) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(blendMode != context.currentBlendModeA && blendMode != context.currentBlendModeRGB)
@@ -811,6 +858,7 @@ class Graphics
 
     public function setBlendModeSeparate(blendModeRGB : BlendMode, blendModeA : BlendMode) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(blendModeRGB != context.currentBlendModeA && blendModeA != context.currentBlendModeRGB)
@@ -824,9 +872,10 @@ class Graphics
 
     public function enableDepthTesting(enabled : Bool) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-       // if(context.currentDepthTesting == enabled)
+       // if(context.currentDepthTesting != null && context.currentDepthTesting == enabled)
          //   return;
 
         if(enabled)
@@ -842,50 +891,55 @@ class Graphics
 
     public function isDepthTesting() : Bool
     {
+        if (graphicsDisabled) return false;
         var context = getCurrentContext();
         return context.currentDepthTesting;
     }
 
     public function enableDepthWrite(enabled: Bool): Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
-        if (context.depthWrite == enabled)
+
+/*        if (context.depthWrite != null && context.depthWrite == enabled)
         {
         	return;
-        }
+        }*/
 
         GL.depthMask(enabled);
 
         context.depthWrite = enabled;
     }
 
-    public function isDepthWriting(): Bool
+    public function isDepthWriting(): Null<Bool>
     {
+        if (graphicsDisabled) return false;
         var context = getCurrentContext();
-        return (context.depthWrite == null ? false : context.depthWrite);
+        return context.depthWrite;
     }
 
     public function setDepthFunc(depthFunc : DepthFunc) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-       // if (context.depthFunc == depthFunc)
-         //   return;
+        if (context.depthFunc != null && context.depthFunc == depthFunc)
+            return;
 
         GL.depthFunc(GLUtils.convertDepthFuncToOGL(depthFunc));
 
         context.depthFunc = depthFunc;
     }
 
-    public function getDepthFunc() : DepthFunc
+    public function getDepthFunc() : Null<DepthFunc>
     {
         var context = getCurrentContext();
         return context.depthFunc;
     }
 
-
     public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(cullingMode != context.currentFaceCullingMode)
@@ -910,15 +964,15 @@ class Graphics
     public function getFaceCullingMode() : FaceCullingMode
     {
         var context = getCurrentContext();
-
         return context.currentFaceCullingMode;
     }
 
     public function setLineWidth(lineWidth : Float) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-        if(context.currentLineWidth == lineWidth)
+        if(context.currentLineWidth != null && context.currentLineWidth == lineWidth)
             return;
 
         GL.lineWidth(lineWidth);
@@ -927,11 +981,13 @@ class Graphics
 
     public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void
     {
+        if (graphicsDisabled) return;
         GL.colorMask(writeRed, writeGreen, writeBlue, writeAlpha);
     }
 
     public function pushRenderTarget(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         var framebuffer = renderTarget.framebufferID;
@@ -946,6 +1002,7 @@ class Graphics
 
     public function popRenderTarget() : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         context.currentRenderTargetStack.pop();
@@ -958,6 +1015,8 @@ class Graphics
 
     public function enableScissorTesting(enabled : Bool) : Void
     {
+        if (graphicsDisabled) return;
+
         if(enabled)
         {
             GL.enable(GLDefines.SCISSOR_TEST);
@@ -970,11 +1029,13 @@ class Graphics
 
     public function setScissorTestRect(x : Int, y : Int, width : Int, height : Int) : Void
     {
+        if (graphicsDisabled) return;
         GL.scissor(x, y, width, height);
     }
 
     public function bindShader(shader : Shader)
 	{
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
 		if(context.currentShader != shader.programName)
@@ -985,7 +1046,6 @@ class Graphics
 
 		for(uniformInterface in shader.uniformInterfaces)
 		{
-
 			switch(uniformInterface.uniformType)
 			{
                 case UniformTypeSingleInt:
@@ -1086,6 +1146,8 @@ class Graphics
 
 	public function bindMeshData(data : MeshData, bakedFrame : Int) 
 	{
+        if (graphicsDisabled) return;
+
 		if(data.bakedFrameCount > 0 && bakedFrame >= data.bakedFrameCount)
 		{
 			trace("Tried to set invalid frame on render buffer data");
@@ -1131,6 +1193,8 @@ class Graphics
 
 	public function unbindMeshData(data : MeshData) : Void
 	{
+        if (graphicsDisabled) return;
+
         if(data.attributeBuffer != null)
         {
             GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
@@ -1144,6 +1208,8 @@ class Graphics
 
 	private function enableVertexAttributes(meshData : MeshData)
 	{
+        if (graphicsDisabled) return;
+
 		var combinedAttributes = 0;
 		for(attributeConfig in meshData.attributeConfigs)
 		{
@@ -1156,6 +1222,8 @@ class Graphics
 
 	private function enableVertexAttributesFromCombinedAttributes(combinedFlagsFromVertexAttributes : Int)
 	{
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
 		var currentMask = 1;
@@ -1184,6 +1252,8 @@ class Graphics
 
 	public function render(meshData : MeshData, bakedFrame : Int)
 	{
+        if (graphicsDisabled) return;
+
 		if(meshData.bakedFrameCount > 0 && bakedFrame >= meshData.bakedFrameCount)
 		{
 			trace("Tried to set invalid frame on render buffer data");
@@ -1236,18 +1306,20 @@ class Graphics
 
     public function present() : Void
     {
+        if (graphicsDisabled) return;
     }
 
 	public function bindTextureData(texture : TextureData, position : Int) : Void
 	{
-    	if(texture == null)
-  	    	return;
+        if (graphicsDisabled) return;
+    	if(texture == null) return;
         activeTexture(position);
         bindTexture(texture);
 	}
 
 	private function bindTexture(texture : TextureData)
 	{
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 		if(context.currentActiveTextures[context.currentActiveTexture] != texture.glTexture)
 		{
@@ -1258,6 +1330,7 @@ class Graphics
 
 	private function activeTexture(position)
 	{
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
 		if(position > GraphicsContext.maxActiveTextures)
@@ -1276,6 +1349,8 @@ class Graphics
 
     public function setClearColor(color : Color4B) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
         var renderTarget = context.currentRenderTargetStack.first();
 
@@ -1291,40 +1366,49 @@ class Graphics
 
     public function clearColorBuffer() : Void
     {
+        if (graphicsDisabled) return;
         GL.clear(GLDefines.COLOR_BUFFER_BIT);
     }
 
     public function clearDepthBuffer() : Void
     {
+        if (graphicsDisabled) return;
         GL.clear(GLDefines.DEPTH_BUFFER_BIT);
     }
 
     public function clearStencilBuffer() : Void
     {
+        if (graphicsDisabled) return;
         GL.clear(GLDefines.STENCIL_BUFFER_BIT);
     }
     public function clearAllBuffers() : Void
     {
+        if (graphicsDisabled) return;
         GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.DEPTH_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
     }
 
     public function finishCommandPipeline() : Void
     {
+        if (graphicsDisabled) return;
         GL.finish();
     }
 
     public function flushCommandPipeline() : Void
     {
+        if (graphicsDisabled) return;
         GL.flush();
     }
 
     public function enableStencilTest(enabled : Bool) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
-        if (context.stencilingEnabled == enabled)
+
+       /* if (context.stencilingEnabled != null && context.stencilingEnabled == enabled)
         {
         	return;
-        }
+        }*/
 
         if (enabled)
         {
@@ -1338,19 +1422,22 @@ class Graphics
         context.stencilingEnabled = enabled;
     }
 
-    public function isStencilTestEnabled() : Bool
+    public function isStencilTestEnabled() : Null<Bool>
     {
+        if (graphicsDisabled) return false;
         var context = getCurrentContext();
-        return (context.stencilingEnabled == null ? false : context.stencilingEnabled);
+        return context.stencilingEnabled;
     }
 
     public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
     {
+        if (graphicsDisabled) return;
         GL.stencilFunc(GLUtils.convertStencilFuncToOGL(stencilFunc), referenceValue, readMask);
     }
 
     public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void
     {
+        if (graphicsDisabled) return;
         GL.stencilOp(GLUtils.convertStencilOpToOGL(stencilFail),
                      GLUtils.convertStencilOpToOGL(depthFail),
                      GLUtils.convertStencilOpToOGL(stencilAndDepthPass));
@@ -1358,6 +1445,7 @@ class Graphics
 
     public function setStencilMask(writeMask : Int) : Void
     {
+        if (graphicsDisabled) return;
         GL.stencilMask(writeMask);
     }
 

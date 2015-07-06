@@ -37,8 +37,8 @@ class MainGraphicsContext extends GraphicsContext
         currentRenderTargetStack = new GenericStack<RenderTarget>();
         currentLineWidth = 1;
         currentDepthTesting = false;
-        GLContext.setupMainContext(function () {
-
+        GLContext.setupMainContext(function ()
+        {
             glContext = GLContext.getMainContext();
             defaultRenderTarget = new RenderTarget();
             defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);

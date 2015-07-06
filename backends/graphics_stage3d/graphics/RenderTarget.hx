@@ -27,11 +27,14 @@ class RenderTarget
 
     public function new () : Void
     {
-        var clearColor : Color4B = new Color4B();
-        clearColor.setRGBA(0, 0, 0, 255);
-        currentClearColor = clearColor;
+        currentClearColor = new Color4B();
+        currentClearColor.setRGBA(0, 0, 0, 255);
         
         alreadyLoaded = false;
     }
 
+    public function invalidate(): Void
+    {
+        currentClearColor.setRGBA(0, 0, 0, 255);
+    }
 }

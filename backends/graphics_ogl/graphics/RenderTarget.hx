@@ -46,4 +46,9 @@ class RenderTarget
         alreadyLoaded = false;
     }
 
+    public function invalidate(): Void
+    {
+        currentClearColor.setRGBA(0, 0, 0, 255);
+    }
+
 }

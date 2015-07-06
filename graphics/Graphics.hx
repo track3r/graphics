@@ -31,6 +31,10 @@ extern class Graphics
 	public static function instance() : Graphics;
 	public static function initialize(onInitializd:Void->Void) : Void;
 
+    ///######## STATE HANDLING ########
+    public function enableGraphicsAPI(enable: Bool): Void;
+    public function invalidateCaches(): Void;
+
     ///######## CONTEXT ########
     public function getMainContext() : GraphicsContext;
 
@@ -66,13 +70,13 @@ extern class Graphics
 
     ///######## DEPTH TESTING ########
     public function enableDepthWrite(enabled : Bool) : Void;
-    public function isDepthWriting() : Bool;
+    public function isDepthWriting() : Null<Bool>;
     public function setDepthFunc(depthFunc : DepthFunc) : Void;
-    public function getDepthFunc() : DepthFunc;
+    public function getDepthFunc() : Null<DepthFunc>;
 
     ///######## FACE CULLING ########
     public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void;
-    public function getFaceCullingMode() : FaceCullingMode;
+    public function getFaceCullingMode() : Null<FaceCullingMode>;
 
     ///######## COLOR MASK ########
     public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void;
@@ -106,7 +110,7 @@ extern class Graphics
 
     ///######## STENCIL ########
     public function enableStencilTest(enabled : Bool) : Void;
-    public function isStencilTestEnabled() : Bool;
+    public function isStencilTestEnabled() : Null<Bool>;
 
     public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void;
     public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void;

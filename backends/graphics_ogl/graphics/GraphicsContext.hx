@@ -20,7 +20,7 @@ class GraphicsContext
     static public var maxActiveTextures = 16;
 
     public var depthWrite : Null<Bool> = null;
-    public var depthFunc : DepthFunc;
+    public var depthFunc : Null<DepthFunc> = null;
 
     public var stencilingEnabled : Null<Bool> = null;
 
@@ -35,16 +35,16 @@ class GraphicsContext
     public var currentActiveTexture : Int;
     public var defaultRenderTarget : RenderTarget;
     public var currentRenderTargetStack : GenericStack<RenderTarget>;
-    public var currentBlendingEnabled : Bool;
+    public var currentBlendingEnabled : Null<Bool>;
     public var currentBlendFactorSrcRGB : BlendFactor;
     public var currentBlendFactorDestRGB : BlendFactor;
     public var currentBlendFactorSrcA : BlendFactor;
     public var currentBlendFactorDestA : BlendFactor;
     public var currentBlendModeRGB : BlendMode;
     public var currentBlendModeA : BlendMode;
-    public var currentFaceCullingMode : FaceCullingMode;
-    public var currentLineWidth : Float = 1.0;
-    public var currentDepthTesting : Bool = true;
+    public var currentFaceCullingMode : Null<FaceCullingMode>;
+    public var currentLineWidth : Null<Float> = 1.0;
+    public var currentDepthTesting : Null<Bool> = true;
     public var glContext : GLContext;
 
     public function new() : Void
@@ -56,9 +56,19 @@ class GraphicsContext
     {
         currentAttributeFlags = 0;
 
-        currentLineWidth = 1.0;
+        currentLineWidth = null;
         currentActiveTexture = maxActiveTextures + 1;
         currentShader = GL.nullProgram;
+
+        currentBlendingEnabled = null;
+        stencilingEnabled = null;
+        depthFunc = null;
+        depthWrite = null;
+        currentDepthTesting = null;
+        currentFaceCullingMode = null;
+
+        defaultRenderTarget.invalidate();
+        defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
 
         for (i in 0...maxActiveTextures)
         {
