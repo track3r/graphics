@@ -15,6 +15,10 @@
             <framework name="QuartzCore.framework" />
 		</ios>
 
+        <documentation>
+            <documentation-folder library="graphics" path="documentation" />
+        </documentation>
+
 	</platform-config>
 
 </library>
