@@ -305,7 +305,7 @@ class Graphics
 
 	private function compileShader(type : Int, code : String) : GLShader
 	{
-        if (graphicsDisabled) return null;
+        if (graphicsDisabled) return GL.nullShader;
 		#if mac
 		code = StringTools.replace(code, "lowp", "");
 		code = StringTools.replace(code, "mediump", "");
