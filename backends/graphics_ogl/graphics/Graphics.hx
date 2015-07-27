@@ -913,7 +913,7 @@ class Graphics
 
     public function isDepthWriting(): Null<Bool>
     {
-        if (graphicsDisabled) return false;
+        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.depthWrite;
     }
