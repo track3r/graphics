@@ -59,13 +59,18 @@ class Graphics
         setDepthFunc(DepthFunc.DepthFuncLEqual);
         enableDepthWrite(false);
         enableDepthTesting(false);
+        GL.clearDepth(1);
 
         /// Stencil
         enableStencilTest(false);
-        setStencilFunc(StencilFuncAlways, 0x00, 0xFF);
-        setColorMask(true, true, true, true);
+        setStencilFunc(StencilFuncAlways, 0, 0xFFFFFFFF);
         setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
-        setStencilMask(0xFF);
+        setStencilMask(0xFFFFFFFF);
+        GL.clearStencil(0);
+
+        GL.clearColor(0, 0, 0, 0);
+
+        setColorMask(true, true, true, true);
 
         var clearColor : Color4B = new Color4B();
         clearColor.setRGBA(
@@ -74,10 +79,10 @@ class Graphics
         	Std.int(GraphicsInitialState.clearColorBlue * 255), 
         	Std.int(GraphicsInitialState.clearColorAlpha * 255));
         setClearColor(clearColor);
+
         clearAllBuffers();
 
         GL.frontFace(GLDefines.CW);
-
         setFaceCullingMode(FaceCullingMode.FaceCullingModeOff);
 
         enableScissorTesting(false);
@@ -877,8 +882,7 @@ class Graphics
         if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-       // if(context.currentDepthTesting != null && context.currentDepthTesting == enabled)
-         //   return;
+        if(context.currentDepthTesting != null && context.currentDepthTesting == enabled) return;
 
         if(enabled)
         {
@@ -903,10 +907,7 @@ class Graphics
         if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-/*        if (context.depthWrite != null && context.depthWrite == enabled)
-        {
-        	return;
-        }*/
+        if (context.depthWrite != null && context.depthWrite == enabled) return;
 
         GL.depthMask(enabled);
 
@@ -925,8 +926,7 @@ class Graphics
         if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-       /* if (context.depthFunc != null && context.depthFunc == depthFunc)
-            return;*/
+        if (context.depthFunc != null && context.depthFunc == depthFunc) return;
 
         GL.depthFunc(GLUtils.convertDepthFuncToOGL(depthFunc));
 
@@ -1408,10 +1408,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-       /* if (context.stencilingEnabled != null && context.stencilingEnabled == enabled)
-        {
-        	return;
-        }*/
+        if (context.stencilingEnabled != null && context.stencilingEnabled == enabled) return;
 
         if (enabled)
         {
@@ -1451,5 +1448,4 @@ class Graphics
         if (graphicsDisabled) return;
         GL.stencilMask(writeMask);
     }
-
 }

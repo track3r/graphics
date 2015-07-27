@@ -20,37 +20,36 @@ class GraphicsContext
 {
     static public var maxActiveTextures = 16;
 
-    public var depthWrite : Null<Bool> = null;
-    public var depthFunc : DepthFunc;
+    public var depthWrite: Null<Bool> = null;
+    public var depthFunc: Null<DepthFunc> = null;
 
-    public var stencilingEnabled : Null<Bool> = null;
+    public var stencilingEnabled: Null<Bool> = null;
 
     public var antialias: Bool;
     public var premultipliedAlpha: Bool;
     public var preserveDrawingBuffer: Bool;
 
-    public var currentBlendFactorSrc : BlendFactor;
-    public var currentBlendFactorDest : BlendFactor;
+    public var currentBlendFactorSrc: BlendFactor;
+    public var currentBlendFactorDest: BlendFactor;
 
-    public var defaultRenderTarget : RenderTarget;
+    public var defaultRenderTarget: RenderTarget;
     public var currentActiveTextures = new Array<TextureBase>();
-    public var currentActiveTexture : Int;
+    public var currentActiveTexture: Int;
 
-    public var currentFaceCullingMode : FaceCullingMode;
-    public var currentRenderTargetStack:GenericStack<RenderTarget>;
+    public var currentFaceCullingMode: Null<FaceCullingMode>;
+    public var currentRenderTargetStack: GenericStack<RenderTarget>;
 
-    public var currentScissoringEnabled : Bool;
-    public var currentScissorRect : Rectangle = null;
+    public var currentScissoringEnabled: Bool;
+    public var currentScissorRect: Rectangle = null;
 
-    public var currentStencilFunc : StencilFunc = StencilFuncAlways;
-    public var currentReferenceValue : Int = 0;
-    public var currentStencilReadMask : Int = 255;   // All 1111s
-    public var currentStencilWriteMask : Int = 255;   // All 1111s
+    public var currentStencilFunc: StencilFunc = StencilFuncAlways;
+    public var currentReferenceValue: Int = 0;
+    public var currentStencilReadMask: Int = 255;   // All 1111s
+    public var currentStencilWriteMask: Int = 255;   // All 1111s
 
-    public var currentStencilFail : StencilOp = StencilOpKeep;
-    public var currentDepthFail : StencilOp = StencilOpKeep;
-    public var currentStencilAndDepthPass : StencilOp = StencilOpKeep;
-
+    public var currentStencilFail: StencilOp = StencilOpKeep;
+    public var currentDepthFail: StencilOp = StencilOpKeep;
+    public var currentStencilAndDepthPass: StencilOp = StencilOpKeep;
 
     public var context3D(get_context3D, set_context3D):Context3D;
     private var _context3D:Context3D;
@@ -79,5 +78,10 @@ class GraphicsContext
         {
             currentActiveTextures[i] = null;
         }
+
+        depthWrite = null;
+        depthFunc = null;
+        stencilingEnabled = null;
+        currentFaceCullingMode = null;
     }
 }

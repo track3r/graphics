@@ -75,6 +75,19 @@ class Graphics
         contextStack = new GenericStack<GraphicsContext>();
     }
 
+    private var graphicsDisabled: Bool = false;
+    public function enableGraphicsAPI(enable: Bool): Void
+    {
+        graphicsDisabled = !enable;
+    }
+
+    public function invalidateCaches(): Void
+    {
+    // TODO loop through all contexts, when we have them
+        var context = getCurrentContext();
+        context.invalidateCaches();
+    }
+
     public function setDefaultGraphicsState() : Void
     {
         // TODO make this functionality available in the library configuration
@@ -101,7 +114,7 @@ class Graphics
         enableScissorTesting(false);
 
         enableStencilTest(false);
-        setStencilFunc(StencilFuncAlways, 0, 0xFF);
+        setStencilFunc(StencilFuncAlways, 0, 0xFFFFFFFF);
         setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
         setStencilMask(0xFF);
     }
@@ -230,26 +243,31 @@ class Graphics
 
     public function getCurrentContext() : GraphicsContext
     {
+        if (graphicsDisabled) return null;
         return contextStack.first();
     }
 
     public function pushContext(context : GraphicsContext) : Void
     {
+        if (graphicsDisabled) return;
         contextStack.add(context);
     }
 
     public function popContext() : GraphicsContext
     {
+        if (graphicsDisabled) return null;
         return contextStack.pop();
     }
 
     public function present() : Void
     {
+        if (graphicsDisabled) return;
         getCurrentContext().context3D.present();
     }
 
     public function loadFilledShader(shader : Shader)
     {
+        if (graphicsDisabled) return;
         var vs = compileShader(Context3DProgramType.VERTEX, shader.vertexShaderCode);
         var fs = compileShader(Context3DProgramType.FRAGMENT, shader.fragmentShaderCode);
         var context3D:Context3D = getCurrentContext().context3D;
@@ -273,6 +291,7 @@ class Graphics
 
     public function unloadShader(shader : Shader) : Void
     {
+        if (graphicsDisabled) return;
         if (shader.program != null)
         {
             try
@@ -290,6 +309,7 @@ class Graphics
 
     public function enableScissorTesting(enabled : Bool) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
 
@@ -307,6 +327,7 @@ class Graphics
 
     public function setScissorTestRect(x : Int, y : Int, width : Int, height : Int) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         context.currentScissorRect = new Rectangle(x, (flash.Lib.current.stage.stageHeight - y) - height, width, height);  // UGLY inverting for stage3d
@@ -314,11 +335,13 @@ class Graphics
         enableScissorTesting(context.currentScissoringEnabled);
     }
 
-
     public function enableStencilTest(enabled : Bool) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
-        if (context.stencilingEnabled == enabled)
+
+        if (context.stencilingEnabled != null && context.stencilingEnabled == enabled)
         {
             return;
         }
@@ -328,14 +351,17 @@ class Graphics
         updateStage3dStencilSettings();
     }
 
-    public function isStencilTestEnabled() : Bool
+    public function isStencilTestEnabled() : Null<Bool>
     {
+        if (graphicsDisabled) return null;
         var context = getCurrentContext();
-        return (context.stencilingEnabled == null ? false : context.stencilingEnabled);
+        return context.stencilingEnabled;
     }
 
     public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
         context.currentStencilFunc = stencilFunc;
@@ -347,6 +373,8 @@ class Graphics
 
     public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
         context.currentStencilFail = stencilFail;
@@ -358,10 +386,10 @@ class Graphics
 
     public function setStencilMask(writeMask : Int) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
-
         context.currentStencilWriteMask = writeMask;
-
         updateStage3dStencilSettings();
     }
 
@@ -383,6 +411,8 @@ class Graphics
 
     public function bindShader(shader : Shader)
     {
+        if (graphicsDisabled) return;
+
         var context3D:Context3D = getCurrentContext().context3D;
         var currentVertexIndex = 0;
         var currentFragmentIndex = 0;
@@ -438,10 +468,8 @@ class Graphics
 
     public function loadFilledMeshData(meshData : MeshData)
     {
-        if(meshData == null)
-        {
-            return;
-        }
+        if (graphicsDisabled) return;
+        if(meshData == null) return;
 
         loadFilledVertexBuffer(meshData);
         loadFilledIndexBuffer(meshData);
@@ -449,10 +477,11 @@ class Graphics
 
     public function loadFilledVertexBuffer(meshData : MeshData) : Void
     {
+        if (graphicsDisabled) return;
+
         var meshDataBuffer : MeshDataBuffer = meshData.attributeBuffer;
 
-        if(meshDataBuffer == null)
-            return;
+        if(meshDataBuffer == null) return;
 
         var context:Context3D = getCurrentContext().context3D;
 
@@ -492,10 +521,10 @@ class Graphics
 
     public function loadFilledIndexBuffer(meshData : MeshData) : Void
     {
-        var meshDataBuffer : MeshDataBuffer = meshData.indexBuffer;
+        if (graphicsDisabled) return;
 
-        if(meshDataBuffer == null)
-            return;
+        var meshDataBuffer : MeshDataBuffer = meshData.indexBuffer;
+        if(meshDataBuffer == null) return;
 
         var context3D:Context3D = getCurrentContext().context3D;
 
@@ -532,6 +561,8 @@ class Graphics
 
     public function unloadMeshData(meshData : MeshData) : Void
     {
+        if (graphicsDisabled) return;
+
         if(meshData.attributeBuffer != null)
         {
             if(meshData.attributeBuffer.bufferAlreadyOnHardware)
@@ -553,6 +584,8 @@ class Graphics
 
     public function bindMeshData(data : MeshData, bakedFrame : Int):Void
     {
+        if (graphicsDisabled) return;
+
         var format;
         var context3D:Context3D = getCurrentContext().context3D;
         var headStep = 0;
@@ -566,6 +599,8 @@ class Graphics
 
     public function unbindMeshData(data : MeshData) : Void
     {
+        if (graphicsDisabled) return;
+
         var format;
         var context3D:Context3D = getCurrentContext().context3D;
         var headStep = 0;
@@ -598,7 +633,9 @@ class Graphics
         return format;
     }
 
-    public function render(meshData : MeshData, bakedFrame : Int):Void{
+    public function render(meshData : MeshData, bakedFrame : Int):Void
+    {
+        if (graphicsDisabled) return;
 
         var context3D:Context3D = getCurrentContext().context3D;
         if(meshData.indexBufferInstance == null)trace("meshData.indexBufferInstance is null");
@@ -609,12 +646,14 @@ class Graphics
 
     public function loadFilledTextureData(texture : TextureData) : Void
     {
+        if (graphicsDisabled) return;
         pushTextureData(texture);
         bindTexture(texture);
     }
 
     public function unloadTextureData(textureData : TextureData) : Void
     {
+        if (graphicsDisabled) return;
         if (textureData.texture != null)
         {
             textureData.texture.dispose();
@@ -653,6 +692,7 @@ class Graphics
 
     public function bindTextureData(texture : TextureData, position : Int) : Void
     {
+        if (graphicsDisabled) return;
         if(texture == null)
         {
             getCurrentContext().context3D.setTextureAt(position, null);
@@ -770,6 +810,8 @@ class Graphics
 
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
 
@@ -784,17 +826,23 @@ class Graphics
 
     public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
-        if(cullingMode != context.currentFaceCullingMode)
+        if(context.currentFaceCullingMode != null && cullingMode == context.currentFaceCullingMode)
         {
-            context.context3D.setCulling(Stage3dUtils.convertFaceCullingModeToStage3d(cullingMode));
-            context.currentFaceCullingMode = cullingMode;
+            return;
         }
+
+        context.context3D.setCulling(Stage3dUtils.convertFaceCullingModeToStage3d(cullingMode));
+        context.currentFaceCullingMode = cullingMode;
     }
 
     public function getFaceCullingMode() : FaceCullingMode
     {
+        if (graphicsDisabled) return null;
+
         var context = getCurrentContext();
 
         return context.currentFaceCullingMode;
@@ -802,8 +850,10 @@ class Graphics
 
     public function enableDepthWrite(enabled: Bool): Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
-        if (context.depthWrite == enabled)
+
+        if (context.depthWrite != null && context.depthWrite == enabled)
         {
             return;
         }
@@ -813,18 +863,23 @@ class Graphics
         context.depthWrite = enabled;
     }
 
-    public function isDepthWriting() : Bool
+    public function isDepthWriting() : Null<Bool>
     {
+        if (graphicsDisabled) return null;
         var context = getCurrentContext();
-        return (context.depthWrite == null ? false : context.depthWrite);
+        return context.depthWrite;
     }
 
     public function setDepthFunc(depthFunc : DepthFunc) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
-        //if (context.depthFunc == depthFunc)
-          //  return;
+        if (context.depthFunc != null && context.depthFunc == depthFunc)
+        {
+            return;
+        }
 
         var context3D:Context3D = context.context3D;
         context3D.setDepthTest(context.depthWrite, Stage3dUtils.convertDepthFuncToStage3D(depthFunc));
@@ -832,14 +887,18 @@ class Graphics
         context.depthFunc = depthFunc;
     }
 
-    public function getDepthFunc() : DepthFunc
+    public function getDepthFunc() : Null<DepthFunc>
     {
+        if (graphicsDisabled) return null;
+
         var context = getCurrentContext();
         return context.depthFunc;
     }
 
     public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
         if(renderTarget == context.defaultRenderTarget)
@@ -866,6 +925,8 @@ class Graphics
 
     public function pushRenderTarget(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
 
@@ -883,6 +944,8 @@ class Graphics
 
     public function popRenderTarget() : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
         var context3D:Context3D = context.context3D;
         context.currentRenderTargetStack.pop();
@@ -905,6 +968,8 @@ class Graphics
 
     public function unloadRenderTarget(renderTarget : RenderTarget) : Void
     {
+        if (graphicsDisabled) return;
+
         var context = getCurrentContext();
 
         if(renderTarget == context.defaultRenderTarget)
@@ -920,11 +985,14 @@ class Graphics
 
     public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
     {
+        if (graphicsDisabled) return false;
         return renderTarget.alreadyLoaded;
     }
 
     public function isLoadedMeshData(meshData : MeshData) : Bool
     {
+        if (graphicsDisabled) return false;
+
         var attributeBuffer : Bool = false;
         if(meshData.attributeBuffer != null)
         {
@@ -942,6 +1010,7 @@ class Graphics
 
     public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool
     {
+        if (graphicsDisabled) return false;
         if(meshDataBuffer != null)
             return meshDataBuffer.bufferAlreadyOnHardware;
         return false;
@@ -949,23 +1018,26 @@ class Graphics
 
     public function isLoadedShader(shader : Shader) : Bool
     {
+        if (graphicsDisabled) return false;
         return shader.program != null;
     }
 
     public function isLoadedTextureData(textureData : TextureData) : Bool
     {
+        if (graphicsDisabled) return false;
         return textureData.texture != null;
     }
 
     public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
-
         context.context3D.setColorMask(writeRed, writeGreen, writeBlue, writeAlpha);
     }
 
     public function setClearColor(color : Color4B) : Void
     {
+        if (graphicsDisabled) return;
         var renderTarget:RenderTarget = getCurrentContext().currentRenderTargetStack.first();
 
         if( renderTarget.currentClearColor.r != color.r ||
@@ -979,6 +1051,7 @@ class Graphics
 
     public function clearColorBuffer() : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
         var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
@@ -987,6 +1060,7 @@ class Graphics
 
     public function clearDepthBuffer() : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
         var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
@@ -995,6 +1069,7 @@ class Graphics
 
     public function clearStencilBuffer() : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
         var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
@@ -1003,6 +1078,7 @@ class Graphics
 
     public function clearAllBuffers() : Void
     {
+        if (graphicsDisabled) return;
         var context = getCurrentContext();
         var clearColor:Color4B  = context.currentRenderTargetStack.first().currentClearColor;
 
