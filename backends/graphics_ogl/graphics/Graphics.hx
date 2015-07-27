@@ -62,7 +62,8 @@ class Graphics
 
         /// Stencil
         enableStencilTest(false);
-        setStencilFunc(StencilFuncAlways, 0, 0xFF);
+        setStencilFunc(StencilFuncAlways, 0x00, 0xFF);
+        setColorMask(true, true, true, true);
         setStencilOp(StencilOpKeep, StencilOpKeep, StencilOpKeep);
         setStencilMask(0xFF);
 
@@ -798,8 +799,9 @@ class Graphics
         context.currentBlendingEnabled = enabled;
     }
 
-    public function isBlending() : Bool
+    public function isBlending() : Null<Bool>
     {
+        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.currentBlendingEnabled;
     }
@@ -889,9 +891,9 @@ class Graphics
         context.currentDepthTesting = enabled;
     }
 
-    public function isDepthTesting() : Bool
+    public function isDepthTesting() : Null<Bool>
     {
-        if (graphicsDisabled) return false;
+        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.currentDepthTesting;
     }
@@ -923,8 +925,8 @@ class Graphics
         if (graphicsDisabled) return;
         var context = getCurrentContext();
 
-        if (context.depthFunc != null && context.depthFunc == depthFunc)
-            return;
+       /* if (context.depthFunc != null && context.depthFunc == depthFunc)
+            return;*/
 
         GL.depthFunc(GLUtils.convertDepthFuncToOGL(depthFunc));
 
@@ -933,6 +935,7 @@ class Graphics
 
     public function getDepthFunc() : Null<DepthFunc>
     {
+        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.depthFunc;
     }
@@ -1424,7 +1427,7 @@ class Graphics
 
     public function isStencilTestEnabled() : Null<Bool>
     {
-        if (graphicsDisabled) return false;
+        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.stencilingEnabled;
     }
