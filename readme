@@ -1,0 +1,16 @@
+= Description =
+
+The graphics library bridges the graphics interface over OpenGL and Stage3D.
+This is basically our own graphics driver api. Here we could potentially also have backend's for Metal
+and DirectX.
+
+= Release Log =
+
+
+== v5.0.0 ==
+
+=== Graphics ===
+
+- Updated dependency to OpenGL library version 5
+- Set minimum version of flash to 11.8 to support npot textures and 4k by 4k textures.
+- Added functionality to handle state invalidation. This is needed for recreating the context, if lost.
