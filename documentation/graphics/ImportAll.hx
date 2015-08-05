@@ -24,7 +24,7 @@ import graphics.GraphicsTypes.UniformType;
 import graphics.MeshData;
 import graphics.MeshData.MeshDataAttributeConfig;
 import graphics.MeshData.MeshDataBuffer;
-import graphics.RenderTarget;
+import graphics.RenderTargetData;
 import graphics.Shader;
 import graphics.Shader.ShaderUniformInterface;
 import graphics.TextureData;

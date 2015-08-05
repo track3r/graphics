@@ -10,7 +10,7 @@ import types.SizeI;
 import types.Color4B;
 import graphics.GraphicsTypes;
 
-extern class RenderTarget
+extern class RenderTargetData
 {
     public var size : SizeI;
 
@@ -22,5 +22,5 @@ extern class RenderTarget
     public var depthTextureData : TextureData;
     public var stencilTextureData : TextureData;
 
-//    public var clearColor : Color4B;
+    public var clearColor : Color4B;
 }

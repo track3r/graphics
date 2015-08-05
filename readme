@@ -1,10 +1,17 @@
 = Description =
 
-The graphics library bridges the graphics interface over OpenGL and Stage3D.
+The graphics library bridges the graphics interface over OpenGL and other Graphics APIs (RIP Stage3D).
 This is basically our own graphics driver api. Here we could potentially also have backend's for Metal
 and DirectX.
 
 = Release Log =
+
+== v6.0.0 ==
+
+=== Graphics ===
+
+- Removed backend for Flash, since we are not supporting it anymore.
+- Renamed RenderTarget to RenderTargetData to be more consistent with other data types.
 
 
 == v5.0.0 ==

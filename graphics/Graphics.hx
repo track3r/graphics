@@ -11,7 +11,6 @@ import graphics.TextureData;
 import types.DataType;
 import types.Data;
 import types.Color4B;
-import types.Touch;
 
 
 extern class Graphics
@@ -83,7 +82,7 @@ extern class Graphics
 
     ///######## RENDER TARGET ########
     public function pushRenderTarget(renderTarget : RenderTarget) : Void;
-    public function popRenderTarget() : Void;
+    public function popRenderTarget() : Null<RenderTarget>;
 
     ///######## ENABLE SCISSOR TESTING ########
     public function enableScissorTesting(enabled : Bool) : Void;

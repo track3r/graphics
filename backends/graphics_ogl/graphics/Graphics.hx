@@ -1,5 +1,6 @@
 package graphics;
 
+import graphics.RenderTargetData;
 import graphics.GraphicsContext;
 import types.Color4B;
 import graphics.MeshData;
@@ -504,13 +505,13 @@ class Graphics
 	    configureFilteringMode(texture);
 	}
 
-    public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void
+    public function loadFilledRenderTargetData(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
 
         var context = getCurrentContext();
 
-        if(renderTarget == context.defaultRenderTarget)
+        if(renderTarget == context.defaultRenderTargetData)
         {
             return;
         }
@@ -577,11 +578,10 @@ class Graphics
         }
     }
 
-    private function setupColorRenderbuffer(renderTarget : RenderTarget) : Void
+    private function setupColorRenderbuffer(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
-        if(renderTarget.colorFormat == null)
-            return;
+        if(renderTarget.colorFormat == null) return;
 
         var format = GLDefines.RGBA;
         if(renderTarget.colorFormat == ColorFormatRGB565)
@@ -595,11 +595,10 @@ class Graphics
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.COLOR_ATTACHMENT0, GLDefines.RENDERBUFFER, renderTarget.colorRenderbufferID);
     }
 
-    private function setupDepthRenderbuffer(renderTarget : RenderTarget) : Void
+    private function setupDepthRenderbuffer(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
-        if(renderTarget.depthFormat == null)
-            return;
+        if(renderTarget.depthFormat == null) return;
 
         var format = GLDefines.DEPTH_COMPONENT;
         if(renderTarget.depthFormat == DepthFormat16)
@@ -613,12 +612,11 @@ class Graphics
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.DEPTH_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthRenderbufferID);
     }
 
-    private function setupStencilRenderbuffer(renderTarget : RenderTarget) : Void
+    private function setupStencilRenderbuffer(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
 
-        if(renderTarget.stencilFormat == null)
-            return;
+        if(renderTarget.stencilFormat == null) return;
 
         renderTarget.stencilRenderbufferID = GL.createRenderbuffer();
         GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.stencilRenderbufferID);
@@ -626,12 +624,11 @@ class Graphics
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.STENCIL_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.stencilRenderbufferID);
     }
 
-    private function setupDepthStencilRenderbuffer(renderTarget : RenderTarget) : Void
+    private function setupDepthStencilRenderbuffer(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
 
-        if(renderTarget.stencilFormat == null && renderTarget.depthFormat == null)
-            return;
+        if(renderTarget.stencilFormat == null && renderTarget.depthFormat == null) return;
 
         if(renderTarget.stencilFormat == null)
         {
@@ -653,7 +650,7 @@ class Graphics
 
     }
 
-    public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool
+    public function isLoadedRenderTargetData(renderTarget : RenderTargetData) : Bool
     {
         if (graphicsDisabled) return false;
         return renderTarget.alreadyLoaded;
@@ -742,11 +739,11 @@ class Graphics
         }
     }
 
-    public function unloadRenderTarget(renderTarget : RenderTarget) : Void
+    public function unloadRenderTargetData(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
         var context = getCurrentContext();
-        if(renderTarget == context.defaultRenderTarget)
+        if(renderTarget == context.defaultRenderTargetData)
         {
             return;
         }
@@ -756,7 +753,7 @@ class Graphics
         renderTarget.alreadyLoaded = false;
     }
 
-    public function destroyRenderbuffers(renderTarget : RenderTarget) : Void
+    public function destroyRenderbuffers(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
         if(renderTarget.colorRenderbufferID != GL.nullRenderbuffer)
@@ -988,32 +985,44 @@ class Graphics
         GL.colorMask(writeRed, writeGreen, writeBlue, writeAlpha);
     }
 
-    public function pushRenderTarget(renderTarget : RenderTarget) : Void
+    public function pushRenderTargetData(renderTarget : RenderTargetData) : Void
     {
         if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         var framebuffer = renderTarget.framebufferID;
 
-        if(context.currentRenderTargetStack.first().framebufferID != framebuffer)
+        if(context.currentRenderTargetDataStack.first().framebufferID != framebuffer)
         {
             GL.bindFramebuffer(GLDefines.FRAMEBUFFER, framebuffer);
         }
 
-        context.currentRenderTargetStack.add(renderTarget);
+        context.currentRenderTargetDataStack.add(renderTarget);
     }
 
-    public function popRenderTarget() : Void
+    public function popRenderTargetData(): Null<RenderTargetData>
     {
-        if (graphicsDisabled) return;
+        if (graphicsDisabled) return null;
+
         var context = getCurrentContext();
 
-        context.currentRenderTargetStack.pop();
+        var topMost: RenderTargetData = context.currentRenderTargetDataStack.pop();
 
-        if(!context.currentRenderTargetStack.isEmpty())
+        if(!context.currentRenderTargetDataStack.isEmpty())
         {
-            GL.bindFramebuffer(GLDefines.FRAMEBUFFER, context.currentRenderTargetStack.first().framebufferID);
+            var nextRenderTarget = context.currentRenderTargetDataStack.first();
+
+            if(nextRenderTarget == context.defaultRenderTargetData)
+            {
+                GL.bindFramebuffer(GLDefines.FRAMEBUFFER, context.defaultRenderTargetData.framebufferID);
+            }
+            else
+            {
+                GL.bindFramebuffer(GLDefines.FRAMEBUFFER, context.currentRenderTargetDataStack.first().framebufferID);
+            }
         }
+
+        return topMost;
     }
 
     public function enableScissorTesting(enabled : Bool) : Void
@@ -1355,7 +1364,7 @@ class Graphics
         if (graphicsDisabled) return;
 
         var context = getCurrentContext();
-        var renderTarget = context.currentRenderTargetStack.first();
+        var renderTarget = context.currentRenderTargetDataStack.first();
 
         if (renderTarget.currentClearColor.r != color.r 
         	|| renderTarget.currentClearColor.g != color.g 

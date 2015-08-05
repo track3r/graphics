@@ -12,7 +12,7 @@ import gl.GLDefines;
 import gl.GLContext;
 import graphics.GraphicsTypes;
 import haxe.ds.GenericStack;
-import graphics.RenderTarget;
+import graphics.RenderTargetData;
 
 import haxe.ds.GenericStack;
 
@@ -34,15 +34,15 @@ class MainGraphicsContext extends GraphicsContext
             currentActiveTextures.push(GL.nullTexture);
         }
 
-        currentRenderTargetStack = new GenericStack<RenderTarget>();
+        currentRenderTargetDataStack = new GenericStack<RenderTargetData>();
         currentLineWidth = 1;
         currentDepthTesting = false;
         GLContext.setupMainContext(function ()
         {
             glContext = GLContext.getMainContext();
-            defaultRenderTarget = new RenderTarget();
-            defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
-            currentRenderTargetStack.add(defaultRenderTarget);
+            defaultRenderTargetData = new RenderTargetData();
+            defaultRenderTargetData.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
+            currentRenderTargetDataStack.add(defaultRenderTargetData);
             finishedCallback();
         });
     }

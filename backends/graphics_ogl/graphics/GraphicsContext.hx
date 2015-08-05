@@ -11,7 +11,7 @@ import gl.GLDefines;
 import gl.GLContext;
 import graphics.GraphicsTypes;
 import haxe.ds.GenericStack;
-import graphics.RenderTarget;
+import graphics.RenderTargetData;
 
 import haxe.ds.GenericStack;
 
@@ -33,8 +33,8 @@ class GraphicsContext
     public var currentAttributeFlags = 0;
     public var currentActiveTextures = new Array<GLTexture>();
     public var currentActiveTexture : Int;
-    public var defaultRenderTarget : RenderTarget;
-    public var currentRenderTargetStack : GenericStack<RenderTarget>;
+    public var defaultRenderTargetData : RenderTargetData;
+    public var currentRenderTargetDataStack : GenericStack<RenderTargetData>;
     public var currentBlendingEnabled : Null<Bool>;
     public var currentBlendFactorSrcRGB : BlendFactor;
     public var currentBlendFactorDestRGB : BlendFactor;
@@ -67,8 +67,8 @@ class GraphicsContext
         currentDepthTesting = null;
         currentFaceCullingMode = null;
 
-        defaultRenderTarget.invalidate();
-        defaultRenderTarget.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
+        defaultRenderTargetData.invalidate();
+        defaultRenderTargetData.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
 
         for (i in 0...maxActiveTextures)
         {

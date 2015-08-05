@@ -11,7 +11,7 @@ import types.SizeI;
 import types.Color4B;
 import graphics.GraphicsTypes;
 
-class RenderTarget
+class RenderTargetData
 {
     public var size : SizeI;
 
@@ -22,6 +22,8 @@ class RenderTarget
     public var colorTextureData : TextureData;
     public var depthTextureData : TextureData;
     public var stencilTextureData : TextureData;
+
+    public var clearColor : Color4B;
 
     public var currentClearColor : Color4B;
 
@@ -40,7 +42,8 @@ class RenderTarget
         stencilRenderbufferID = GL.nullRenderbuffer;
         depthStencilRenderbufferID = GL.nullRenderbuffer;
         framebufferID = GL.nullFramebuffer;
-        
+
+        clearColor = new Color4B();
         currentClearColor = new Color4B();
 
         alreadyLoaded = false;
