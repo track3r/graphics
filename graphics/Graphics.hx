@@ -102,6 +102,8 @@ extern class Graphics
     public function clearDepthBuffer() : Void;
     public function clearStencilBuffer() : Void;
     public function clearAllBuffers() : Void;
+    public function clearColorStencilBuffer(): Void;
+    public function clearStencilDepthBuffer(): Void;
 
     ///######## GRAPHICS STATE ########
     public function finishCommandPipeline() : Void;
@@ -114,6 +116,9 @@ extern class Graphics
     public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void;
     public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void;
     public function setStencilMask(writeMask : Int) : Void;
+
+    ///######## VIEWPORT ########
+    public function setViewPort(x: Int, y: Int, width: Int, height: Int);
 
 	public static var maxActiveTextures : Int;
 }

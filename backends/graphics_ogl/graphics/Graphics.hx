@@ -516,6 +516,8 @@ class Graphics
             return;
         }
 
+        var previousRenderTarget = context.currentRenderTargetDataStack.first();
+
         destroyRenderbuffers(renderTarget);
 
         if(!renderTarget.alreadyLoaded)
@@ -576,6 +578,8 @@ class Graphics
         {
             trace("Framebuffer error: 0x%x", result);
         }
+
+        GL.bindFramebuffer(GLDefines.FRAMEBUFFER, previousRenderTarget.framebufferID);
     }
 
     private function setupColorRenderbuffer(renderTarget : RenderTargetData) : Void
@@ -1393,6 +1397,19 @@ class Graphics
         if (graphicsDisabled) return;
         GL.clear(GLDefines.STENCIL_BUFFER_BIT);
     }
+
+    public function clearColorStencilBuffer(): Void
+    {
+        if (graphicsDisabled) return;
+        GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
+    }
+
+    public function clearStencilDepthBuffer(): Void
+    {
+        if (graphicsDisabled) return;
+        GL.clear(GLDefines.DEPTH_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
+    }
+
     public function clearAllBuffers() : Void
     {
         if (graphicsDisabled) return;
@@ -1457,4 +1474,11 @@ class Graphics
         if (graphicsDisabled) return;
         GL.stencilMask(writeMask);
     }
+
+    public function setViewPort(x: Int, y: Int, width: Int, height: Int)
+    {
+        if (graphicsDisabled) return;
+        GL.viewport(x,y,width,height);
+    }
+
 }

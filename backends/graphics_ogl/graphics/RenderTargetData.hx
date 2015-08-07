@@ -46,6 +46,8 @@ class RenderTargetData
         clearColor = new Color4B();
         currentClearColor = new Color4B();
 
+        size = new SizeI();
+
         alreadyLoaded = false;
     }
 
