@@ -1,5 +1,6 @@
 package graphics;
 
+import types.Color4F;
 import msignal.Signal.Signal2;
 import graphics.Graphics;
 import graphics.GraphicsContext;
@@ -10,7 +11,6 @@ import graphics.TextureData;
 
 import types.DataType;
 import types.Data;
-import types.Color4B;
 
 
 extern class Graphics
@@ -97,7 +97,7 @@ extern class Graphics
     public function present() : Void;
 
     ///######## RENDER TARGET ########
-	public function setClearColor(color : Color4B) : Void;
+    public function setClearColor(color: Color4F): Void;
 	public function clearColorBuffer() : Void;
     public function clearDepthBuffer() : Void;
     public function clearStencilBuffer() : Void;

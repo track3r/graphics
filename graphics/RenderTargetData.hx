@@ -6,13 +6,12 @@
  */
 package graphics;
 
-import types.SizeI;
-import types.Color4B;
 import graphics.GraphicsTypes;
 
 extern class RenderTargetData
 {
-    public var size : SizeI;
+    public var width: UInt;
+    public var height: UInt;
 
     public var colorFormat : ColorFormat;
     public var depthFormat : DepthFormat;
@@ -21,6 +20,4 @@ extern class RenderTargetData
     public var colorTextureData : TextureData;
     public var depthTextureData : TextureData;
     public var stencilTextureData : TextureData;
-
-    public var clearColor : Color4B;
 }

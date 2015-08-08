@@ -13,7 +13,8 @@ import graphics.GraphicsTypes;
 
 class RenderTargetData
 {
-    public var size : SizeI;
+    public var width: UInt = 0;
+    public var height: UInt = 0;
 
     public var colorFormat : ColorFormat;
     public var depthFormat : DepthFormat;
@@ -22,10 +23,6 @@ class RenderTargetData
     public var colorTextureData : TextureData;
     public var depthTextureData : TextureData;
     public var stencilTextureData : TextureData;
-
-    public var clearColor : Color4B;
-
-    public var currentClearColor : Color4B;
 
     /// GL Specific data
     public var alreadyLoaded : Bool;
@@ -43,17 +40,14 @@ class RenderTargetData
         depthStencilRenderbufferID = GL.nullRenderbuffer;
         framebufferID = GL.nullFramebuffer;
 
-        clearColor = new Color4B();
-        currentClearColor = new Color4B();
-
-        size = new SizeI();
-
         alreadyLoaded = false;
+
+        width = 0;
+        height = 0;
     }
 
     public function invalidate(): Void
     {
-        currentClearColor.setRGBA(0, 0, 0, 255);
-    }
 
+    }
 }

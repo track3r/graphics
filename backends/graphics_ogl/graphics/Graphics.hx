@@ -1,5 +1,6 @@
 package graphics;
 
+import types.Color4F;
 import graphics.RenderTargetData;
 import graphics.GraphicsContext;
 import types.Color4B;
@@ -69,17 +70,16 @@ class Graphics
         setStencilMask(0xFFFFFFFF);
         GL.clearStencil(0);
 
-        GL.clearColor(0, 0, 0, 0);
-
         setColorMask(true, true, true, true);
 
-        var clearColor : Color4B = new Color4B();
-        clearColor.setRGBA(
-        	Std.int(GraphicsInitialState.clearColorRed * 255), 
-        	Std.int(GraphicsInitialState.clearColorGreen * 255), 
-        	Std.int(GraphicsInitialState.clearColorBlue * 255), 
-        	Std.int(GraphicsInitialState.clearColorAlpha * 255));
-        setClearColor(clearColor);
+        var color: Color4F = new Color4F();
+
+        color.r = GraphicsInitialState.clearColorRed;
+        color.g = GraphicsInitialState.clearColorGreen;
+        color.b = GraphicsInitialState.clearColorBlue;
+        color.a = GraphicsInitialState.clearColorAlpha;
+
+        setClearColor(color);
 
         clearAllBuffers();
 
@@ -595,7 +595,7 @@ class Graphics
 
         renderTarget.colorRenderbufferID = GL.createRenderbuffer();
         GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.colorRenderbufferID);
-        GL.renderbufferStorage(GLDefines.RENDERBUFFER, format, renderTarget.size.width, renderTarget.size.height);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, format, renderTarget.width, renderTarget.height);
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.COLOR_ATTACHMENT0, GLDefines.RENDERBUFFER, renderTarget.colorRenderbufferID);
     }
 
@@ -612,7 +612,7 @@ class Graphics
 
         renderTarget.depthRenderbufferID = GL.createRenderbuffer();
         GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.depthRenderbufferID);
-        GL.renderbufferStorage(GLDefines.RENDERBUFFER, format, renderTarget.size.width, renderTarget.size.height);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, format, renderTarget.width, renderTarget.height);
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.DEPTH_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthRenderbufferID);
     }
 
@@ -624,7 +624,7 @@ class Graphics
 
         renderTarget.stencilRenderbufferID = GL.createRenderbuffer();
         GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.stencilRenderbufferID);
-        GL.renderbufferStorage(GLDefines.RENDERBUFFER, GLDefines.STENCIL_INDEX8, renderTarget.size.width, renderTarget.size.height);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, GLDefines.STENCIL_INDEX8, renderTarget.width, renderTarget.height);
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.STENCIL_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.stencilRenderbufferID);
     }
 
@@ -648,7 +648,7 @@ class Graphics
 
         renderTarget.depthStencilRenderbufferID = GL.createRenderbuffer();
         GL.bindRenderbuffer(GLDefines.RENDERBUFFER, renderTarget.depthStencilRenderbufferID);
-        GL.renderbufferStorage(GLDefines.RENDERBUFFER, GLDefines.DEPTH24_STENCIL8, renderTarget.size.width, renderTarget.size.height);
+        GL.renderbufferStorage(GLDefines.RENDERBUFFER, GLDefines.DEPTH24_STENCIL8, renderTarget.width, renderTarget.height);
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.STENCIL_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthStencilRenderbufferID);
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.DEPTH_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthStencilRenderbufferID);
 
@@ -1360,24 +1360,12 @@ class Graphics
             context.currentActiveTexture = position;
 			GL.activeTexture(position + GLDefines.TEXTURE0);
 		}
-
 	}
 
-    public function setClearColor(color : Color4B) : Void
+    public function setClearColor(color: Color4F): Void
     {
         if (graphicsDisabled) return;
-
-        var context = getCurrentContext();
-        var renderTarget = context.currentRenderTargetDataStack.first();
-
-        if (renderTarget.currentClearColor.r != color.r 
-        	|| renderTarget.currentClearColor.g != color.g 
-        	|| renderTarget.currentClearColor.b != color.b
-        	|| renderTarget.currentClearColor.a != color.a)
-        {
-            renderTarget.currentClearColor.data.writeData(color.data);
-            GL.clearColor(color.r/255.0, color.g/255.0, color.b/255.0, color.a/255.0);
-        }
+        GL.clearColor(color.r, color.g, color.b, color.a);
     }
 
     public function clearColorBuffer() : Void
@@ -1404,10 +1392,10 @@ class Graphics
         GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
     }
 
-    public function clearStencilDepthBuffer(): Void
+    public function clearColorDepthBuffer(): Void
     {
         if (graphicsDisabled) return;
-        GL.clear(GLDefines.DEPTH_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
+        GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.DEPTH_BUFFER_BIT);
     }
 
     public function clearAllBuffers() : Void
