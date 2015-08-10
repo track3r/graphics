@@ -51,18 +51,18 @@ extern class Graphics
     public function loadFilledIndexBuffer(meshData : MeshData) : Void;///called by loadFilledMeshData
 	public function loadFilledShader(shader : Shader) : Void;
 	public function loadFilledTextureData(textureData : TextureData) : Void;
-    public function loadFilledRenderTarget(renderTarget : RenderTarget) : Void;
+    public function loadFilledRenderTargetData(renderTarget : RenderTargetData) : Void;
 
     public function isLoadedMeshData(meshData : MeshData) : Bool;
     public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool; ///called by isLoadedMeshData
     public function isLoadedShader(shader : Shader) : Bool;
     public function isLoadedTextureData(textureData : TextureData) : Bool;
-    public function isLoadedRenderTarget(renderTarget : RenderTarget) : Bool;
+    public function isLoadedRenderTargetData(renderTarget : RenderTargetData) : Bool;
 
     public function unloadMeshData(meshData : MeshData) : Void;
     public function unloadShader(shader : Shader) : Void;
     public function unloadTextureData(textureData : TextureData) : Void;
-    public function unloadRenderTarget(renderTarget : RenderTarget) : Void;
+    public function unloadRenderTargetData(renderTarget : RenderTargetData) : Void;
 
     ///######## BLENDING ########
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void;
@@ -81,8 +81,10 @@ extern class Graphics
     public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void;
 
     ///######## RENDER TARGET ########
-    public function pushRenderTarget(renderTarget : RenderTarget) : Void;
-    public function popRenderTarget() : Null<RenderTarget>;
+    public function pushRenderTargetData(renderTarget : RenderTargetData): Void;
+    public function popRenderTargetData(): Null<RenderTargetData>;
+    public function discardRenderTargetData(renderTarget : RenderTargetData): Void; // Does nothing, if not supported
+    public function getDefaultRenderTargetData(): RenderTargetData;
 
     ///######## ENABLE SCISSOR TESTING ########
     public function enableScissorTesting(enabled : Bool) : Void;
@@ -118,7 +120,7 @@ extern class Graphics
     public function setStencilMask(writeMask : Int) : Void;
 
     ///######## VIEWPORT ########
-    public function setViewPort(x: Int, y: Int, width: Int, height: Int);
+    public function setViewPort(x: Int, y: Int, width: Int, height: Int): Void;
 
 	public static var maxActiveTextures : Int;
 }

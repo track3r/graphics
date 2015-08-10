@@ -24,6 +24,10 @@ class RenderTargetData
     public var depthTextureData : TextureData;
     public var stencilTextureData : TextureData;
 
+    public var discardColor: Bool;
+    public var discardDepth: Bool;
+    public var discardStencil: Bool;
+
     /// GL Specific data
     public var alreadyLoaded : Bool;
     public var framebufferID : GLFramebuffer;
@@ -39,6 +43,10 @@ class RenderTargetData
         stencilRenderbufferID = GL.nullRenderbuffer;
         depthStencilRenderbufferID = GL.nullRenderbuffer;
         framebufferID = GL.nullFramebuffer;
+
+        discardColor = false;
+        discardDepth = false;
+        discardStencil = false;
 
         alreadyLoaded = false;
 

@@ -20,4 +20,9 @@ extern class RenderTargetData
     public var colorTextureData : TextureData;
     public var depthTextureData : TextureData;
     public var stencilTextureData : TextureData;
+
+    // False by default
+    public var discardColor: Bool;
+    public var discardDepth: Bool;
+    public var discardStencil: Bool;
 }

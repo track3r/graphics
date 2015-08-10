@@ -1,5 +1,7 @@
 package graphics;
 
+
+import gl.GLExtDefines;
 import types.Color4F;
 import graphics.RenderTargetData;
 import graphics.GraphicsContext;
@@ -15,6 +17,10 @@ import graphics.GraphicsInitialState;
 
 import gl.GL;
 import gl.GLDefines;
+
+import gl.GLExt;
+import gl.GLExtDefines;
+
 import gl.GLContext;
 
 import types.DataType;
@@ -1027,6 +1033,27 @@ class Graphics
         }
 
         return topMost;
+    }
+
+    public function getDefaultRenderTargetData(): RenderTargetData
+    {
+        var context = getCurrentContext();
+        return context.defaultRenderTargetData;
+    }
+
+    public function discardRenderTargetData(renderTarget: RenderTargetData): Void
+    {
+        if (graphicsDisabled) return;
+
+        var context = getCurrentContext();
+
+        if (!context.supportsDiscardRenderTarget) return;
+
+        var colorFlag: Int = renderTarget.discardColor ? GLDefines.COLOR_ATTACHMENT0 : 0;
+        var depthFlag: Int = renderTarget.discardDepth ? GLDefines.DEPTH_ATTACHMENT  : 0;
+        var stencilFlag: Int = renderTarget.discardStencil ? GLDefines.STENCIL_ATTACHMENT  : 0;
+
+        GLExt.discardFramebufferEXT(GLDefines.FRAMEBUFFER, colorFlag, depthFlag, stencilFlag);
     }
 
     public function enableScissorTesting(enabled : Bool) : Void

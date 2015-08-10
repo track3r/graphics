@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import haxe.ds.Vector;
 import gl.GL;
 import gl.GLDefines;
 import gl.GLContext;
@@ -17,6 +18,12 @@ import haxe.ds.GenericStack;
 
 class GraphicsContext
 {
+    // Is set on initialisation
+    static public var vendor(default, null): Null<String>;
+    static public var renderer(default, null): Null<String>;
+    static public var version(default, null): Null<String>;
+    static public var extensions(default, null): Vector<String>;
+
     static public var maxActiveTextures = 16;
 
     public var depthWrite : Null<Bool> = null;
@@ -43,9 +50,12 @@ class GraphicsContext
     public var currentBlendModeRGB : BlendMode;
     public var currentBlendModeA : BlendMode;
     public var currentFaceCullingMode : Null<FaceCullingMode>;
-    public var currentLineWidth : Null<Float> = 1.0;
-    public var currentDepthTesting : Null<Bool> = true;
+    public var currentLineWidth : Null<Float>;
+    public var currentDepthTesting : Null<Bool>;
     public var glContext : GLContext;
+
+    // API Extensions
+    public var supportsDiscardRenderTarget(default, null): Bool = false;
 
     public function new() : Void
     {
