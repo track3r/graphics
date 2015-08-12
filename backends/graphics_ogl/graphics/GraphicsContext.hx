@@ -22,7 +22,7 @@ class GraphicsContext
     static public var vendor(default, null): Null<String>;
     static public var renderer(default, null): Null<String>;
     static public var version(default, null): Null<String>;
-    static public var extensions(default, null): Vector<String>;
+    static public var extensions(default, null): Null<String>;
 
     static public var maxActiveTextures = 16;
 
@@ -56,7 +56,7 @@ class GraphicsContext
 
     // API Extensions
     public var supportsDiscardFramebuffer(default, null): Bool = false;
-    public var supportsVertexArrayObject(default, null): Bool = false;
+    public var supportsVertexArrayObjects(default, null): Bool = false;
 
     public function new() : Void
     {

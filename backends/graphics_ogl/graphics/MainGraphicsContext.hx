@@ -63,42 +63,38 @@ class MainGraphicsContext extends GraphicsContext
         GraphicsContext.version = GL.getParameter(GLDefines.VERSION);
         GraphicsContext.renderer = GL.getParameter(GLDefines.RENDERER);
 
-        var extensions: Vector<String> = null;
-        var extensionsArray: Array<String> = null;
-
 #if html5
-        extensionsArray = GL.getSupportedExtensions();
-        extensions = Vector.fromArrayCopy(extensionsArray);
+        GraphicsContext.extensions = Std.string(GL.getSupportedExtensions());
 #else
         var extensionsString: String = GL.getParameter(GLDefines.EXTENSIONS);
 
-        if (extensionsString != null)
+        if (extensionsString == null)
         {
-            extensionsArray = extensionsString.split(" ");
-            extensions = new Vector(extensionsArray.length - 1);
+            extensionsString = "GL_INVALID_ENUM";
+        }
 
-            for (index in 0...extensionsArray.length - 1)
-            {
-                extensions[index] = extensionsArray[index];
-            }
-        }
-        else
-        {
-            extensionsArray = new Array();
-            extensions = new Vector(1);
-            extensions[0] = "GL_INVALID_ENUM";
-        }
+        GraphicsContext.extensions = extensionsString;
 #end
-        GraphicsContext.extensions = extensions;
 
-        if (extensionsArray.indexOf(GLExtDefines.EXT_discard_framebuffer) != -1)
+        trace("##### Graphic Hardware Description #####");
+        GraphicsContext.vendor != null ? trace("Vendor: ", GraphicsContext.vendor) : trace("Vendor: null");
+        GraphicsContext.version != null ? trace("Version: ", GraphicsContext.version) : trace("Version: null");
+        GraphicsContext.renderer != null ? trace("Renderer: ", GraphicsContext.renderer) : trace("Renderer: null");
+        GraphicsContext.extensions != null ? trace("Extensions: ", GraphicsContext.extensions) : trace("Extensions: null");
+        trace("##### Enabled Extensions #####");
+
+        if (GraphicsContext.extensions.indexOf(GLExtDefines.EXT_discard_framebuffer) != -1)
         {
             this.supportsDiscardFramebuffer = true;
+            trace(GLExtDefines.EXT_discard_framebuffer);
         }
 
-        if (extensionsArray.indexOf(GLExtDefines.OES_vertex_array_object) != -1)
+        if (GraphicsContext.extensions.indexOf(GLExtDefines.OES_vertex_array_object) != -1)
         {
-            this.supportsVertexArrayObject = true;
+            this.supportsVertexArrayObjects = true;
+            trace(GLExtDefines.OES_vertex_array_object);
         }
+
+        trace("########################################");
     }
 }

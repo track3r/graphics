@@ -730,7 +730,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (context.supportsVertexArrayObject)
+        if (context.supportsVertexArrayObjects)
         {
             if (meshData.vertexArrayObject != GLExt.nullVertexArrayObject)
             {
@@ -1210,7 +1210,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (context.supportsVertexArrayObject)
+        if (context.supportsVertexArrayObjects)
         {
             if (data.vertexArrayObject == GLExt.nullVertexArrayObject)
             {
@@ -1242,7 +1242,7 @@ class Graphics
 			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, GL.nullBuffer);
 		}
 
-        if (context.supportsVertexArrayObject)
+        if (context.supportsVertexArrayObjects)
         {
             enableVertexAttributes(data);
         }
@@ -1274,7 +1274,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (context.supportsVertexArrayObject)
+        if (context.supportsVertexArrayObjects)
         {
             if (data.vertexArrayObject != GLExt.nullVertexArrayObject)
             {
