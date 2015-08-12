@@ -55,7 +55,8 @@ class GraphicsContext
     public var glContext : GLContext;
 
     // API Extensions
-    public var supportsDiscardRenderTarget(default, null): Bool = false;
+    public var supportsDiscardFramebuffer(default, null): Bool = false;
+    public var supportsVertexArrayObject(default, null): Bool = false;
 
     public function new() : Void
     {

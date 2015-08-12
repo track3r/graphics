@@ -727,6 +727,17 @@ class Graphics
         {
             unloadMeshDataBuffer(meshData.indexBuffer);
         }
+
+        var context = getCurrentContext();
+
+        if (context.supportsVertexArrayObject)
+        {
+            if (meshData.vertexArrayObject != GLExt.nullVertexArrayObject)
+            {
+                GLExt.deleteVertexArrayOES(meshData.vertexArrayObject);
+                meshData.vertexArrayObject = GLExt.nullVertexArrayObject;
+            }
+        }
     }
 
     public function unloadShader(shader : Shader) : Void
@@ -1047,11 +1058,11 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (!context.supportsDiscardRenderTarget) return;
+        if (!context.supportsDiscardFramebuffer) return;
 
         var colorFlag: Int = renderTarget.discardColor ? GLDefines.COLOR_ATTACHMENT0 : 0;
-        var depthFlag: Int = renderTarget.discardDepth ? GLDefines.DEPTH_ATTACHMENT  : 0;
-        var stencilFlag: Int = renderTarget.discardStencil ? GLDefines.STENCIL_ATTACHMENT  : 0;
+        var depthFlag: Int = renderTarget.discardDepth ? GLDefines.DEPTH_ATTACHMENT : 0;
+        var stencilFlag: Int = renderTarget.discardStencil ? GLDefines.STENCIL_ATTACHMENT : 0;
 
         GLExt.discardFramebufferEXT(GLDefines.FRAMEBUFFER, colorFlag, depthFlag, stencilFlag);
     }
@@ -1197,14 +1208,30 @@ class Graphics
 			return;
 		}
 
-		if(data.attributeBuffer != null)
-		{
-			GL.bindBuffer(GLDefines.ARRAY_BUFFER, data.attributeBuffer.glBuffer);
-		}
-		else
-		{
-			GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
-		}
+        var context = getCurrentContext();
+
+        if (context.supportsVertexArrayObject)
+        {
+            if (data.vertexArrayObject == GLExt.nullVertexArrayObject)
+            {
+                data.vertexArrayObject = GLExt.createVertexArrayOES();
+                GLExt.bindVertexArrayOES(data.vertexArrayObject);
+            }
+            else
+            {
+                GLExt.bindVertexArrayOES(data.vertexArrayObject);
+                return;
+            }
+        }
+
+        if(data.attributeBuffer != null)
+        {
+            GL.bindBuffer(GLDefines.ARRAY_BUFFER, data.attributeBuffer.glBuffer);
+        }
+        else
+        {
+            GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
+        }
 
 		if(data.indexBuffer != null)
 		{
@@ -1215,7 +1242,14 @@ class Graphics
 			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, GL.nullBuffer);
 		}
 
-		enableVertexAttributes(data);
+        if (context.supportsVertexArrayObject)
+        {
+            enableVertexAttributes(data);
+        }
+        else
+        {
+            enableVertexAttributesGlobal(data);
+        }
 
 		for(attributeConfig in data.attributeConfigs)
 		{
@@ -1238,6 +1272,17 @@ class Graphics
 	{
         if (graphicsDisabled) return;
 
+        var context = getCurrentContext();
+
+        if (context.supportsVertexArrayObject)
+        {
+            if (data.vertexArrayObject != GLExt.nullVertexArrayObject)
+            {
+                GLExt.bindVertexArrayOES(GLExt.nullVertexArrayObject);
+                return;
+            }
+        }
+
         if(data.attributeBuffer != null)
         {
             GL.bindBuffer(GLDefines.ARRAY_BUFFER, GL.nullBuffer);
@@ -1249,7 +1294,17 @@ class Graphics
         }
 	}
 
-	private function enableVertexAttributes(meshData : MeshData)
+    private function enableVertexAttributes(meshData : MeshData)
+    {
+        if (graphicsDisabled) return;
+
+        for(attributeConfig in meshData.attributeConfigs)
+        {
+            GL.enableVertexAttribArray(attributeConfig.attributeNumber);
+        }
+    }
+
+	private function enableVertexAttributesGlobal(meshData : MeshData)
 	{
         if (graphicsDisabled) return;
 
@@ -1260,7 +1315,6 @@ class Graphics
 		}
 
 		enableVertexAttributesFromCombinedAttributes(combinedAttributes);
-
 	}
 
 	private function enableVertexAttributesFromCombinedAttributes(combinedFlagsFromVertexAttributes : Int)
@@ -1283,7 +1337,7 @@ class Graphics
 				}
 				else
 				{
-					GL.disableVertexAttribArray(i);
+                    GL.disableVertexAttribArray(i);
 				}
 			}
 

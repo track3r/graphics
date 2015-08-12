@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import gl.GLExt;
 import graphics.GraphicsTypes;
 import graphics.MeshData;
 
@@ -56,6 +57,9 @@ class MeshData
     public var indexDataType : DataType;
     public var indexCountPerBakedFrame : Array<Int>;
     public var indexOffsetPerBakedFrame : Array<Int>;
+
+    /// specific to ogl
+    public var vertexArrayObject: GLVertexArrayObject = GLExt.nullVertexArrayObject; // Only used if supported
 
     public function new() : Void {}
 }

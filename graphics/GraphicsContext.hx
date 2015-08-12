@@ -28,6 +28,8 @@ extern class GraphicsContext
     public function invalidateCaches(): Void;
 
     // API Extensions. This should never be invalidated after initialisation,
-    // since we assume that the graphics hardware will not change on runtime.
-    public var supportsDiscardRenderTarget(default, null): Bool = false;
+    // since we assume that the graphics hardware will not change at runtime.
+    public var supportsDiscardFramebuffer(default, null): Bool = false;
+    public var supportsVertexArrayObject(default, null): Bool = false;
+
 }    

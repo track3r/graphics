@@ -93,7 +93,12 @@ class MainGraphicsContext extends GraphicsContext
 
         if (extensionsArray.indexOf(GLExtDefines.EXT_discard_framebuffer) != -1)
         {
-            this.supportsDiscardRenderTarget = true;
+            this.supportsDiscardFramebuffer = true;
+        }
+
+        if (extensionsArray.indexOf(GLExtDefines.OES_vertex_array_object) != -1)
+        {
+            this.supportsVertexArrayObject = true;
         }
     }
 }
