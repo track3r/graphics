@@ -730,7 +730,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (context.supportsVertexArrayObjects)
+        if (context.glContext.supportsVertexArrayObjects)
         {
             if (meshData.vertexArrayObject != GLExt.nullVertexArrayObject)
             {
@@ -1058,7 +1058,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (!context.supportsDiscardFramebuffer) return;
+        if (!context.glContext.supportsDiscardFramebuffer) return;
 
         var colorFlag: Int = renderTarget.discardColor ? GLDefines.COLOR_ATTACHMENT0 : 0;
         var depthFlag: Int = renderTarget.discardDepth ? GLDefines.DEPTH_ATTACHMENT : 0;
@@ -1210,7 +1210,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (context.supportsVertexArrayObjects)
+        if (context.glContext.supportsVertexArrayObjects)
         {
             if (data.vertexArrayObject == GLExt.nullVertexArrayObject)
             {
@@ -1242,7 +1242,7 @@ class Graphics
 			GL.bindBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, GL.nullBuffer);
 		}
 
-        if (context.supportsVertexArrayObjects)
+        if (context.glContext.supportsVertexArrayObjects)
         {
             enableVertexAttributes(data);
         }
@@ -1274,7 +1274,7 @@ class Graphics
 
         var context = getCurrentContext();
 
-        if (context.supportsVertexArrayObjects)
+        if (context.glContext.supportsVertexArrayObjects)
         {
             if (data.vertexArrayObject != GLExt.nullVertexArrayObject)
             {

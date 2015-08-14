@@ -18,12 +18,6 @@ import haxe.ds.GenericStack;
 
 class GraphicsContext
 {
-    // Is set on initialisation
-    static public var vendor(default, null): Null<String>;
-    static public var renderer(default, null): Null<String>;
-    static public var version(default, null): Null<String>;
-    static public var extensions(default, null): Null<String>;
-
     static public var maxActiveTextures = 16;
 
     public var depthWrite : Null<Bool> = null;
@@ -53,10 +47,6 @@ class GraphicsContext
     public var currentLineWidth : Null<Float>;
     public var currentDepthTesting : Null<Bool>;
     public var glContext : GLContext;
-
-    // API Extensions
-    public var supportsDiscardFramebuffer(default, null): Bool = false;
-    public var supportsVertexArrayObjects(default, null): Bool = false;
 
     public function new() : Void
     {
