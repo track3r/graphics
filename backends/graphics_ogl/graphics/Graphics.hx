@@ -762,6 +762,11 @@ class Graphics
         if (graphicsDisabled) return;
         if(textureData.alreadyLoaded)
         {
+            var context = getCurrentContext();
+            if(context.currentActiveTextures[context.currentActiveTexture] == textureData.glTexture)
+            {
+                context.currentActiveTextures[context.currentActiveTexture] = GL.nullTexture;
+            }
             GL.deleteTexture(textureData.glTexture);
             textureData.alreadyLoaded = false;
         }
