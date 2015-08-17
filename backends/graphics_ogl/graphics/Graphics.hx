@@ -1103,7 +1103,12 @@ class Graphics
 			switch(uniformInterface.uniformType)
 			{
                 case UniformTypeSingleInt:
-                    GL.uniform1i(uniformInterface.uniformLocation, uniformInterface.data.readInt(DataTypeInt32));
+                    var nextValue: Int = uniformInterface.data.readInt(DataTypeInt32);
+                    if (context.currentUniformTypeSingleInt != nextValue)
+                    {
+                        context.currentUniformTypeSingleInt = nextValue;
+                        GL.uniform1i(uniformInterface.uniformLocation, nextValue);
+                    }
                 case UniformTypeSingleIntArray:
                     GL.uniform1iv(uniformInterface.uniformLocation, uniformInterface.dataActiveCount, uniformInterface.data);
                 case UniformTypeSingleFloat:
@@ -1446,7 +1451,14 @@ class Graphics
     public function setClearColor(color: Color4F): Void
     {
         if (graphicsDisabled) return;
-        GL.clearColor(color.r, color.g, color.b, color.a);
+
+        var context = getCurrentContext();
+
+        if (context.currentClearColor.isNotEqual(color))
+        {
+            context.currentClearColor.set(color);
+            GL.clearColor(color.r, color.g, color.b, color.a);
+        }
     }
 
     public function clearColorBuffer() : Void

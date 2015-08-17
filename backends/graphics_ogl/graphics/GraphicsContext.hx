@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import types.Color4F;
 import haxe.ds.Vector;
 import gl.GL;
 import gl.GLDefines;
@@ -46,11 +47,17 @@ class GraphicsContext
     public var currentFaceCullingMode : Null<FaceCullingMode>;
     public var currentLineWidth : Null<Float>;
     public var currentDepthTesting : Null<Bool>;
+
+    public var currentUniformTypeSingleInt: Int = -1;
+    public var currentClearColor: Color4F;
+
     public var glContext : GLContext;
 
     public function new() : Void
     {
         ///only the main context is currently implemented fully
+        currentClearColor = new Color4F();
+        currentClearColor.setRGBA(-1.0, -1.0 ,-1.0 ,-1.0);
     }
 
     public function invalidateCaches(): Void
@@ -67,6 +74,9 @@ class GraphicsContext
         depthWrite = null;
         currentDepthTesting = null;
         currentFaceCullingMode = null;
+
+        currentUniformTypeSingleInt = -1;
+        currentClearColor.setRGBA(-1.0, -1.0 ,-1.0 ,-1.0);
 
         defaultRenderTargetData.invalidate();
         defaultRenderTargetData.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
