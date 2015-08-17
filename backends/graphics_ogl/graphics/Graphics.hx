@@ -95,6 +95,13 @@ class Graphics
         enableScissorTesting(false);
     }
 
+    public function rebindDefaultBackbuffer() : Void
+    {
+    // TODO loop through all contexts, when we have them
+        var context = getCurrentContext();
+        context.rebindDefaultBackbuffer();
+    }
+
     public static function initialize(callback:Void->Void)
     {
         sharedInstance = new Graphics();
@@ -1203,6 +1210,8 @@ class Graphics
 		}
 	}
 
+    // TODO Check bakedFrame feature with support of VertexArrayObjects (caching).
+    // TODO Maybe implement bindBakedMeshData method.
 	public function bindMeshData(data : MeshData, bakedFrame : Int) 
 	{
         if (graphicsDisabled) return;

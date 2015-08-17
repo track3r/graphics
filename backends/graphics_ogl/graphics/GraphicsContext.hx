@@ -78,12 +78,21 @@ class GraphicsContext
         currentUniformTypeSingleInt = -1;
         currentClearColor.setRGBA(-1.0, -1.0 ,-1.0 ,-1.0);
 
-        defaultRenderTargetData.invalidate();
-        defaultRenderTargetData.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
-
         for (i in 0...maxActiveTextures)
         {
             currentActiveTextures[i] = GL.nullTexture;
         }
+    }
+
+    public function rebindDefaultBackbuffer() : Void
+    {
+        defaultRenderTargetData.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
+
+        while(!currentRenderTargetDataStack.isEmpty())
+        {
+            currentRenderTargetDataStack.pop();
+        }
+
+        currentRenderTargetDataStack.add(defaultRenderTargetData);
     }
 }

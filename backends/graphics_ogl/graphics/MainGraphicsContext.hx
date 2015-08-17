@@ -45,7 +45,7 @@ class MainGraphicsContext extends GraphicsContext
         {
             glContext = GLContext.getMainContext();
             defaultRenderTargetData = new RenderTargetData();
-            defaultRenderTargetData.framebufferID = GL.getParameter(GLDefines.FRAMEBUFFER_BINDING);
+            rebindDefaultBackbuffer();
             defaultRenderTargetData.discardColor = true;
             defaultRenderTargetData.discardDepth = true; // TODO change that the default renderTarget is initialized with just the stencil attachment
             defaultRenderTargetData.discardStencil = true;

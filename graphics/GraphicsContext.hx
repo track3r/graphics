@@ -21,4 +21,5 @@ extern class GraphicsContext
     public var preserveDrawingBuffer: Bool;
 
     public function invalidateCaches(): Void;
+    public function rebindDefaultBackbuffer() : Void; // Just needed when the context was lost and is recreated;
 }    

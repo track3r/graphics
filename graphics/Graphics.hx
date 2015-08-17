@@ -26,6 +26,7 @@ extern class Graphics
 	private function new() : Void;
 
     public function setDefaultGraphicsState() : Void;
+    public function rebindDefaultBackbuffer() : Void; // Just needed when the context was lost and is recreated;
 
 	public static function instance() : Graphics;
 	public static function initialize(onInitializd:Void->Void) : Void;

@@ -36,7 +36,7 @@ class RenderTargetData
     public var stencilRenderbufferID : GLRenderbuffer;
     public var depthStencilRenderbufferID : GLRenderbuffer;
 
-    public function new () : Void
+    public function new() : Void
     {
         colorRenderbufferID = GL.nullRenderbuffer;
         depthRenderbufferID = GL.nullRenderbuffer;
@@ -52,10 +52,5 @@ class RenderTargetData
 
         width = 0;
         height = 0;
-    }
-
-    public function invalidate(): Void
-    {
-
     }
 }
