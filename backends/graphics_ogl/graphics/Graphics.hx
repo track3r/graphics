@@ -360,7 +360,7 @@ class Graphics
 
 		#if debug
 		var log = GL.getProgramInfoLog(shaderProgramName);
-		if(log.length > 0)
+		if(log.length > 1)
 		{
 			trace("Shader program log:");
 			trace(log);
