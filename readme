@@ -12,7 +12,9 @@ and DirectX.
 
 - Removed backend for Flash, since we are not supporting it anymore.
 - Renamed RenderTarget to RenderTargetData to be more consistent with other data types.
-
+- Replaced Color4B type by Color4F type for clearColor.
+- Using discardFramebuffer extensions if available.
+- Using Vertex Array Object if available.
 
 == v5.0.0 ==
 
