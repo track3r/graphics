@@ -11,10 +11,10 @@ import graphics.GraphicsTypes;
 
 extern class GraphicsContext
 {
-    public var depthWrite : Null<Bool> = null;
+    public var depthWrite : Null<Bool>;
     public var depthFunc : DepthFunc;
 
-	public var stencilingEnabled : Null<Bool> = null;
+	public var stencilingEnabled : Null<Bool>;
 
     public var antialias: Bool;
     public var premultipliedAlpha: Bool;

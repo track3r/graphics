@@ -2,6 +2,7 @@ package graphics;
 
 import types.Color4F;
 import msignal.Signal.Signal2;
+import msignal.Signal.Signal0;
 import graphics.Graphics;
 import graphics.GraphicsContext;
 import graphics.GraphicsTypes;
