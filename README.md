@@ -6,9 +6,11 @@ and DirectX.
 
 = Release Log =
 
-== v6.0.0 ==
+== v7.0.0 ==
 
-=== Graphics ===
+- OpenGL major
+
+== v6.0.0 ==
 
 - Removed backend for Flash, since we are not supporting it anymore.
 - Renamed RenderTarget to RenderTargetData to be more consistent with other data types.
@@ -17,8 +19,6 @@ and DirectX.
 - Using Vertex Array Object if available.
 
 == v5.0.0 ==
-
-=== Graphics ===
 
 - Updated dependency to OpenGL library version 5
 - Set minimum version of flash to 11.8 to support npot textures and 4k by 4k textures.

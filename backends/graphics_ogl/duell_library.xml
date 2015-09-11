@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <library xmlns="duell">
 
-	<duelllib name="opengl" version="5.1.0+" />
+	<duelllib name="opengl" version="6.0.0+" />
 
 </library>
