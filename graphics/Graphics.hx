@@ -40,12 +40,12 @@ extern class Graphics
     public function getMainContext() : GraphicsContext;
 
     public function loadFilledContext(context : GraphicsContext) : Void;
-    public function isLoadedContext(context : GraphicsContext) : Void;
+    public function isLoadedContext(context : GraphicsContext) : Bool;
     public function unloadFilledContext(context : GraphicsContext) : Void;
 
-    public function getCurrentContext() : GraphicsContext;
+    public function getCurrentContext() : Null<GraphicsContext>;
     public function pushContext(context : GraphicsContext) : Void;
-    public function popContext() : GraphicsContext;
+    public function popContext() : Null<GraphicsContext>;
 
     ///######## LOAD ########
 	public function loadFilledMeshData(meshData : MeshData) : Void;
@@ -86,7 +86,7 @@ extern class Graphics
     public function pushRenderTargetData(renderTarget : RenderTargetData): Void;
     public function popRenderTargetData(): Null<RenderTargetData>;
     public function discardRenderTargetData(renderTarget : RenderTargetData): Void; // Does nothing, if not supported
-    public function getDefaultRenderTargetData(): RenderTargetData;
+    public function getDefaultRenderTargetData(): Null<RenderTargetData>;
 
     ///######## ENABLE SCISSOR TESTING ########
     public function enableScissorTesting(enabled : Bool) : Void;

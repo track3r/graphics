@@ -32,29 +32,29 @@ import msignal.Signal;
 
 class Graphics
 {
-    public var onRender(default, null) : Signal0;
+    public var onRender(default, null): Signal0;
 
-    private var mainContext : GraphicsContext;
+    private var mainContext: GraphicsContext;
 
-    public var onMainContextRecreated : Signal0;
-    public var onMainContextSizeChanged : Signal0;
-    public var mainContextWidth(get, null) : Int;
-    public var mainContextHeight(get, null) : Int;
+    public var onMainContextRecreated: Signal0;
+    public var onMainContextSizeChanged: Signal0;
+    public var mainContextWidth(get, null): Int;
+    public var mainContextHeight(get, null): Int;
 
 	private function new() 
 	{}
 
-	public function get_mainContextWidth() : Int
+	public function get_mainContextWidth(): Int
 	{
 		return mainContext.glContext.contextWidth;
 	}
 
-	public function get_mainContextHeight() : Int
+	public function get_mainContextHeight(): Int
 	{
 		return mainContext.glContext.contextHeight;
     }
 
-    public function setDefaultGraphicsState() : Void
+    public function setDefaultGraphicsState(): Void
     {
         // TODO: Make all of this functionality available in the library configuration
 
@@ -95,9 +95,9 @@ class Graphics
         enableScissorTesting(false);
     }
 
-    public function rebindDefaultBackbuffer() : Void
+    public function rebindDefaultBackbuffer(): Void
     {
-    // TODO loop through all contexts, when we have them
+        // TODO loop through all contexts, when we have them
         var context = getCurrentContext();
         context.rebindDefaultBackbuffer();
     }
@@ -105,6 +105,9 @@ class Graphics
     public static function initialize(callback:Void->Void)
     {
         sharedInstance = new Graphics();
+        disabledSharedInstance = new DisabledGraphics();
+
+        sharedInstance.enableGraphicsAPI(true);
 
         sharedInstance.mainContext = new MainGraphicsContext();
 
@@ -121,16 +124,25 @@ class Graphics
  	    });
     }
 
-	static var sharedInstance : Graphics;
-	public static function instance() : Graphics
+	static var sharedInstance: Graphics;
+    static var disabledSharedInstance: DisabledGraphics;
+    static var selectedSharedInstance: Graphics;
+
+	public static function instance(): Graphics
 	{
-		return sharedInstance;
+		return selectedSharedInstance;
 	}
 
-    private var graphicsDisabled: Bool = false;
     public function enableGraphicsAPI(enable: Bool): Void
     {
-        graphicsDisabled = !enable;
+        if (enable)
+        {
+            selectedSharedInstance = sharedInstance;
+        }
+        else
+        {
+            selectedSharedInstance = disabledSharedInstance;
+        }
     }
 
     public function invalidateCaches(): Void
@@ -140,46 +152,41 @@ class Graphics
         context.invalidateCaches();
     }
 
-    public function getMainContext() : GraphicsContext
+    public function getMainContext(): GraphicsContext
     {
     	return mainContext;
     }
 
-    public function loadFilledContext(context : GraphicsContext) : Void
+    public function loadFilledContext(context: GraphicsContext): Void
     {
-        if (graphicsDisabled) return;
     }
 
-    public function isLoadedContext(context:GraphicsContext) : Void
+    public function isLoadedContext(context:GraphicsContext): Bool
     {
-        if (graphicsDisabled) return;
+        return context != null;
     }
 
-    public function unloadFilledContext(context : GraphicsContext) : Void
+    public function unloadFilledContext(context: GraphicsContext): Void
     {
-        if (graphicsDisabled) return;
     }
 
-    public function getCurrentContext() : GraphicsContext
+    public function getCurrentContext(): Null<GraphicsContext>
     {
-        if (graphicsDisabled) return null;
     	/// temporary
         return mainContext;
     }
 
-    public function pushContext(context : GraphicsContext) : Void
+    public function pushContext(context: GraphicsContext): Void
     {
-        if (graphicsDisabled) return;
     }
 
-    public function popContext() : GraphicsContext
+    public function popContext(): Null<GraphicsContext>
     {
         return null;
     }
 
-	public function loadFilledMeshData(meshData : MeshData)
+	public function loadFilledMeshData(meshData: MeshData)
 	{
-        if (graphicsDisabled) return;
 		if(meshData == null)
         {
             return;
@@ -189,21 +196,18 @@ class Graphics
         loadFilledIndexBuffer(meshData);
 	}
 
-    public function loadFilledVertexBuffer(meshData : MeshData) : Void
+    public function loadFilledVertexBuffer(meshData: MeshData): Void
     {
-        if (graphicsDisabled) return;
         loadFilledMeshDataBuffer(GLDefines.ARRAY_BUFFER, meshData.attributeBuffer);
     }
 
-    public function loadFilledIndexBuffer(meshData : MeshData) : Void
+    public function loadFilledIndexBuffer(meshData: MeshData): Void
     {
-        if (graphicsDisabled) return;
         loadFilledMeshDataBuffer(GLDefines.ELEMENT_ARRAY_BUFFER, meshData.indexBuffer);
     }
 
-	private function loadFilledMeshDataBuffer(bufferType : Int, meshDataBuffer : MeshDataBuffer)
+	private function loadFilledMeshDataBuffer(bufferType: Int, meshDataBuffer: MeshDataBuffer)
 	{
-        if (graphicsDisabled) return;
 		if(meshDataBuffer == null) return;
 
 		if(!meshDataBuffer.bufferAlreadyOnHardware)
@@ -233,9 +237,8 @@ class Graphics
 	}
 
 
-	public function loadFilledShader(shader : Shader) 
+	public function loadFilledShader(shader: Shader) 
 	{
-        if (graphicsDisabled) return;
 		if(shader.alreadyLoaded) return;
 
 		/// COMPILE
@@ -266,7 +269,7 @@ class Graphics
 
 		for(i in 0...shader.attributeNames.length)
 		{
-			var attribute : String = shader.attributeNames[i];
+			var attribute: String = shader.attributeNames[i];
 			GL.bindAttribLocation(shader.programName, i, attribute);
 		}		
 
@@ -296,7 +299,7 @@ class Graphics
 		{
 			for(uniInterface in shader.uniformInterfaces)
 			{
-				var uniformLocation : GLUniformLocation;
+				var uniformLocation: GLUniformLocation;
 				uniformLocation = GL.getUniformLocation(shader.programName, uniInterface.shaderVariableName);
 
 				if(uniformLocation == GL.nullUniformLocation)
@@ -323,9 +326,8 @@ class Graphics
         shader.alreadyLoaded = true;
 	}
 
-	private function compileShader(type : Int, code : String) : GLShader
+	private function compileShader(type: Int, code: String): GLShader
 	{
-        if (graphicsDisabled) return GL.nullShader;
 		#if mac
 		code = StringTools.replace(code, "lowp", "");
 		code = StringTools.replace(code, "mediump", "");
@@ -353,9 +355,8 @@ class Graphics
 		return s;
 	}
 
-	private function linkShader(shaderProgramName : GLProgram) : Bool
+	private function linkShader(shaderProgramName: GLProgram): Bool
 	{
-        if (graphicsDisabled) return false;
 		GL.linkProgram(shaderProgramName);
 
 		#if debug
@@ -372,9 +373,8 @@ class Graphics
 		return true;
 	}
 
-	public function loadFilledTextureData(texture : TextureData) : Void
+	public function loadFilledTextureData(texture: TextureData): Void
 	{
-        if (graphicsDisabled) return;
         if(texture.alreadyLoaded) return;
 
 		texture.glTexture = GL.createTexture();
@@ -388,9 +388,8 @@ class Graphics
         texture.alreadyLoaded = true;
 	}
 
-	private function pushTextureData(texture : TextureData) : Void
+	private function pushTextureData(texture: TextureData): Void
 	{
-        if (graphicsDisabled) return;
 		var glTextureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
 
 		if(texture.textureType == TextureType2D)
@@ -437,9 +436,8 @@ class Graphics
 		}
 	}
 
-	private function pushTextureDataForType(textureType : Int, textureFormat : TextureFormat, data : Data, width : Int, height : Int)
+	private function pushTextureDataForType(textureType: Int, textureFormat: TextureFormat, data: Data, width: Int, height: Int)
 	{
-        if (graphicsDisabled) return;
 		switch(textureFormat)
 		{
 			case(TextureFormatRGB565):
@@ -456,9 +454,8 @@ class Graphics
 		}
 	}
 
-	private function configureFilteringMode(texture : TextureData) : Void
+	private function configureFilteringMode(texture: TextureData): Void
 	{
-        if (graphicsDisabled) return;
 		bindTexture(texture);
 
 		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
@@ -483,9 +480,8 @@ class Graphics
 	    }
 	}
 
-	private function configureWrap(texture : TextureData) : Void
+	private function configureWrap(texture: TextureData): Void
 	{
-        if (graphicsDisabled) return;
 		bindTexture(texture);
 
 		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
@@ -501,10 +497,8 @@ class Graphics
 	    }
 	}
 
-	private function configureMipmaps(texture : TextureData) : Void
+	private function configureMipmaps(texture: TextureData): Void
 	{
-        if (graphicsDisabled) return;
-
 	    if(!texture.hasMipMaps)
 	        return;
 	    
@@ -518,10 +512,8 @@ class Graphics
 	    configureFilteringMode(texture);
 	}
 
-    public function loadFilledRenderTargetData(renderTarget : RenderTargetData) : Void
+    public function loadFilledRenderTargetData(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
-
         var context = getCurrentContext();
 
         if(renderTarget == context.defaultRenderTargetData)
@@ -595,9 +587,8 @@ class Graphics
         GL.bindFramebuffer(GLDefines.FRAMEBUFFER, previousRenderTarget.framebufferID);
     }
 
-    private function setupColorRenderbuffer(renderTarget : RenderTargetData) : Void
+    private function setupColorRenderbuffer(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
         if(renderTarget.colorFormat == null) return;
 
         var format = GLDefines.RGBA;
@@ -612,9 +603,8 @@ class Graphics
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.COLOR_ATTACHMENT0, GLDefines.RENDERBUFFER, renderTarget.colorRenderbufferID);
     }
 
-    private function setupDepthRenderbuffer(renderTarget : RenderTargetData) : Void
+    private function setupDepthRenderbuffer(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
         if(renderTarget.depthFormat == null) return;
 
         var format = GLDefines.DEPTH_COMPONENT;
@@ -629,10 +619,8 @@ class Graphics
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.DEPTH_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.depthRenderbufferID);
     }
 
-    private function setupStencilRenderbuffer(renderTarget : RenderTargetData) : Void
+    private function setupStencilRenderbuffer(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
-
         if(renderTarget.stencilFormat == null) return;
 
         renderTarget.stencilRenderbufferID = GL.createRenderbuffer();
@@ -641,10 +629,8 @@ class Graphics
         GL.framebufferRenderbuffer(GLDefines.FRAMEBUFFER, GLDefines.STENCIL_ATTACHMENT, GLDefines.RENDERBUFFER, renderTarget.stencilRenderbufferID);
     }
 
-    private function setupDepthStencilRenderbuffer(renderTarget : RenderTargetData) : Void
+    private function setupDepthStencilRenderbuffer(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
-
         if(renderTarget.stencilFormat == null && renderTarget.depthFormat == null) return;
 
         if(renderTarget.stencilFormat == null)
@@ -667,22 +653,20 @@ class Graphics
 
     }
 
-    public function isLoadedRenderTargetData(renderTarget : RenderTargetData) : Bool
+    public function isLoadedRenderTargetData(renderTarget: RenderTargetData): Bool
     {
-        if (graphicsDisabled) return false;
         return renderTarget.alreadyLoaded;
     }
 
-    public function isLoadedMeshData(meshData : MeshData) : Bool
+    public function isLoadedMeshData(meshData: MeshData): Bool
     {
-        if (graphicsDisabled) return false;
-        var attributeBuffer : Bool = false;
+        var attributeBuffer: Bool = false;
         if(meshData.attributeBuffer != null)
         {
             attributeBuffer = isLoadedMeshDataBuffer(meshData.attributeBuffer);
         }
 
-        var indexBuffer : Bool = false;
+        var indexBuffer: Bool = false;
         if(meshData.indexBuffer != null)
         {
             indexBuffer = isLoadedMeshDataBuffer(meshData.indexBuffer);
@@ -691,29 +675,25 @@ class Graphics
         return attributeBuffer && indexBuffer;
     }
 
-    public function isLoadedMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Bool
+    public function isLoadedMeshDataBuffer(meshDataBuffer: MeshDataBuffer): Bool
     {
-        if (graphicsDisabled) return false;
         if(meshDataBuffer != null)
             return meshDataBuffer.bufferAlreadyOnHardware;
         return false;
     }
 
-    public function isLoadedShader(shader : Shader) : Bool
+    public function isLoadedShader(shader: Shader): Bool
     {
-        if (graphicsDisabled) return false;
         return shader.alreadyLoaded;
     }
 
-    public function isLoadedTextureData(textureData : TextureData) : Bool
+    public function isLoadedTextureData(textureData: TextureData): Bool
     {
-        if (graphicsDisabled) return false;
         return textureData.alreadyLoaded;
     }
 
-    private function unloadMeshDataBuffer(meshDataBuffer : MeshDataBuffer) : Void
+    private function unloadMeshDataBuffer(meshDataBuffer: MeshDataBuffer): Void
     {
-        if (graphicsDisabled) return;
         if(meshDataBuffer.bufferAlreadyOnHardware)
         {
             GL.deleteBuffer(meshDataBuffer.glBuffer);
@@ -721,10 +701,8 @@ class Graphics
         }
     }
 
-    public function unloadMeshData(meshData : MeshData) : Void
+    public function unloadMeshData(meshData: MeshData): Void
     {
-        if (graphicsDisabled) return;
-
         if(meshData.attributeBuffer != null)
         {
             unloadMeshDataBuffer(meshData.attributeBuffer);
@@ -747,9 +725,8 @@ class Graphics
         }
     }
 
-    public function unloadShader(shader : Shader) : Void
+    public function unloadShader(shader: Shader): Void
     {
-        if (graphicsDisabled) return;
         if(shader.alreadyLoaded)
         {
             GL.deleteProgram(shader.programName);
@@ -757,9 +734,8 @@ class Graphics
         }
     }
 
-    public function unloadTextureData(textureData : TextureData) : Void
+    public function unloadTextureData(textureData: TextureData): Void
     {
-        if (graphicsDisabled) return;
         if(textureData.alreadyLoaded)
         {
             var context = getCurrentContext();
@@ -772,9 +748,8 @@ class Graphics
         }
     }
 
-    public function unloadRenderTargetData(renderTarget : RenderTargetData) : Void
+    public function unloadRenderTargetData(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
         if(renderTarget == context.defaultRenderTargetData)
         {
@@ -786,9 +761,8 @@ class Graphics
         renderTarget.alreadyLoaded = false;
     }
 
-    public function destroyRenderbuffers(renderTarget : RenderTargetData) : Void
+    public function destroyRenderbuffers(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
         if(renderTarget.colorRenderbufferID != GL.nullRenderbuffer)
         {
             GL.deleteRenderbuffer(renderTarget.colorRenderbufferID);
@@ -814,9 +788,8 @@ class Graphics
         }
     }
 
-    public function enableBlending(enabled : Bool) : Void
+    public function enableBlending(enabled: Bool): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(context.currentBlendingEnabled != null && context.currentBlendingEnabled == enabled)
@@ -834,16 +807,14 @@ class Graphics
         context.currentBlendingEnabled = enabled;
     }
 
-    public function isBlending() : Null<Bool>
+    public function isBlending(): Null<Bool>
     {
-        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.currentBlendingEnabled;
     }
 
-    public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void
+    public function setBlendFunc(sourceFactor: BlendFactor, destinationFactor: BlendFactor): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(context.currentBlendFactorSrcRGB != sourceFactor || context.currentBlendFactorDestRGB != destinationFactor ||
@@ -858,12 +829,11 @@ class Graphics
         }
     }
 
-    public function setBlendFuncSeparate(sourceFactorRGB : BlendFactor,
-                                         destinationFactorRGB : BlendFactor,
-                                         sourceFactorA : BlendFactor,
-                                         destinationFactorA : BlendFactor) : Void
+    public function setBlendFuncSeparate(sourceFactorRGB: BlendFactor,
+                                         destinationFactorRGB: BlendFactor,
+                                         sourceFactorA: BlendFactor,
+                                         destinationFactorA: BlendFactor): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(context.currentBlendFactorSrcRGB != sourceFactorRGB || context.currentBlendFactorDestRGB != destinationFactorRGB ||
@@ -880,9 +850,8 @@ class Graphics
         }
     }
 
-    public function setBlendMode(blendMode : BlendMode) : Void
+    public function setBlendMode(blendMode: BlendMode): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(blendMode != context.currentBlendModeA && blendMode != context.currentBlendModeRGB)
@@ -893,9 +862,8 @@ class Graphics
         }
     }
 
-    public function setBlendModeSeparate(blendModeRGB : BlendMode, blendModeA : BlendMode) : Void
+    public function setBlendModeSeparate(blendModeRGB: BlendMode, blendModeA: BlendMode): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(blendModeRGB != context.currentBlendModeA && blendModeA != context.currentBlendModeRGB)
@@ -907,9 +875,8 @@ class Graphics
         }
     }
 
-    public function enableDepthTesting(enabled : Bool) : Void
+    public function enableDepthTesting(enabled: Bool): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(context.currentDepthTesting != null && context.currentDepthTesting == enabled) return;
@@ -925,16 +892,14 @@ class Graphics
         context.currentDepthTesting = enabled;
     }
 
-    public function isDepthTesting() : Null<Bool>
+    public function isDepthTesting(): Null<Bool>
     {
-        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.currentDepthTesting;
     }
 
     public function enableDepthWrite(enabled: Bool): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if (context.depthWrite != null && context.depthWrite == enabled) return;
@@ -946,14 +911,12 @@ class Graphics
 
     public function isDepthWriting(): Null<Bool>
     {
-        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.depthWrite;
     }
 
-    public function setDepthFunc(depthFunc : DepthFunc) : Void
+    public function setDepthFunc(depthFunc: DepthFunc): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if (context.depthFunc != null && context.depthFunc == depthFunc) return;
@@ -963,16 +926,14 @@ class Graphics
         context.depthFunc = depthFunc;
     }
 
-    public function getDepthFunc() : Null<DepthFunc>
+    public function getDepthFunc(): Null<DepthFunc>
     {
-        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.depthFunc;
     }
 
-    public function setFaceCullingMode(cullingMode : FaceCullingMode) : Void
+    public function setFaceCullingMode(cullingMode: FaceCullingMode): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(cullingMode != context.currentFaceCullingMode)
@@ -994,15 +955,14 @@ class Graphics
         }
     }
 
-    public function getFaceCullingMode() : FaceCullingMode
+    public function getFaceCullingMode(): FaceCullingMode
     {
         var context = getCurrentContext();
         return context.currentFaceCullingMode;
     }
 
-    public function setLineWidth(lineWidth : Float) : Void
+    public function setLineWidth(lineWidth: Float): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         if(context.currentLineWidth != null && context.currentLineWidth == lineWidth)
@@ -1012,15 +972,13 @@ class Graphics
         context.currentLineWidth = lineWidth;
     }
 
-    public function setColorMask(writeRed : Bool, writeGreen : Bool, writeBlue : Bool, writeAlpha : Bool) : Void
+    public function setColorMask(writeRed: Bool, writeGreen: Bool, writeBlue: Bool, writeAlpha: Bool): Void
     {
-        if (graphicsDisabled) return;
         GL.colorMask(writeRed, writeGreen, writeBlue, writeAlpha);
     }
 
-    public function pushRenderTargetData(renderTarget : RenderTargetData) : Void
+    public function pushRenderTargetData(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
         var framebuffer = renderTarget.framebufferID;
@@ -1035,8 +993,6 @@ class Graphics
 
     public function popRenderTargetData(): Null<RenderTargetData>
     {
-        if (graphicsDisabled) return null;
-
         var context = getCurrentContext();
 
         var topMost: RenderTargetData = context.currentRenderTargetDataStack.pop();
@@ -1066,23 +1022,19 @@ class Graphics
 
     public function discardRenderTargetData(renderTarget: RenderTargetData): Void
     {
-        if (graphicsDisabled) return;
-
         var context = getCurrentContext();
 
         if (!context.glContext.supportsDiscardFramebuffer) return;
 
-        var colorFlag: Int = renderTarget.discardColor ? GLDefines.COLOR_ATTACHMENT0 : 0;
-        var depthFlag: Int = renderTarget.discardDepth ? GLDefines.DEPTH_ATTACHMENT : 0;
-        var stencilFlag: Int = renderTarget.discardStencil ? GLDefines.STENCIL_ATTACHMENT : 0;
+        var colorFlag: Int = renderTarget.discardColor ? GLDefines.COLOR_ATTACHMENT0: 0;
+        var depthFlag: Int = renderTarget.discardDepth ? GLDefines.DEPTH_ATTACHMENT: 0;
+        var stencilFlag: Int = renderTarget.discardStencil ? GLDefines.STENCIL_ATTACHMENT: 0;
 
         GLExt.discardFramebufferEXT(GLDefines.FRAMEBUFFER, colorFlag, depthFlag, stencilFlag);
     }
 
-    public function enableScissorTesting(enabled : Bool) : Void
+    public function enableScissorTesting(enabled: Bool): Void
     {
-        if (graphicsDisabled) return;
-
         if(enabled)
         {
             GL.enable(GLDefines.SCISSOR_TEST);
@@ -1093,15 +1045,13 @@ class Graphics
         }
     }
 
-    public function setScissorTestRect(x : Int, y : Int, width : Int, height : Int) : Void
+    public function setScissorTestRect(x: Int, y: Int, width: Int, height: Int): Void
     {
-        if (graphicsDisabled) return;
         GL.scissor(x, y, width, height);
     }
 
-    public function bindShader(shader : Shader)
+    public function bindShader(shader: Shader)
 	{
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
 		if(context.currentShader != shader.programName)
@@ -1217,10 +1167,8 @@ class Graphics
 
     // TODO Check bakedFrame feature with support of VertexArrayObjects (caching).
     // TODO Maybe implement bindBakedMeshData method.
-	public function bindMeshData(data : MeshData, bakedFrame : Int) 
+	public function bindMeshData(data: MeshData, bakedFrame: Int) 
 	{
-        if (graphicsDisabled) return;
-
 		if(data.bakedFrameCount > 0 && bakedFrame >= data.bakedFrameCount)
 		{
 			trace("Tried to set invalid frame on render buffer data");
@@ -1287,10 +1235,8 @@ class Graphics
 		}
 	}
 
-	public function unbindMeshData(data : MeshData) : Void
+	public function unbindMeshData(data: MeshData): Void
 	{
-        if (graphicsDisabled) return;
-
         var context = getCurrentContext();
 
         if (context.glContext.supportsVertexArrayObjects)
@@ -1313,20 +1259,16 @@ class Graphics
         }
 	}
 
-    private function enableVertexAttributes(meshData : MeshData)
+    private function enableVertexAttributes(meshData: MeshData)
     {
-        if (graphicsDisabled) return;
-
         for(attributeConfig in meshData.attributeConfigs)
         {
             GL.enableVertexAttribArray(attributeConfig.attributeNumber);
         }
     }
 
-	private function enableVertexAttributesGlobal(meshData : MeshData)
+	private function enableVertexAttributesGlobal(meshData: MeshData)
 	{
-        if (graphicsDisabled) return;
-
 		var combinedAttributes = 0;
 		for(attributeConfig in meshData.attributeConfigs)
 		{
@@ -1336,10 +1278,8 @@ class Graphics
 		enableVertexAttributesFromCombinedAttributes(combinedAttributes);
 	}
 
-	private function enableVertexAttributesFromCombinedAttributes(combinedFlagsFromVertexAttributes : Int)
+	private function enableVertexAttributesFromCombinedAttributes(combinedFlagsFromVertexAttributes: Int)
 	{
-        if (graphicsDisabled) return;
-
         var context = getCurrentContext();
 
 		var currentMask = 1;
@@ -1366,10 +1306,8 @@ class Graphics
         context.currentAttributeFlags = combinedFlagsFromVertexAttributes;
 	}
 
-	public function render(meshData : MeshData, bakedFrame : Int)
+	public function render(meshData: MeshData, bakedFrame: Int)
 	{
-        if (graphicsDisabled) return;
-
 		if(meshData.bakedFrameCount > 0 && bakedFrame >= meshData.bakedFrameCount)
 		{
 			trace("Tried to set invalid frame on render buffer data");
@@ -1380,8 +1318,8 @@ class Graphics
 
 		if(meshData.indexBuffer != null) 
 		{///dont know if it is working
-			var count : Int;
-			var offset : Int;
+			var count: Int;
+			var offset: Int;
 
 			if(meshData.bakedFrameCount == 0)
 			{
@@ -1401,8 +1339,8 @@ class Graphics
 		}
 		else
 		{
-			var count : Int;
-			var offset : Int;
+			var count: Int;
+			var offset: Int;
 			if(meshData.bakedFrameCount == 0)
 			{
 				count = meshData.vertexCount;
@@ -1420,22 +1358,19 @@ class Graphics
 		}
 	}
 
-    public function present() : Void
+    public function present(): Void
     {
-        if (graphicsDisabled) return;
     }
 
-	public function bindTextureData(texture : TextureData, position : Int) : Void
+	public function bindTextureData(texture: TextureData, position: Int): Void
 	{
-        if (graphicsDisabled) return;
     	if(texture == null) return;
         activeTexture(position);
         bindTexture(texture);
 	}
 
-	private function bindTexture(texture : TextureData)
+	private function bindTexture(texture: TextureData)
 	{
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 		if(context.currentActiveTextures[context.currentActiveTexture] != texture.glTexture)
 		{
@@ -1446,7 +1381,6 @@ class Graphics
 
 	private function activeTexture(position)
 	{
-        if (graphicsDisabled) return;
         var context = getCurrentContext();
 
 		if(position > GraphicsContext.maxActiveTextures)
@@ -1464,8 +1398,6 @@ class Graphics
 
     public function setClearColor(color: Color4F): Void
     {
-        if (graphicsDisabled) return;
-
         var context = getCurrentContext();
 
         if (context.currentClearColor.isNotEqual(color))
@@ -1475,58 +1407,48 @@ class Graphics
         }
     }
 
-    public function clearColorBuffer() : Void
+    public function clearColorBuffer(): Void
     {
-        if (graphicsDisabled) return;
         GL.clear(GLDefines.COLOR_BUFFER_BIT);
     }
 
-    public function clearDepthBuffer() : Void
+    public function clearDepthBuffer(): Void
     {
-        if (graphicsDisabled) return;
         GL.clear(GLDefines.DEPTH_BUFFER_BIT);
     }
 
-    public function clearStencilBuffer() : Void
+    public function clearStencilBuffer(): Void
     {
-        if (graphicsDisabled) return;
         GL.clear(GLDefines.STENCIL_BUFFER_BIT);
     }
 
     public function clearColorStencilBuffer(): Void
     {
-        if (graphicsDisabled) return;
         GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
     }
 
     public function clearColorDepthBuffer(): Void
     {
-        if (graphicsDisabled) return;
         GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.DEPTH_BUFFER_BIT);
     }
 
-    public function clearAllBuffers() : Void
+    public function clearAllBuffers(): Void
     {
-        if (graphicsDisabled) return;
         GL.clear(GLDefines.COLOR_BUFFER_BIT | GLDefines.DEPTH_BUFFER_BIT | GLDefines.STENCIL_BUFFER_BIT);
     }
 
-    public function finishCommandPipeline() : Void
+    public function finishCommandPipeline(): Void
     {
-        if (graphicsDisabled) return;
         GL.finish();
     }
 
-    public function flushCommandPipeline() : Void
+    public function flushCommandPipeline(): Void
     {
-        if (graphicsDisabled) return;
         GL.flush();
     }
 
-    public function enableStencilTest(enabled : Bool) : Void
+    public function enableStencilTest(enabled: Bool): Void
     {
-        if (graphicsDisabled) return;
-
         var context = getCurrentContext();
 
         if (context.stencilingEnabled != null && context.stencilingEnabled == enabled) return;
@@ -1543,37 +1465,121 @@ class Graphics
         context.stencilingEnabled = enabled;
     }
 
-    public function isStencilTestEnabled() : Null<Bool>
+    public function isStencilTestEnabled(): Null<Bool>
     {
-        if (graphicsDisabled) return null;
         var context = getCurrentContext();
         return context.stencilingEnabled;
     }
 
-    public function setStencilFunc(stencilFunc : StencilFunc, referenceValue : Int, readMask : Int) : Void
+    public function setStencilFunc(stencilFunc: StencilFunc, referenceValue: Int, readMask: Int): Void
     {
-        if (graphicsDisabled) return;
         GL.stencilFunc(GLUtils.convertStencilFuncToOGL(stencilFunc), referenceValue, readMask);
     }
 
-    public function setStencilOp(stencilFail : StencilOp, depthFail : StencilOp, stencilAndDepthPass : StencilOp) : Void
+    public function setStencilOp(stencilFail: StencilOp, depthFail: StencilOp, stencilAndDepthPass: StencilOp): Void
     {
-        if (graphicsDisabled) return;
         GL.stencilOp(GLUtils.convertStencilOpToOGL(stencilFail),
                      GLUtils.convertStencilOpToOGL(depthFail),
                      GLUtils.convertStencilOpToOGL(stencilAndDepthPass));
     }
 
-    public function setStencilMask(writeMask : Int) : Void
+    public function setStencilMask(writeMask: Int): Void
     {
-        if (graphicsDisabled) return;
         GL.stencilMask(writeMask);
     }
 
     public function setViewPort(x: Int, y: Int, width: Int, height: Int)
     {
-        if (graphicsDisabled) return;
         GL.viewport(x,y,width,height);
     }
+}
 
+class DisabledGraphics extends Graphics
+{
+    override public function loadFilledContext(context: GraphicsContext): Void {}
+    override public function isLoadedContext(context:GraphicsContext): Bool {return false;}
+    override public function unloadFilledContext(context: GraphicsContext): Void {}
+    override public function getCurrentContext(): Null<GraphicsContext> {return null;}
+    override public function pushContext(context: GraphicsContext): Void {}
+    override public function popContext(): Null<GraphicsContext> {return null;}
+    override public function loadFilledMeshData(meshData: MeshData) {}
+    override public function loadFilledVertexBuffer(meshData: MeshData): Void {}
+    override public function loadFilledIndexBuffer(meshData: MeshData): Void {}
+    override private function loadFilledMeshDataBuffer(bufferType: Int, meshDataBuffer: MeshDataBuffer) {}
+    override public function loadFilledShader(shader: Shader) {}
+    override private function compileShader(type: Int, code: String): GLShader {return GL.nullShader;}
+    override private function linkShader(shaderProgramName: GLProgram): Bool {return false;}
+    override public function loadFilledTextureData(texture: TextureData): Void {}
+    override private function pushTextureData(texture: TextureData): Void {}
+    override private function pushTextureDataForType(textureType: Int, textureFormat: TextureFormat, data: Data, width: Int, height: Int) {}
+    override private function configureFilteringMode(texture: TextureData): Void {}
+    override private function configureWrap(texture: TextureData): Void {}
+    override private function configureMipmaps(texture: TextureData): Void {}
+    override public function loadFilledRenderTargetData(renderTarget: RenderTargetData): Void {}
+    override private function setupColorRenderbuffer(renderTarget: RenderTargetData): Void {}
+    override private function setupDepthRenderbuffer(renderTarget: RenderTargetData): Void {}
+    override private function setupStencilRenderbuffer(renderTarget: RenderTargetData): Void {}
+    override private function setupDepthStencilRenderbuffer(renderTarget: RenderTargetData): Void {}
+    override public function isLoadedRenderTargetData(renderTarget: RenderTargetData): Bool {return false;}
+    override public function isLoadedMeshData(meshData: MeshData): Bool {return false;}
+    override public function isLoadedMeshDataBuffer(meshDataBuffer: MeshDataBuffer): Bool {return false;}
+    override public function isLoadedShader(shader: Shader): Bool {return false;}
+    override public function isLoadedTextureData(textureData: TextureData): Bool {return false;}
+    override private function unloadMeshDataBuffer(meshDataBuffer: MeshDataBuffer): Void {}
+    override public function unloadMeshData(meshData: MeshData): Void {}
+    override public function unloadShader(shader: Shader): Void {}
+    override public function unloadTextureData(textureData: TextureData): Void {}
+    override public function unloadRenderTargetData(renderTarget: RenderTargetData): Void {}
+    override public function destroyRenderbuffers(renderTarget: RenderTargetData): Void {}
+    override public function enableBlending(enabled: Bool): Void {}
+    override public function isBlending(): Null<Bool> {return null;}
+    override public function setBlendFunc(sourceFactor: BlendFactor, destinationFactor: BlendFactor): Void {}
+    override public function setBlendFuncSeparate(sourceFactorRGB: BlendFactor,
+                                         destinationFactorRGB: BlendFactor,
+                                         sourceFactorA: BlendFactor,
+                                         destinationFactorA: BlendFactor): Void {}
+    override public function setBlendMode(blendMode: BlendMode): Void {}
+    override public function setBlendModeSeparate(blendModeRGB: BlendMode, blendModeA: BlendMode): Void {}
+    override public function enableDepthTesting(enabled: Bool): Void {}
+    override public function isDepthTesting(): Null<Bool> {return null;}
+    override public function enableDepthWrite(enabled: Bool): Void {}
+    override public function isDepthWriting(): Null<Bool> {return null;}
+    override public function setDepthFunc(depthFunc: DepthFunc): Void {}
+    override public function getDepthFunc(): Null<DepthFunc> {return null;}
+    override public function setFaceCullingMode(cullingMode: FaceCullingMode): Void {}
+    override public function getFaceCullingMode(): Null<FaceCullingMode> {return null;}
+    override public function setLineWidth(lineWidth: Float): Void {}
+    override public function setColorMask(writeRed: Bool, writeGreen: Bool, writeBlue: Bool, writeAlpha: Bool): Void {}
+    override public function pushRenderTargetData(renderTarget: RenderTargetData): Void {}
+    override public function popRenderTargetData(): Null<RenderTargetData> {return null;}
+    override public function getDefaultRenderTargetData(): Null<RenderTargetData> {return null;}
+    override public function discardRenderTargetData(renderTarget: RenderTargetData): Void {}
+    override public function enableScissorTesting(enabled: Bool): Void {}
+    override public function setScissorTestRect(x: Int, y: Int, width: Int, height: Int): Void {}
+    override public function bindShader(shader: Shader) {}
+    override public function bindMeshData(data: MeshData, bakedFrame: Int) {}
+    override public function unbindMeshData(data: MeshData): Void {}
+    override private function enableVertexAttributes(meshData: MeshData) {}
+    override private function enableVertexAttributesGlobal(meshData: MeshData) {}
+    override private function enableVertexAttributesFromCombinedAttributes(combinedFlagsFromVertexAttributes: Int) {}
+    override public function render(meshData: MeshData, bakedFrame: Int) {}
+    override public function present(): Void {}
+    override public function bindTextureData(texture: TextureData, position: Int): Void {}
+    override private function bindTexture(texture: TextureData) {}
+    override private function activeTexture(position) {}
+    override public function setClearColor(color: Color4F): Void {}
+    override public function clearColorBuffer(): Void {}
+    override public function clearDepthBuffer(): Void {}
+    override public function clearStencilBuffer(): Void {}
+    override public function clearColorStencilBuffer(): Void {}
+    override public function clearColorDepthBuffer(): Void {}
+    override public function clearAllBuffers(): Void {}
+    override public function finishCommandPipeline(): Void {}
+    override public function flushCommandPipeline(): Void {}
+    override public function enableStencilTest(enabled: Bool): Void {}
+    override public function isStencilTestEnabled(): Null<Bool> {return null;}
+    override public function setStencilFunc(stencilFunc: StencilFunc, referenceValue: Int, readMask: Int): Void {}
+    override public function setStencilOp(stencilFail: StencilOp, depthFail: StencilOp, stencilAndDepthPass: StencilOp): Void {}
+    override public function setStencilMask(writeMask: Int): Void {}
+    override public function setViewPort(x: Int, y: Int, width: Int, height: Int) {}
 }
