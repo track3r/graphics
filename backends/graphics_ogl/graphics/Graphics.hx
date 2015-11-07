@@ -229,9 +229,8 @@ class Graphics
 				GL.bindBuffer(bufferType, meshDataBuffer.glBuffer);
 				GL.bufferData(bufferType, meshDataBuffer.data,
 							  GLUtils.convertBufferModeToOGL(meshDataBuffer.bufferMode));
-
+                meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.offsetLength;
 			}
-			meshDataBuffer.sizeOfHardwareBuffer = meshDataBuffer.data.offsetLength;
 		}
 		GL.bindBuffer(bufferType, GL.nullBuffer);
 	}
