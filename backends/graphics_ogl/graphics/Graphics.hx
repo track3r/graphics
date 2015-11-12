@@ -696,6 +696,7 @@ class Graphics
         if(meshDataBuffer.bufferAlreadyOnHardware)
         {
             GL.deleteBuffer(meshDataBuffer.glBuffer);
+            meshDataBuffer.glBuffer = GL.nullBuffer;
             meshDataBuffer.bufferAlreadyOnHardware = false;
         }
     }
@@ -729,6 +730,7 @@ class Graphics
         if(shader.alreadyLoaded)
         {
             GL.deleteProgram(shader.programName);
+            shader.programName = GL.nullProgram;
             shader.alreadyLoaded = false;
         }
     }
@@ -743,6 +745,7 @@ class Graphics
                 context.currentActiveTextures[context.currentActiveTexture] = GL.nullTexture;
             }
             GL.deleteTexture(textureData.glTexture);
+            textureData.glTexture = GL.nullTexture;
             textureData.alreadyLoaded = false;
         }
     }
@@ -757,6 +760,7 @@ class Graphics
         destroyRenderbuffers(renderTarget);
 
         GL.deleteFramebuffer(renderTarget.framebufferID);
+        renderTarget.framebufferID = GL.nullFramebuffer;
         renderTarget.alreadyLoaded = false;
     }
 
