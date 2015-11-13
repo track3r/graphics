@@ -276,4 +276,8 @@ class GLUtils
         }
     }
 
+    inline public static function isPowerOfTwo(x: Int): Bool
+    {
+        return x > 0 && (x & (x - 1)) == 0;
+    }
 }

@@ -499,8 +499,22 @@ class Graphics
 	private function configureMipmaps(texture: TextureData): Void
 	{
 	    if(!texture.hasMipMaps)
-	        return;
-	    
+        {
+            return;
+        }
+
+        if (texture.originalWidth != texture.originalHeight)
+        {
+            trace("Mimaps requested for Texture, but texture is not square.");
+            return;
+        }
+
+        if (!GLUtils.isPowerOfTwo(texture.originalWidth))
+        {
+            trace("Mimaps requested for Texture, but texture dimensions are not power of two.");
+            return;
+        }
+
 		bindTexture(texture);
 	    GL.hint(GLDefines.GENERATE_MIPMAP_HINT, GLDefines.NICEST);
 	    
