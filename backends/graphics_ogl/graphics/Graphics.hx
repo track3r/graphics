@@ -1509,6 +1509,18 @@ class Graphics
     {
         GL.viewport(x,y,width,height);
     }
+
+    public function getMaxTextureSize(): Null<Int>
+    {
+        var context = getCurrentContext();
+        return context.glContext.maxTextureSize;
+    }
+
+    public function getMaxCubeTextureSize(): Null<Int>
+    {
+        var context = getCurrentContext();
+        return context.glContext.maxCubeTextureSize;
+    }
 }
 
 class DisabledGraphics extends Graphics
@@ -1599,4 +1611,6 @@ class DisabledGraphics extends Graphics
     override public function setStencilOp(stencilFail: StencilOp, depthFail: StencilOp, stencilAndDepthPass: StencilOp): Void {}
     override public function setStencilMask(writeMask: Int): Void {}
     override public function setViewPort(x: Int, y: Int, width: Int, height: Int) {}
+    override public function getMaxTextureSize(): Null<Int> {return null;}
+    override public function getMaxCubeTextureSize(): Null<Int> {return null;}
 }

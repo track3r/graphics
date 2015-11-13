@@ -124,6 +124,10 @@ extern class Graphics
     ///######## VIEWPORT ########
     public function setViewPort(x: Int, y: Int, width: Int, height: Int): Void;
 
+    ///######## LIMITS ########
+    public function getMaxTextureSize(): Null<Int>;
+    public function getMaxCubeTextureSize(): Null<Int>;
+
 	public static var maxActiveTextures : Int;
 }
 
