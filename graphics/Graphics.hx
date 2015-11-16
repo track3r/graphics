@@ -66,6 +66,9 @@ extern class Graphics
     public function unloadTextureData(textureData : TextureData) : Void;
     public function unloadRenderTargetData(renderTarget : RenderTargetData) : Void;
 
+    ///######## UPDATE ########
+    public function updateFilledTextureData(textureData : TextureData, offsetX: Int, offsetY: Int) : Void;
+
     ///######## BLENDING ########
     public function setBlendFunc(sourceFactor : BlendFactor, destinationFactor : BlendFactor) : Void;
 

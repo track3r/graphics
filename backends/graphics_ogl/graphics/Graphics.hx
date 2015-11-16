@@ -387,6 +387,14 @@ class Graphics
         texture.alreadyLoaded = true;
 	}
 
+    public function updateFilledTextureData(texture: TextureData, offsetX: Int, offsetY: Int) : Void
+    {
+        if(!texture.alreadyLoaded) return;
+
+        bindTexture(texture);
+        updateTextureDataForType(GLDefines.TEXTURE_2D, texture.pixelFormat, texture.data, offsetX, offsetY, texture.originalWidth, texture.originalHeight);
+    }
+
 	private function pushTextureData(texture: TextureData): Void
 	{
 		var glTextureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
@@ -452,6 +460,24 @@ class Graphics
 				GL.texImage2D(textureType, 0, GLDefines.RGBA, width, height, 0, GLDefines.RGBA, GLDefines.UNSIGNED_BYTE, data);
 		}
 	}
+
+    private function updateTextureDataForType(textureType: Int, textureFormat: TextureFormat, data: Data, offsetX: Int, offsetY: Int, width: Int, height: Int)
+    {
+        switch(textureFormat)
+        {
+            case(TextureFormatRGB565):
+                GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 2);
+                GL.texSubImage2D(textureType, 0, offsetX, offsetY, width, height, GLDefines.RGB, GLDefines.UNSIGNED_SHORT_5_6_5, data);
+
+            case(TextureFormatA8):
+                GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 1);
+                GL.texSubImage2D(textureType, 0, offsetX, offsetY, width, height, GLDefines.ALPHA, GLDefines.UNSIGNED_BYTE, data);
+
+            case(TextureFormatRGBA8888):
+                GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 4);
+                GL.texSubImage2D(textureType, 0, offsetX, offsetY, width, height, GLDefines.RGBA, GLDefines.UNSIGNED_BYTE, data);
+        }
+    }
 
 	private function configureFilteringMode(texture: TextureData): Void
 	{
@@ -1539,6 +1565,7 @@ class DisabledGraphics extends Graphics
     override private function compileShader(type: Int, code: String): GLShader {return GL.nullShader;}
     override private function linkShader(shaderProgramName: GLProgram): Bool {return false;}
     override public function loadFilledTextureData(texture: TextureData): Void {}
+    override public function updateFilledTextureData(texture: TextureData, offsetX: Int, offsetY: Int) : Void{};
     override private function pushTextureData(texture: TextureData): Void {}
     override private function pushTextureDataForType(textureType: Int, textureFormat: TextureFormat, data: Data, width: Int, height: Int) {}
     override private function configureFilteringMode(texture: TextureData): Void {}
