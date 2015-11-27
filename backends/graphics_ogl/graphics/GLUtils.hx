@@ -18,6 +18,9 @@ class GLUtils
 			case BufferModeDynamicDraw:
 				return GLDefines.DYNAMIC_DRAW;
 
+            case BufferModeStreamDraw:
+                return GLDefines.STREAM_DRAW;
+
 			default:
 				return 0;
 		}

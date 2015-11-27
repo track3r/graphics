@@ -22,6 +22,7 @@ enum BufferMode
 {
 	BufferModeStaticDraw;
 	BufferModeDynamicDraw;
+    BufferModeStreamDraw;
 }
 
 enum UniformType
