@@ -41,7 +41,7 @@ class Graphics
     public var mainContextWidth(get, null): Int;
     public var mainContextHeight(get, null): Int;
 
-	private function new() 
+	private function new()
 	{}
 
 	public function get_mainContextWidth(): Int
@@ -236,7 +236,7 @@ class Graphics
 	}
 
 
-	public function loadFilledShader(shader: Shader) 
+	public function loadFilledShader(shader: Shader)
 	{
 		if(shader.alreadyLoaded) return;
 
@@ -263,14 +263,14 @@ class Graphics
 		shader.programName = GL.createProgram();
 		GL.attachShader(shader.programName, vs);
 		GL.attachShader(shader.programName, fs);
-		
+
 		/// BIND ATTRIBUTE LOCATIONS
 
 		for(i in 0...shader.attributeNames.length)
 		{
 			var attribute: String = shader.attributeNames[i];
 			GL.bindAttribLocation(shader.programName, i, attribute);
-		}		
+		}
 
 
 		/// LINK
@@ -346,7 +346,7 @@ class Graphics
 		}
 		#end
 
-		if(GL.getShaderParameter(s, GLDefines.COMPILE_STATUS) != cast 1 ) 
+		if(GL.getShaderParameter(s, GLDefines.COMPILE_STATUS) != cast 1 )
 		{
 			GL.deleteShader(s);
 			return GL.nullShader;
@@ -405,40 +405,40 @@ class Graphics
 		}
 		else
 		{
-			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_X, 
-									texture.pixelFormat, 
-									texture.dataForCubeMapPositiveX, 
-									texture.originalWidth, 
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_X,
+									texture.pixelFormat,
+									texture.dataForCubeMapPositiveX,
+									texture.originalWidth,
 									texture.originalHeight);
 
-			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_X, 
-									texture.pixelFormat, 
-									texture.dataForCubeMapNegativeX, 
-									texture.originalWidth, 
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_X,
+									texture.pixelFormat,
+									texture.dataForCubeMapNegativeX,
+									texture.originalWidth,
 									texture.originalHeight);
 
-			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_Y, 
-									texture.pixelFormat, 
-									texture.dataForCubeMapPositiveY, 
-									texture.originalWidth, 
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_Y,
+									texture.pixelFormat,
+									texture.dataForCubeMapPositiveY,
+									texture.originalWidth,
 									texture.originalHeight);
 
-			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_Y, 
-									texture.pixelFormat, 
-									texture.dataForCubeMapNegativeY, 
-									texture.originalWidth, 
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+									texture.pixelFormat,
+									texture.dataForCubeMapNegativeY,
+									texture.originalWidth,
 									texture.originalHeight);
 
-			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_Z, 
-									texture.pixelFormat, 
-									texture.dataForCubeMapPositiveZ, 
-									texture.originalWidth, 
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_POSITIVE_Z,
+									texture.pixelFormat,
+									texture.dataForCubeMapPositiveZ,
+									texture.originalWidth,
 									texture.originalHeight);
 
-			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_Z, 
-									texture.pixelFormat, 
-									texture.dataForCubeMapNegativeZ, 
-									texture.originalWidth, 
+			pushTextureDataForType( GLDefines.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+									texture.pixelFormat,
+									texture.dataForCubeMapNegativeZ,
+									texture.originalWidth,
 									texture.originalHeight);
 		}
 	}
@@ -497,7 +497,7 @@ class Graphics
 	    else
 	    {
 	        GL.texParameteri(textureType, GLDefines.TEXTURE_MAG_FILTER, GLDefines.NEAREST);
-	        
+
 	        if (texture.hasMipMaps)
 	            GL.texParameteri(textureType, GLDefines.TEXTURE_MIN_FILTER, GLDefines.LINEAR_MIPMAP_NEAREST);
 	        else
@@ -510,7 +510,7 @@ class Graphics
 		bindTexture(texture);
 
 		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
-	    
+
 	    if (texture.wrap == TextureWrapClamp)
 	    {
 	        GL.texParameteri(textureType, GLDefines.TEXTURE_WRAP_S, GLDefines.CLAMP_TO_EDGE);
@@ -543,11 +543,11 @@ class Graphics
 
 		bindTexture(texture);
 	    GL.hint(GLDefines.GENERATE_MIPMAP_HINT, GLDefines.NICEST);
-	    
+
 		var textureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
-	    
+
 	   	GL.generateMipmap(textureType);
-	    
+
 	    configureFilteringMode(texture);
 	}
 
@@ -1210,7 +1210,7 @@ class Graphics
 
     // TODO Check bakedFrame feature with support of VertexArrayObjects (caching).
     // TODO Maybe implement bindBakedMeshData method.
-	public function bindMeshData(data: MeshData, bakedFrame: Int) 
+	public function bindMeshData(data: MeshData, bakedFrame: Int)
 	{
 		if(data.bakedFrameCount > 0 && bakedFrame >= data.bakedFrameCount)
 		{
@@ -1359,7 +1359,7 @@ class Graphics
 
 		var primitiveType = GLUtils.convertPrimitiveTypeToOGL(meshData.primitiveType);
 
-		if(meshData.indexBuffer != null) 
+		if(meshData.indexBuffer != null)
 		{///dont know if it is working
 			var count: Int;
 			var offset: Int;
@@ -1396,7 +1396,7 @@ class Graphics
 			}
 
 			GL.drawArrays(primitiveType,
-						  offset, 
+						  offset,
 						  count);
 		}
 	}
