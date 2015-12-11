@@ -395,6 +395,14 @@ class Graphics
         updateTextureDataForType(GLDefines.TEXTURE_2D, texture.pixelFormat, texture.data, offsetX, offsetY, texture.originalWidth, texture.originalHeight);
     }
 
+	public function updateLoadedTextureData(texture: TextureData, data: Data, offsetX: Int, offsetY: Int, width: Int, height: Int): Void
+	{
+		if(!texture.alreadyLoaded) return;
+
+		bindTexture(texture);
+		updateTextureDataForType(GLDefines.TEXTURE_2D, texture.pixelFormat, data, offsetX, offsetY, width, height);
+	}
+
 	private function pushTextureData(texture: TextureData): Void
 	{
 		var glTextureType = GLUtils.convertTextureTypeToOGL(texture.textureType);
