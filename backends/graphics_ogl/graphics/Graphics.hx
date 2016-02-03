@@ -379,10 +379,11 @@ class Graphics
 		texture.glTexture = GL.createTexture();
 		bindTexture(texture);
 		configureFilteringMode(texture);
-		configureMipmaps(texture);
 		configureWrap(texture);
 
 		pushTextureData(texture);
+
+		configureMipmaps(texture);
 
         texture.alreadyLoaded = true;
 	}
