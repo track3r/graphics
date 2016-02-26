@@ -6,6 +6,7 @@
  */
 package graphics;
 
+import graphics.GraphicsTypes.BufferMode;
 import types.Data;
 import types.DataType;
 import graphics.GraphicsTypes;
@@ -14,6 +15,10 @@ extern class MeshDataBuffer
 {
     public var bufferMode : BufferMode;
     public var data : Data;
+
+    public var bufferAlreadyOnHardware : Bool;
+
+    public function new(): Void;
 }
 
 extern class MeshDataAttributeConfig
@@ -25,6 +30,8 @@ extern class MeshDataAttributeConfig
     public var offsetInData : Int;
     public var offsetPerBakedFrame : Array<Int>;
     public var vertexElementsNormalized : Bool;
+
+    public function new(): Void;
 }
 
 extern class MeshData
@@ -43,4 +50,6 @@ extern class MeshData
     public var indexDataType : DataType;
     public var indexCountPerBakedFrame : Array<Int>;
     public var indexOffsetPerBakedFrame : Array<Int>;
+
+    public function new(): Void;
 }

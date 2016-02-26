@@ -31,4 +31,8 @@ extern class TextureData
     public var dataForCubeMapNegativeY : Data;
     public var dataForCubeMapPositiveZ : Data;
     public var dataForCubeMapNegativeZ : Data;
+
+    public var alreadyLoaded : Bool;
+
+    public function new(): Void;
 }
