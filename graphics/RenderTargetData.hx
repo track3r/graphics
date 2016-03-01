@@ -25,4 +25,6 @@ extern class RenderTargetData
     public var discardColor: Bool;
     public var discardDepth: Bool;
     public var discardStencil: Bool;
+
+    public function new();
 }
