@@ -1551,6 +1551,12 @@ class Graphics
         return context.glContext.maxTextureSize;
     }
 
+    public function getMaxRenderbufferSize(): Null<Int>
+    {
+        var context = getCurrentContext();
+        return context.glContext.maxRenderbufferSize;
+    }
+
     public function getMaxCubeTextureSize(): Null<Int>
     {
         var context = getCurrentContext();
@@ -1648,5 +1654,6 @@ class DisabledGraphics extends Graphics
     override public function setStencilMask(writeMask: Int): Void {}
     override public function setViewPort(x: Int, y: Int, width: Int, height: Int) {}
     override public function getMaxTextureSize(): Null<Int> {return null;}
+    override public function getMaxRenderbufferSize(): Null<Int> {return null;}
     override public function getMaxCubeTextureSize(): Null<Int> {return null;}
 }

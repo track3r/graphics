@@ -129,6 +129,7 @@ extern class Graphics
 
     ///######## LIMITS ########
     public function getMaxTextureSize(): Null<Int>;
+    public function getMaxRenderbufferSize(): Null<Int>;
     public function getMaxCubeTextureSize(): Null<Int>;
 
 	public static var maxActiveTextures : Int;
