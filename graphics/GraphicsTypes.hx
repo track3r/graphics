@@ -94,6 +94,7 @@ enum TextureFormat
 	TextureFormatRGBA8888;
 	TextureFormatRGB565;
 	TextureFormatA8;
+	TextureFormatD24S8;
 }
 
 enum TextureWrap

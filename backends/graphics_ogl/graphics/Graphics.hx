@@ -492,6 +492,10 @@ class Graphics
 			case(TextureFormatRGBA8888):
 				GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 4);
 				GL.texImage2D(textureType, 0, GLDefines.RGBA, width, height, 0, GLDefines.RGBA, GLDefines.UNSIGNED_BYTE, data);
+
+			case(TextureFormatD24S8):
+				GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 4);
+				GL.texImage2D(textureType, 0, GLDefines.DEPTH_STENCIL, width, height, 0, GLDefines.DEPTH_STENCIL, GLDefines.UNSIGNED_INT_24_8, data);
 		}
 	}
 
@@ -510,6 +514,10 @@ class Graphics
             case(TextureFormatRGBA8888):
                 GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 4);
                 GL.texSubImage2D(textureType, 0, offsetX, offsetY, width, height, GLDefines.RGBA, GLDefines.UNSIGNED_BYTE, data);
+
+			case(TextureFormatD24S8):
+				GL.pixelStorei(GLDefines.UNPACK_ALIGNMENT, 4);
+				GL.texImage2D(textureType, 0, GLDefines.DEPTH_STENCIL, width, height, 0, GLDefines.DEPTH_STENCIL, GLDefines.UNSIGNED_INT_24_8, data);
         }
     }
 
@@ -624,31 +632,44 @@ class Graphics
         }
         else
         {
-            if(renderTarget.depthTextureData != null)
-            {
-                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
-                                        GLDefines.DEPTH_ATTACHMENT,
+			if (renderTarget.depthTextureData != null
+				&& renderTarget.stencilTextureData != null
+				&& renderTarget.depthTextureData.glTexture == renderTarget.stencilTextureData.glTexture)
+			{
+				GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+                                        GLDefines.DEPTH_STENCIL_ATTACHMENT,
                                         GLDefines.TEXTURE_2D,
                                         renderTarget.depthTextureData.glTexture,
                                         0);
-            }
-            else
-            {
-                setupDepthRenderbuffer(renderTarget);
-            }
+			}
+			else
+			{
+	            if(renderTarget.depthTextureData != null)
+	            {
+	                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+	                                        GLDefines.DEPTH_ATTACHMENT,
+	                                        GLDefines.TEXTURE_2D,
+	                                        renderTarget.depthTextureData.glTexture,
+	                                        0);
+	            }
+	            else
+	            {
+	                setupDepthRenderbuffer(renderTarget);
+	            }
 
-            if(renderTarget.stencilTextureData != null)
-            {
-                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
-                                        GLDefines.STENCIL_ATTACHMENT,
-                                        GLDefines.TEXTURE_2D,
-                                        renderTarget.stencilTextureData.glTexture,
-                                        0);
-            }
-            else
-            {
-                setupStencilRenderbuffer(renderTarget);
-            }
+	            if(renderTarget.stencilTextureData != null)
+	            {
+	                GL.framebufferTexture2D(GLDefines.FRAMEBUFFER,
+	                                        GLDefines.STENCIL_ATTACHMENT,
+	                                        GLDefines.TEXTURE_2D,
+	                                        renderTarget.stencilTextureData.glTexture,
+	                                        0);
+	            }
+	            else
+	            {
+	                setupStencilRenderbuffer(renderTarget);
+	            }
+			}
         }
 
         var result = GL.checkFramebufferStatus(GLDefines.FRAMEBUFFER);
