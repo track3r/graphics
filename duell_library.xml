@@ -2,7 +2,7 @@
 <library xmlns="duell">
 
     <duelllib name="types" version="3.6.0+" />
-    <haxelib name="msignal" version="1.2.2" />
+    <haxelib name="msignal" version="1.2.4" />
 
     <include path="backends/graphics_ogl/duell_library.xml" if="html5||android||apple" />
 
