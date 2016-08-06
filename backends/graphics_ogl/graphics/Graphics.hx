@@ -911,7 +911,13 @@ class Graphics
         return context.currentBlendingEnabled;
     }
 
-    public function setBlendFunc(sourceFactor: BlendFactor, destinationFactor: BlendFactor): Void
+	public function setBlendFunc(sourceFactor: BlendFactor, destinationFactor: BlendFactor): Void
+	{
+        trace('setBlendFunc sourceFactor: $sourceFactor destinationFactor: $destinationFactor');
+		_setBlendFunc(sourceFactor, destinationFactor);
+	}
+
+    public function _setBlendFunc(sourceFactor: BlendFactor, destinationFactor: BlendFactor): Void
     {
         var context = getCurrentContext();
 
@@ -927,7 +933,16 @@ class Graphics
         }
     }
 
-    public function setBlendFuncSeparate(sourceFactorRGB: BlendFactor,
+	public function setBlendFuncSeparate(sourceFactorRGB: BlendFactor,
+										 destinationFactorRGB: BlendFactor,
+										 sourceFactorA: BlendFactor,
+										 destinationFactorA: BlendFactor): Void
+	{
+        trace('setBlendFunc sourceFactorRGB: $sourceFactorRGB destinationFactorRGB: $destinationFactorRGB sourceFactorA: $sourceFactorA destinationFactorA: $destinationFactorA');
+		_setBlendFuncSeparate(sourceFactorRGB, destinationFactorRGB, sourceFactorA, destinationFactorA);
+	}
+
+    public function _setBlendFuncSeparate(sourceFactorRGB: BlendFactor,
                                          destinationFactorRGB: BlendFactor,
                                          sourceFactorA: BlendFactor,
                                          destinationFactorA: BlendFactor): Void
@@ -948,7 +963,13 @@ class Graphics
         }
     }
 
-    public function setBlendMode(blendMode: BlendMode): Void
+	public function setBlendMode(blendMode: BlendMode): Void
+	{
+        trace('setBlendMode blendMode: $blendMode');
+		_setBlendMode(blendMode);
+	}
+
+    public function _setBlendMode(blendMode: BlendMode): Void
     {
         var context = getCurrentContext();
 
@@ -960,7 +981,12 @@ class Graphics
         }
     }
 
-    public function setBlendModeSeparate(blendModeRGB: BlendMode, blendModeA: BlendMode): Void
+	public function setBlendModeSeparate(blendModeRGB: BlendMode, blendModeA: BlendMode): Void
+	{
+		_setBlendModeSeparate(blendModeRGB, blendModeA);
+	}
+
+    public function _setBlendModeSeparate(blendModeRGB: BlendMode, blendModeA: BlendMode): Void
     {
         var context = getCurrentContext();
 
